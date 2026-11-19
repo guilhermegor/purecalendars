@@ -8,7 +8,8 @@ States (Federal Holidays), then layers a rich set of working-day / date helpers 
 timezone-aware conversions, and more. Every calendar is computed locally: no network, no cache.
 
 !!! note "Renamed from `wwdates` in 3.0.0"
-    `import wwdates` becomes `import purecalendars`. The live fetchers (`*Web` classes,
+    Use `import purecalendars`. Since 3.0.1, `import wwdates` still works but emits a
+    `DeprecationWarning`; that alias is removed in 4.0.0. The live fetchers (`*Web` classes,
     `DatesUSNasdaq`) moved to the separate `opendata-calendars` package, which returns `purecalendars` calendars.
 
 ---

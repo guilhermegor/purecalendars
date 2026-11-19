@@ -16,7 +16,8 @@ States (Federal Holidays), then layers a rich set of working-day / date helpers 
 `is_working_day`, `add_working_days`, `working_days_range`, `delta_working_days`, timezone-aware
 conversions, and more. Every calendar is computed locally: no network, no cache, no browser.
 
-> **Renamed from `wwdates` in 3.0.0.** `import wwdates` becomes `import purecalendars`. The live
+> **Renamed from `wwdates` in 3.0.0.** Use `import purecalendars`. Since 3.0.1, `import wwdates` still
+> works but emits a `DeprecationWarning`; that alias is removed in 4.0.0. The live
 > fetchers (`*Web` classes, `DatesUSNasdaq`) moved to the separate
 > [`opendata-calendars`](https://github.com/guilhermegor/greenfield/issues/103) package, which
 > returns `purecalendars` calendars.
