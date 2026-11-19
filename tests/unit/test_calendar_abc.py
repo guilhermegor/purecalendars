@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 from pytest_mock import MockerFixture
 
-from wwdates._internal.utils.calendars import (
+from purecalendars._internal.utils.calendars import (
 	ABCCalendar,
 	ABCCalendarOperations,
 	TypeDateFormatInput,

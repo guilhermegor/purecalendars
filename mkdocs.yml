@@ -1,6 +1,6 @@
-site_name: wwdates
+site_name: purecalendars
 site_description: Global calendar system. Python package.
-repo_url: https://github.com/guilhermegor/wwdates
+repo_url: https://github.com/guilhermegor/purecalendars
 nav:
   - Home: index.md
   - Usage: usage.md
@@ -13,8 +13,8 @@ theme:
   name: material
   # Native Material mechanism: places the image in the top bar left of the site name, with no
   # custom CSS, template override or build hook. Same asset as the README/index.md inline logo.
-  logo: assets/logo_wwdates_no_description.png
-  favicon: assets/logo_wwdates_no_description.png
+  logo: assets/logo_purecalendars_no_description.png
+  favicon: assets/logo_purecalendars_no_description.png
   palette:
     - scheme: default
       primary: indigo

@@ -9,7 +9,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from wwdates.br import DatesBRAnbima, DatesBRB3, DatesBRFebraban
+from purecalendars.br import DatesBRAnbima, DatesBRB3, DatesBRFebraban
 
 
 # The 2026 ANBIMA table, as published in feriados_nacionais.xls. Carnaval (Feb 16-17) and
