@@ -28,6 +28,25 @@ import pytest
 # --------------------------
 
 
+def _env_without_git_vars() -> dict[str, str]:
+	"""Return the ambient environment minus every ``GIT_*`` variable.
+
+	A pre-commit hook runs with ``GIT_INDEX_FILE`` (and friends) pointing at the *outer*
+	repository. Inherited by a git call inside the throwaway repo, it makes ``git commit`` write
+	to the wrong index and fail, so the suite went red only when run from the commit hook.
+
+	Returns
+	-------
+	dict[str, str]
+		A copy of ``os.environ`` without ``GIT_*`` keys.
+	"""
+	return {
+		str_key: str_value
+		for str_key, str_value in os.environ.items()
+		if not str_key.startswith("GIT_")
+	}
+
+
 def _git(cls_repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
 	"""Run a git command inside a throwaway repository.
 
@@ -46,7 +65,12 @@ def _git(cls_repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
 	str_git = shutil.which("git") or "git"
 	# Trusted, constant argv built from test-local literals only — bandit S603.
 	return subprocess.run(  # noqa: S603
-		[str_git, *args], cwd=cls_repo, capture_output=True, text=True, check=True
+		[str_git, *args],
+		cwd=cls_repo,
+		capture_output=True,
+		text=True,
+		check=True,
+		env=_env_without_git_vars(),
 	)
 
 
@@ -105,7 +129,7 @@ def _run_gate(
 		The completed process, for exit-code and message assertions.
 	"""
 	cls_script = Path(__file__).resolve().parents[2] / "bin" / "check_backlog_ledger.py"
-	dict_env = dict(os.environ)
+	dict_env = _env_without_git_vars()
 	dict_env["LEDGER_BASE_REF"] = str_base
 	# Both are cleared first so an ambient CI value cannot decide the outcome.
 	dict_env.pop("LEDGER_PR_AUTHOR", None)
