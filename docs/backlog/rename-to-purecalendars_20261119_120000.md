@@ -25,7 +25,7 @@ Ship `purecalendars` 3.0.0: the distribution and the import package renamed toge
       `release-test-pypi`), `PACKAGE_NAME` updated.
 - [x] `backfill` input on both release workflows (opendata-cvm#419 mechanism) so v0.1.0–v2.0.0
       are rebuilt under the new name, keeping the old name literal for historical tags.
-- [ ] README, `docs/`, `CLAUDE.md`, `CONTRIBUTING.md` describe the offline-only package.
+- [x] README, `docs/`, `CLAUDE.md`, `CONTRIBUTING.md` describe the offline-only package.
 
 ## Why the I/O leaves instead of staying behind an extra
 

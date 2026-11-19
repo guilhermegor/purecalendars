@@ -4,8 +4,7 @@ No network and no cache: the national holidays come from ``holidays.B3`` (verifi
 to ANBIMA's published table) and the exchange's own non-trading days — the last working day
 of each year, and optionally Christmas Eve — are derived from them.
 
-For the calendar built from the live ANBIMA fetch, use
-:class:`purecalendars.br.b3_web.DatesBRB3Web` instead.
+For the calendar built from the live ANBIMA fetch, use the ``opendata-calendars`` package.
 """
 
 from datetime import date, timedelta

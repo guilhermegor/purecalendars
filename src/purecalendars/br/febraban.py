@@ -6,8 +6,8 @@ financial-market calendar — so that is the offline source. The equivalence was
 the live endpoint for 2025 and 2026; years outside that window are computed from the same
 statutory rules but have not been diffed against FEBRABAN's own publication.
 
-For the table fetched live from feriadosbancarios.febraban.org.br, use
-:class:`purecalendars.br.febraban_web.DatesBRFebrabanWeb` instead.
+For the table fetched live from feriadosbancarios.febraban.org.br, use the
+``opendata-calendars`` package.
 """
 
 from datetime import date, timedelta

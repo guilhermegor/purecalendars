@@ -1,31 +1,17 @@
 # **FAQ & Troubleshooting**
 
-Common questions and fixes when using `wwdates`.
+Common questions and fixes when using `purecalendars`.
 
 > **See also:** [Usage](usage.md) · [API Reference](api.md)
 
 ---
 
-## Do I need `playwright install chromium`? / A provider raises a browser error
+## Where did `DatesBRB3Web`, `DatesUSNasdaq` and the other live fetchers go?
 
-**Almost certainly not.** Every provider works offline after `pip install wwdates` — including
-the recommended `DatesUSFederalHolidays`, which computes US federal holidays locally (no network,
-no browser). Use it and you never touch Playwright.
-
-The **only** class that needs a browser is the optional `DatesUSFederalHolidaysWeb` — a live
-scrape of federalholidays.net. Playwright is **not** installed by the base package; enable it
-with the `web` extra (quote the brackets so the shell does not glob them), then download the
-browser binary:
-
-```bash
-pip install "wwdates[web]"   # adds Playwright
-playwright install chromium  # one-time browser download (pip cannot do this)
-```
-
-Constructing or using `DatesUSFederalHolidaysWeb` without both steps raises an `ImportError`
-telling you to run them. If you deploy in a container, run both in the image build so the browser
-ships with it. Prefer `DatesUSFederalHolidays` (offline) unless you specifically need the scraped
-site's published dates.
+They moved to the separate `opendata-calendars` package when `wwdates` became `purecalendars`
+(3.0.0). `purecalendars` does no I/O: every provider here is computed offline, with no network,
+no cache and no browser. `opendata-calendars` fetches the publishers' live tables and returns
+them as `purecalendars` calendars.
 
 ## Why does a US federal holiday show up on both a Sunday *and* the next Monday?
 
@@ -40,73 +26,17 @@ each holiday on its published date.
 
 ---
 
-## Where are the cached holiday files, and how do I clear them?
+## Can a holiday be stale?
 
-Fetched calendars are cached per platform:
-
-| OS | Default cache directory |
-|----|-------------------------|
-| Linux | `~/.cache/wwdates_calendar_cache/` |
-| macOS | `~/.cache/wwdates_calendar_cache/` |
-| Windows | `%APPDATA%\wwdates_calendar_cache\` |
-
-Delete that directory to force a clean re-fetch:
-
-```bash
-# Linux
-rm -rf ~/.cache/wwdates_calendar_cache
-```
-
-```bash
-# macOS
-rm -rf ~/.cache/wwdates_calendar_cache
-```
-
-```powershell
-# Windows (PowerShell)
-Remove-Item -Recurse -Force "$env:APPDATA\wwdates_calendar_cache"
-```
-
-Or skip the cache entirely by using an **offline** provider — it computes its holidays
-locally, so there is nothing to fetch or store:
-
-```python
-from wwdates.br.b3 import DatesBRB3
-
-cls_cal = DatesBRB3()   # no network, no cache
-```
-
-For the `*Web` providers, `bool_persist_cache=False` keeps the cache in memory only:
-
-```python
-from wwdates.br.b3_web import DatesBRB3Web
-
-cls_cal = DatesBRB3Web(bool_persist_cache=False)   # in-memory only
-```
-
-Point the cache elsewhere with `path_cache_dir="/some/path"`. See
-[Caching internals](contributing.md#caching-internals) for the full controls.
-
----
-
-## A holiday looks stale / I want fresh data now
-
-Only the `*Web` providers cache. The cache re-fetches once it is older than
-`int_days_cache_expiration` days (default `1`); force an immediate refresh by lowering it,
-clearing the cache directory, or disabling reuse:
-
-```python
-DatesBRAnbimaWeb(int_days_cache_expiration=0)   # always re-fetch
-```
-
-The offline providers never go stale in this sense — they recompute from statutory rules on
-every call.
+Not in the cache sense: every provider recomputes from statutory rules on every call, so there
+is nothing to refresh. A calendar can only be wrong when a publisher declares an extraordinary
+closure the rules do not know; add it yourself (see below) until a release picks it up.
 
 ---
 
 ## `ZoneInfoNotFoundError` on a timezone lookup
 
-`wwdates` depends on `tzdata` so the IANA timezone database is available even on systems that
+`purecalendars` depends on `tzdata` so the IANA timezone database is available even on systems that
 ship none (notably Windows and minimal containers). If you see this error, confirm `tzdata`
 installed alongside the package:
 
@@ -121,11 +51,9 @@ pip show tzdata
 - **Brazilian exchange (B3):** `DatesBRB3` — national holidays plus B3 non-trading days,
   **including 24 December**, which B3 publishes as a closure (pass
   `bool_add_christmas_eve=False` to opt out; the default changed in 2.0).
-  `DatesBRB3Web` scrapes B3's own calendar, but only covers the years B3 publishes
-  (2021–2026 today).
 - **Brazilian banking / settlement:** `DatesBRFebraban`.
-- **US market:** `DatesUSNasdaq` (market closures) — not `DatesUSFederalHolidays`, which is
-  the civil federal-holiday calendar.
+- **US market:** `DatesUSFederalHolidays` is the civil federal-holiday calendar, not the
+  exchange's. Nasdaq market closures (e.g. Good Friday) come from `opendata-calendars`.
 
 See the [provider comparison table](api.md) for what each one loads.
 
@@ -137,7 +65,7 @@ Yes — every provider inherits `add_holidays`:
 
 ```python
 from datetime import date
-from wwdates.br.b3 import DatesBRB3
+from purecalendars.br.b3 import DatesBRB3
 
 cls_cal = DatesBRB3()
 cls_cal.add_holidays([("Company offsite", date(2025, 6, 2))])

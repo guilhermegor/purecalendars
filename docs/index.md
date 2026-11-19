@@ -1,12 +1,15 @@
-# **wwdates** <img src="assets/logo_wwdates_no_description.png" align="right" width="200" style="border-radius: 15px;" alt="wwdates logo">
+# **purecalendars** <img src="assets/logo_purecalendars_no_description.png" align="right" width="200" style="border-radius: 15px;" alt="purecalendars logo">
 
-Global calendar system.
+Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline.
 
-`wwdates` fetches official holiday calendars for Brazil (ANBIMA, FEBRABAN, B3) and the United
-States (Nasdaq, Federal Holidays), then layers a rich set of working-day / date helpers on top
+`purecalendars` ships official holiday calendars for Brazil (ANBIMA, FEBRABAN, B3) and the United
+States (Federal Holidays), then layers a rich set of working-day / date helpers on top
 — `is_working_day`, `add_working_days`, `working_days_range`, `delta_working_days`,
-timezone-aware conversions, and more. Fetched calendars are cached locally so repeated calls
-stay fast and offline-friendly.
+timezone-aware conversions, and more. Every calendar is computed locally: no network, no cache.
+
+!!! note "Renamed from `wwdates` in 3.0.0"
+    `import wwdates` becomes `import purecalendars`. The live fetchers (`*Web` classes,
+    `DatesUSNasdaq`) moved to the separate `opendata-calendars` package, which returns `purecalendars` calendars.
 
 ---
 
@@ -26,13 +29,13 @@ stay fast and offline-friendly.
 ## Quick start
 
 ```bash
-pip install wwdates
+pip install purecalendars
 ```
 
 ```python
 from datetime import date
 
-from wwdates.br.b3 import DatesBRB3
+from purecalendars.br.b3 import DatesBRB3
 
 cls_cal = DatesBRB3()
 cls_cal.is_working_day(date(2024, 12, 25))          # False — Christmas
@@ -40,10 +43,7 @@ cls_cal.add_working_days(date(2024, 12, 24), 3)     # skips holidays + weekends
 cls_cal.holidays()                                  # [(name, date), ...]
 ```
 
-Everything works offline after install. Only the optional `DatesUSFederalHolidaysWeb` (a live
-scrape) needs a browser — enable it with `pip install "wwdates[web]"` then
-`playwright install chromium`. The rest, including the recommended offline
-`DatesUSFederalHolidays`, need neither. See [Usage](usage.md#optional-the-browser-scrape-provider-web-extra).
+Everything works offline after install — no network, no browser.
 
 ---
 
@@ -51,15 +51,10 @@ scrape) needs a browser — enable it with `pip install "wwdates[web]"` then
 
 | Country | Import | Source |
 |---------|--------|--------|
-| 🇧🇷 Brazil | `from wwdates.br.anbima import DatesBRAnbima` | ANBIMA national holidays (offline, recommended) |
-| 🇧🇷 Brazil | `from wwdates.br.anbima_web import DatesBRAnbimaWeb` | The same set, fetched live from ANBIMA |
-| 🇧🇷 Brazil | `from wwdates.br.febraban import DatesBRFebraban` | FEBRABAN bank holidays (offline, recommended) |
-| 🇧🇷 Brazil | `from wwdates.br.febraban_web import DatesBRFebrabanWeb` | The same set, fetched live from FEBRABAN |
-| 🇧🇷 Brazil | `from wwdates.br.b3 import DatesBRB3` | National + B3 exchange extras (offline, recommended) |
-| 🇧🇷 Brazil | `from wwdates.br.b3_web import DatesBRB3Web` | Scraped from B3's trading calendar (2021–2026) |
-| 🇺🇸 USA | `from wwdates.us.nasdaq import DatesUSNasdaq` | Nasdaq trading calendar |
-| 🇺🇸 USA | `from wwdates.us.federal_holidays import DatesUSFederalHolidays` | US federal holidays (offline, recommended) |
-| 🇺🇸 USA | `from wwdates.us.federal_holidays_web import DatesUSFederalHolidaysWeb` | US federal holidays via live scrape |
+| 🇧🇷 Brazil | `from purecalendars.br.anbima import DatesBRAnbima` | ANBIMA national holidays (offline, recommended) |
+| 🇧🇷 Brazil | `from purecalendars.br.febraban import DatesBRFebraban` | FEBRABAN bank holidays (offline, recommended) |
+| 🇧🇷 Brazil | `from purecalendars.br.b3 import DatesBRB3` | National + B3 exchange extras (offline, recommended) |
+| 🇺🇸 USA | `from purecalendars.us.federal_holidays import DatesUSFederalHolidays` | US federal holidays (offline, recommended) |
 
 ---
 

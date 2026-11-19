@@ -7,8 +7,8 @@ following Monday) — both the statutory date and the observed date are returned
 holiday still appears on that Sunday *and* the closed Monday is marked too. This is required for
 correct working-day math, since federal offices, banks, and markets close on the observed day.
 
-For the dates exactly as published on federalholidays.net (a live scrape), use
-:class:`purecalendars.us.federal_holidays_web.DatesUSFederalHolidaysWeb` instead.
+For the dates exactly as published on federalholidays.net (a live scrape), use the
+``opendata-calendars`` package.
 """
 
 from datetime import date

@@ -4,8 +4,7 @@ No network and no cache: the ANBIMA national holiday table is reproduced from
 ``holidays.B3``, which was verified identical to the published
 ``feriados_nacionais.xls`` across all 2001–2099 years it covers.
 
-For the table fetched live from anbima.com.br, use
-:class:`purecalendars.br.anbima_web.DatesBRAnbimaWeb` instead.
+For the table fetched live from anbima.com.br, use the ``opendata-calendars`` package.
 """
 
 from datetime import date

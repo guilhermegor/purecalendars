@@ -13,7 +13,7 @@ Advance a trade date by N business days on the B3 exchange calendar:
 ```python
 from datetime import date
 
-from wwdates.br.b3 import DatesBRB3
+from purecalendars.br.b3 import DatesBRB3
 
 cls_cal = DatesBRB3()
 trade_date = date(2024, 12, 20)
@@ -30,7 +30,7 @@ Snap a nominal due date to the next (or previous) business day:
 ```python
 from datetime import date
 
-from wwdates.br.anbima import DatesBRAnbima
+from purecalendars.br.anbima import DatesBRAnbima
 
 cls_cal = DatesBRAnbima()
 due = date(2025, 1, 1)                                  # New Year — a holiday
@@ -47,9 +47,9 @@ E.g. an SLA or aging metric in working days:
 ```python
 from datetime import date
 
-from wwdates.us.nasdaq import DatesUSNasdaq
+from purecalendars.us.federal_holidays import DatesUSFederalHolidays
 
-cls_cal = DatesUSNasdaq()
+cls_cal = DatesUSFederalHolidays()
 opened = date(2024, 12, 20)
 closed = date(2025, 1, 6)
 print(cls_cal.delta_working_days(opened, closed))   # business days elapsed
@@ -60,9 +60,9 @@ print(cls_cal.delta_working_days(opened, closed))   # business days elapsed
 ## Find options expiry (3rd Friday of a month)
 
 ```python
-from wwdates.us.nasdaq import DatesUSNasdaq
+from purecalendars.br.b3 import DatesBRB3
 
-cls_cal = DatesUSNasdaq()
+cls_cal = DatesBRB3()
 # weekday: Monday=0 … Friday=4; n=3 → the third Friday, rolled to a working day if needed.
 expiry = cls_cal.get_nth_weekday_month(2025, 3, weekday=4, n=3)
 print(expiry)
@@ -73,7 +73,7 @@ print(expiry)
 ## List every holiday in a year
 
 ```python
-from wwdates.br.b3 import DatesBRB3
+from purecalendars.br.b3 import DatesBRB3
 
 cls_cal = DatesBRB3()
 for name, day in sorted(cls_cal.holidays(), key=lambda pair: pair[1]):
@@ -88,7 +88,7 @@ for name, day in sorted(cls_cal.holidays(), key=lambda pair: pair[1]):
 ```python
 from datetime import date
 
-from wwdates.br.febraban import DatesBRFebraban
+from purecalendars.br.febraban import DatesBRFebraban
 
 cls_cal = DatesBRFebraban()
 business_days = cls_cal.working_days_range(date(2025, 1, 1), date(2025, 3, 31))
@@ -102,14 +102,14 @@ print(date(2025, 2, 17) in business_days)   # O(1) lookup against the quarter
 ```python
 from datetime import date
 
-from wwdates.br.b3 import DatesBRB3
-from wwdates.us.nasdaq import DatesUSNasdaq
+from purecalendars.br.b3 import DatesBRB3
+from purecalendars.us.federal_holidays import DatesUSFederalHolidays
 
 cls_br = DatesBRB3()
-cls_us = DatesUSNasdaq()
+cls_us = DatesUSFederalHolidays()
 
 def is_dual_working_day(day: date) -> bool:
-    """True only when both the B3 and Nasdaq calendars are open."""
+    """True only when both the B3 and US federal calendars are open."""
     return cls_br.is_working_day(day) and cls_us.is_working_day(day)
 
 print(is_dual_working_day(date(2025, 7, 4)))   # US Independence Day → False
