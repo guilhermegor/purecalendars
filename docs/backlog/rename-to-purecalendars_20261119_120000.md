@@ -20,10 +20,10 @@ Ship `purecalendars` 3.0.0: the distribution and the import package renamed toge
       and the `calendar-drift` workflow, with their tests.
 - [x] Dropped `requests`, `lxml`, `openpyxl`, `xlrd`, `playwright` and the `web` extra.
 - [x] `ruff.toml`: the pandas-reader ban now states the no-I/O rule.
-- [ ] Release workflows renamed to the hyphenated names the OIDC publishers were registered with
+- [x] Release workflows renamed to the hyphenated names the OIDC publishers were registered with
       (`release-pypi.yaml` / `release-test-pypi.yaml`, environments `release-pypi` /
       `release-test-pypi`), `PACKAGE_NAME` updated.
-- [ ] `backfill` input on both release workflows (opendata-cvm#419 mechanism) so v0.1.0–v2.0.0
+- [x] `backfill` input on both release workflows (opendata-cvm#419 mechanism) so v0.1.0–v2.0.0
       are rebuilt under the new name, keeping the old name literal for historical tags.
 - [ ] README, `docs/`, `CLAUDE.md`, `CONTRIBUTING.md` describe the offline-only package.
 
