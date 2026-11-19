@@ -183,7 +183,7 @@ def test_a_checkbox_outside_the_work_section_does_not_satisfy_the_rule() -> None
 
 def test_non_ledger_paths_are_ignored() -> None:
 	"""The gate judges ledgers only, so it can be handed a broad file list."""
-	dict_files = {"src/wwdates/main.py": "print('x')", "README.md": "# readme"}
+	dict_files = {"src/purecalendars/main.py": "print('x')", "README.md": "# readme"}
 
 	assert checker.check(list(dict_files), _reader(dict_files)) == []
 
@@ -223,7 +223,7 @@ def test_src_diff_without_a_ledger_is_an_error() -> None:
 	This is the whole point of the existence half. If this test ever passes trivially, the gate
 	has become a no-op (see the `every-gate-needs-a-should-fail-test` lesson).
 	"""
-	list_paths = ["src/wwdates/us/federal_holidays.py"]
+	list_paths = ["src/purecalendars/us/federal_holidays.py"]
 	list_errors = checker.check(list_paths, _reader({}), bool_require_existence=True)
 
 	assert any("adds no" in e and "work ledger" in e for e in list_errors)
@@ -231,7 +231,7 @@ def test_src_diff_without_a_ledger_is_an_error() -> None:
 
 def test_src_diff_with_a_ledger_is_clean() -> None:
 	"""The same diff satisfies the rule once a ledger rides along."""
-	list_paths = ["src/wwdates/us/federal_holidays.py", VALID_PATH]
+	list_paths = ["src/purecalendars/us/federal_holidays.py", VALID_PATH]
 
 	list_errors = checker.check(
 		list_paths, _reader({VALID_PATH: VALID_LEDGER}), bool_require_existence=True
@@ -282,7 +282,7 @@ def test_a_ci_path_beside_a_tests_path_still_demands_a_ledger() -> None:
 
 def test_existence_is_off_by_default() -> None:
 	"""An explicit ad-hoc run stays shape-only, so it never demands a branch context."""
-	assert checker.check(["src/wwdates/main.py"], _reader({})) == []
+	assert checker.check(["src/purecalendars/main.py"], _reader({})) == []
 
 
 def test_a_ledger_alone_satisfies_nothing_but_also_demands_nothing() -> None:
@@ -297,7 +297,7 @@ def test_a_ledger_alone_satisfies_nothing_but_also_demands_nothing() -> None:
 def test_shape_errors_still_surface_alongside_the_existence_check() -> None:
 	"""Both halves report together — a malformed ledger is not masked by a satisfied existence."""
 	str_bad = VALID_LEDGER.replace("## Goal\n", "")
-	list_paths = ["src/wwdates/main.py", VALID_PATH]
+	list_paths = ["src/purecalendars/main.py", VALID_PATH]
 	list_errors = checker.check(
 		list_paths, _reader({VALID_PATH: str_bad}), bool_require_existence=True
 	)

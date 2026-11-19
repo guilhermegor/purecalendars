@@ -1,18 +1,18 @@
 [tool.poetry]
-name = "wwdates"
+name = "purecalendars"
 # Placeholder only — the real version is derived from the git tag at build time by
 # poetry-dynamic-versioning (see [tool.poetry-dynamic-versioning]). Do not bump this by hand;
 # releases are cut by tagging via the CI release workflows.
 version = "0.0.0"
-description = "Global calendar system. Python package."
+description = "Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline."
 authors = ["guilhermegor"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://guilhermegor.github.io/wwdates/"
-documentation = "https://guilhermegor.github.io/wwdates/"
-repository = "https://github.com/guilhermegor/wwdates"
-keywords = ["wwdates", "python", "library"]
-packages = [{ include = "wwdates", from = "src" }]
+homepage = "https://guilhermegor.github.io/purecalendars/"
+documentation = "https://guilhermegor.github.io/purecalendars/"
+repository = "https://github.com/guilhermegor/purecalendars"
+keywords = ["calendar", "holidays", "business-days", "b3", "anbima", "febraban"]
+packages = [{ include = "purecalendars", from = "src" }]
 # Keep internal dev docs out of the distributed wheel/sdist.
 exclude = ["src/**/CLAUDE.md"]
 package-mode = true
@@ -26,30 +26,19 @@ classifiers = [
 ]
 
 [tool.poetry.urls]
-"Bug Reports" = "https://github.com/guilhermegor/wwdates/issues"
-"Source" = "https://github.com/guilhermegor/wwdates"
-"Documentation" = "https://guilhermegor.github.io/wwdates/"
+"Bug Reports" = "https://github.com/guilhermegor/purecalendars/issues"
+"Source" = "https://github.com/guilhermegor/purecalendars"
+"Documentation" = "https://guilhermegor.github.io/purecalendars/"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-# Required by the private _internal helpers (dtypes / tabular_reader / config.contracts).
+# Calendar core (business-day frames). No I/O dependency belongs here: live fetchers live in
+# opendata-calendars, which depends on this package, never the reverse.
 pandas = ">=2.1.0"
-openpyxl = ">=3.1.0"
-requests = "^2.34.2"
 businesstimedelta = "^1.0.1"
 python-dateutil = "^2.9.0.post0"
-xlrd = "^2.0.2"
-lxml = "^6.1.1"
 tzdata = "^2026.2"
 holidays = "^0.99"
-# Optional — only DatesUSFederalHolidaysWeb (the live-scrape provider) needs a browser.
-# Installed via the `web` extra: pip install "wwdates[web]".
-playwright = { version = "^1.61.0", optional = true }
-
-[tool.poetry.extras]
-# `pip install "wwdates[web]"` adds Playwright for the live-scrape DatesUSFederalHolidaysWeb
-# provider. After installing, run `playwright install chromium` once to fetch the browser.
-web = ["playwright"]
 
 [tool.commitizen]
 # Conventional-commit driven changelog. The version comes from the git tag

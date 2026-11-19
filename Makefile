@@ -156,7 +156,7 @@ install_dist_locally:
 	@rm -rf dist/* build/ *.egg-info/
 	@$(POETRY) run python -m build
 	@$(POETRY) install
-	@$(POETRY) run python -c "from wwdates.br.b3 import DatesBRB3; import wwdates; assert wwdates.__version__; print('Package import works; __version__ resolves')"
+	@$(POETRY) run python -c "from purecalendars.br.b3 import DatesBRB3; import purecalendars; assert purecalendars.__version__; print('Package import works; __version__ resolves')"
 	@$(POETRY) run python -c "import pathlib; print('Built wheel:', sorted(pathlib.Path('dist').glob('*.whl'))[-1].name)"
 
 # -------------------

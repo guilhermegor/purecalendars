@@ -136,7 +136,9 @@ def _run_gate(
 # --------------------------
 
 
-@pytest.mark.parametrize("str_changed_path", ["src/wwdates/thing.py", ".github/workflows/x.yaml"])
+@pytest.mark.parametrize(
+	"str_changed_path", ["src/purecalendars/thing.py", ".github/workflows/x.yaml"]
+)
 def test_a_bot_pr_is_exempt_even_on_a_ledger_class_path(
 	tmp_path: Path, str_changed_path: str
 ) -> None:
@@ -171,7 +173,7 @@ def test_the_same_diff_from_a_human_fails(tmp_path: Path) -> None:
 	tmp_path : pathlib.Path
 		pytest's per-test temporary directory.
 	"""
-	str_base = _seed_repo(tmp_path, "src/wwdates/thing.py")
+	str_base = _seed_repo(tmp_path, "src/purecalendars/thing.py")
 
 	cls_proc = _run_gate(tmp_path, str_base, None)
 
@@ -192,7 +194,7 @@ def test_the_bot_check_precedes_path_classification(tmp_path: Path) -> None:
 	tmp_path : pathlib.Path
 		pytest's per-test temporary directory.
 	"""
-	str_base = _seed_repo(tmp_path, "src/wwdates/thing.py")
+	str_base = _seed_repo(tmp_path, "src/purecalendars/thing.py")
 
 	cls_bot = _run_gate(tmp_path, str_base, "dependabot[bot]")
 	cls_human = _run_gate(tmp_path, str_base, None)
@@ -209,7 +211,7 @@ def test_a_human_pr_with_a_ledger_passes(tmp_path: Path) -> None:
 	tmp_path : pathlib.Path
 		pytest's per-test temporary directory.
 	"""
-	str_base = _seed_repo(tmp_path, "src/wwdates/thing.py")
+	str_base = _seed_repo(tmp_path, "src/purecalendars/thing.py")
 	cls_ledger = tmp_path / "docs" / "backlog" / "a-topic_20260803_101010.md"
 	cls_ledger.parent.mkdir(parents=True, exist_ok=True)
 	cls_ledger.write_text(
@@ -242,7 +244,7 @@ def test_the_gate_survives_a_non_utf8_console(tmp_path: Path) -> None:
 	tmp_path : pathlib.Path
 		pytest's per-test temporary directory.
 	"""
-	str_base = _seed_repo(tmp_path, "src/wwdates/thing.py")
+	str_base = _seed_repo(tmp_path, "src/purecalendars/thing.py")
 
 	cls_proc = _run_gate(tmp_path, str_base, "dependabot[bot]", str_io_encoding="cp1252")
 

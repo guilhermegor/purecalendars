@@ -91,25 +91,19 @@ fixable = ["I"]
 # allow dummy variables to start with an underscore and be followed by alphanumeric
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-# Bare pandas readers are banned so every file/SQL read funnels through
-# utils/tabular_reader (which enforces a FileContract + apply_dtypes). ruff resolves
-# `pd.read_csv` to `pandas.read_csv` and flags it. The seam itself and tests
-# (round-trip read-backs) are exempted via per-file-ignores below.
+# purecalendars is a pure* package: computation only, no I/O. Bare pandas readers are banned
+# so a file or SQL read cannot creep back in; fetching and reading published data belongs in
+# opendata-calendars, which depends on this package. Tests are exempt below.
 [lint.flake8-tidy-imports.banned-api]
-"pandas.read_excel".msg = "Use utils.tabular_reader.read_table (enforces contract + dtypes)."
-"pandas.read_csv".msg = "Use utils.tabular_reader.read_table (enforces contract + dtypes)."
-"pandas.read_json".msg = "Use utils.tabular_reader.read_table (enforces contract + dtypes)."
-"pandas.read_table".msg = "Use utils.tabular_reader.read_table (enforces contract + dtypes)."
-"pandas.read_parquet".msg = "Use utils.tabular_reader.read_table (enforces contract + dtypes)."
-"pandas.read_sql".msg = "Use utils.tabular_reader.read_query (enforces contract + dtypes)."
-"pandas.read_sql_query".msg = "Use utils.tabular_reader.read_query (enforces contract + dtypes)."
-"pandas.read_sql_table".msg = "Use utils.tabular_reader.read_query (enforces contract + dtypes)."
-"pandas.ExcelFile".msg = "Use utils.tabular_reader.read_table (enforces contract + dtypes)."
-# FileContract is CONSTRUCTED only in config/contracts/ (per-file-exempt below); everywhere
-# else imports the instance. Both import paths of the class are banned; a file importing the
-# class purely for a type annotation carries a line-scoped `# noqa: TID251`.
-"utils.tabular_reader.FileContract".msg = "Construct contracts only in config/contracts/; import the instance."
-"config.contracts.FileContract".msg = "Construct contracts only in config/contracts/; import the instance."
+"pandas.read_excel".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.read_csv".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.read_json".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.read_table".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.read_parquet".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.read_sql".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.read_sql_query".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.read_sql_table".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
+"pandas.ExcelFile".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
 
 [lint.isort]
 force-single-line = false
@@ -133,10 +127,6 @@ allow-star-arg-any = false  # do not allow `*args` and `**kwargs` to be untyped
     "TID251",  # tests legitimately read back outputs with pd.read_* to assert on them
     "ERA001",  # explanatory imperative-mood comments read as commented-out code
 ]
-# The seam itself is the one place allowed to call the bare pandas readers.
-"src/wwdates/_internal/utils/tabular_reader.py" = ["TID251"]
-# config/contracts/ is the one place allowed to construct FileContract.
-"src/wwdates/_internal/config/contracts/*.py" = ["TID251"]
 # Native DB-API 2.0 / SQLAlchemy connections have no shared stdlib type, so `Any` is the
 # honest return/param annotation for the raw-driver connection factory (MVC skeletons).
 "src/config/connection_db.py" = ["ANN401"]

@@ -1,9 +1,9 @@
 # **Contributing**
 
-Everything you need to develop, test, and release `wwdates`.
+Everything you need to develop, test, and release `purecalendars`.
 
 > **See also:** [Usage](usage.md) · [API Reference](api.md) · the repository's
-> [`CONTRIBUTING.md`](https://github.com/guilhermegor/wwdates/blob/main/CONTRIBUTING.md) holds
+> [`CONTRIBUTING.md`](https://github.com/guilhermegor/purecalendars/blob/main/CONTRIBUTING.md) holds
 > the authoritative branch/PR policy.
 
 ---
@@ -17,8 +17,8 @@ tasks.sh init`** when `make` is unavailable (e.g. a stock Windows shell).
 **With `make` (preferred):**
 
 ```bash
-git clone https://github.com/guilhermegor/wwdates.git
-cd wwdates
+git clone https://github.com/guilhermegor/purecalendars.git
+cd purecalendars
 make init        # seed .env, create the Poetry venv + install deps, install pre-commit hooks
 ```
 
@@ -32,12 +32,6 @@ bash tasks.sh init
 `.env.example`), `venv` (create the Poetry virtualenv and install **all** dependencies,
 including the dev tools), and `precommit` (install the git hooks). Poetry is auto-installed if
 missing.
-
-Then install the Playwright browser used by the US federal-holidays provider's tests:
-
-```bash
-make fix_playwright        # or: bash tasks.sh fix_playwright
-```
 
 Every command below also has a `bash tasks.sh <name>` equivalent. Run `make help` (or
 `bash tasks.sh help`) to list them all.
@@ -71,8 +65,7 @@ make integration_tests  # integration tests only
 make test_cov           # unit tests + coverage report + badge
 ```
 
-Unit tests mock all network I/O at the boundary (`requests`, Playwright) — they never touch a
-real network, DB, or filesystem.
+`purecalendars` does no I/O, so unit tests never touch a real network, DB, or filesystem.
 
 ### The network guard
 
@@ -86,19 +79,16 @@ NetworkAccessError: A test tried to reach the network (...). Mock the I/O bounda
 it truly must hit the wire.
 ```
 
-If you see this, the fix is to mock the seam your code calls — `requests.get` for the ANBIMA /
-FEBRABAN readers, the Playwright page for the US federal-holidays provider — not to work around
-the guard. A test that genuinely must hit the network opts out explicitly:
+If you see this, something in `purecalendars` started doing I/O — which the package must not do
+(fetching belongs in `opendata-calendars`). Remove the I/O rather than work around the guard. A test that genuinely must hit the network opts out explicitly:
 
 ```python
 @pytest.mark.allow_network
 def test_something_that_really_needs_the_wire() -> None: ...
 ```
 
-Why it is a guard and not a guideline: `wwdates` scrapes three third-party portals (ANBIMA, B3,
-FEBRABAN). In CI an un-mocked fetch runs on every push from many IPs, so the cost of forgetting is
-not a red test — it is getting rate-limited or IP-banned from the very source the library depends
-on. Note that DNS resolution (`socket.getaddrinfo`) is deliberately **not** blocked: resolving an
+Why it is a guard and not a guideline: `purecalendars` is a `pure*` package — computation only, no
+I/O. The guard turns that rule into a red test the moment network code creeps back in. Note that DNS resolution (`socket.getaddrinfo`) is deliberately **not** blocked: resolving an
 address neither exfiltrates data nor triggers a ban, and blocking it would break code that
 classifies an address before deciding whether to connect.
 
@@ -113,31 +103,6 @@ make lint          # ruff check + ruff format + codespell + pydocstyle
 Ruff config lives in `ruff.toml` (line-length 99, tab indent, double quotes, NumPy
 docstrings). Docstring parameter/return types **must match** the type hints textually
 (`int | float`, not `Union[int, float]`) — the `check-docstrings` gate enforces this.
-
----
-
-## Caching internals
-
-Fetched calendars are cached to disk so repeated runs avoid re-downloading. The cache lives at
-`~/.cache/wwdates_calendar_cache/` (or `%APPDATA%\wwdates_calendar_cache` on Windows). Only the
-**`*Web`** providers cache — the offline ones compute locally and have no cache parameters at
-all. Every `*Web` provider accepts the same controls (also documented in the
-[API Reference](api.md)):
-
-```python
-from wwdates.br.b3_web import DatesBRB3Web
-
-cls_cal = DatesBRB3Web(
-    bool_persist_cache=True,        # write cache to disk
-    bool_reuse_cache=True,          # reuse in-memory cache within a run
-    int_days_cache_expiration=1,    # re-fetch after N days
-    int_cache_ttl_days=30,          # prune cache files older than N days
-    path_cache_dir=None,            # override the default cache directory
-)
-```
-
-Pass `bool_persist_cache=False` to run fully in-memory — useful in tests so a run never writes
-to the shared cache directory.
 
 ---
 
@@ -180,7 +145,7 @@ is broken even when `make unit_tests` is green — fix it before pushing.
     ```
 
 4. **Open the PR.** GitHub pre-fills the
-   [pull-request template](https://github.com/guilhermegor/wwdates/blob/main/.github/PULL_REQUEST_TEMPLATE.md);
+   [pull-request template](https://github.com/guilhermegor/purecalendars/blob/main/.github/PULL_REQUEST_TEMPLATE.md);
    fill in every section — **Description** (what / why / how), **Changes Made**
    (added / updated / fixed), **Testing** (manual + automated evidence), **Documentation**, and
    **Reviewer Focus**. Link the issue the work addresses.
@@ -207,8 +172,8 @@ Because pre-commit mirrors these gates, a commit that passed your local hooks wi
 
 Two GitHub Actions workflows handle releases:
 
-- **`release_test_pypi.yaml`** — publish to [Test PyPI](https://test.pypi.org) first.
-- **`release_pypi.yaml`** — publish to [PyPI](https://pypi.org) and cut a GitHub release.
+- **`release-test-pypi.yaml`** — publish to [Test PyPI](https://test.pypi.org) first.
+- **`release-pypi.yaml`** — publish to [PyPI](https://pypi.org) and cut a GitHub release.
 
 **There is no manual version bump.** The version is the **git tag** — `pyproject.toml` holds a
 `0.0.0` placeholder and [poetry-dynamic-versioning](https://github.com/mtkennerly/poetry-dynamic-versioning)
@@ -226,11 +191,11 @@ stamps the real version at build time. To release, trigger the workflow from the
 
 Configure once:
 
-- A GitHub **Environment** per index (repository settings): `release_pypi` for PyPI,
-  `release_test_pypi` for Test PyPI.
+- A GitHub **Environment** per index (repository settings): `release-pypi` for PyPI,
+  `release-test-pypi` for Test PyPI.
 - A **trusted publisher** on each index (PyPI and Test PyPI), matching this repo exactly:
-  owner `guilhermegor`, repo `wwdates`, workflow filename `release_pypi.yaml` (environment
-  `release_pypi`) and `release_test_pypi.yaml` (environment `release_test_pypi`). On a first-ever release use a
+  owner `guilhermegor`, repo `purecalendars`, workflow filename `release-pypi.yaml` (environment
+  `release-pypi`) and `release-test-pypi.yaml` (environment `release-test-pypi`). On a first-ever release use a
   [**pending publisher**](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
   (register it before the project exists). No `PYPI_TOKEN` / `TEST_PYPI_TOKEN` secret is needed.
 

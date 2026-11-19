@@ -66,8 +66,8 @@ of your public `__all__`. The internal imports are package-qualified
 
 Two workflows ship under `.github/workflows/` (present only when a GitHub remote is set up):
 
-- `release_test_pypi.yaml` — publish to **Test PyPI** first (`workflow_dispatch`).
-- `release_pypi.yaml` — publish to **PyPI** and cut a GitHub release.
+- `release-test-pypi.yaml` — publish to **Test PyPI** first (`workflow_dispatch`).
+- `release-pypi.yaml` — publish to **PyPI** and cut a GitHub release.
 
 **Versioning is tag-driven.** `[tool.poetry] version` is a `0.0.0` placeholder;
 **poetry-dynamic-versioning** stamps the real version from the git tag at build time (`python -m
@@ -75,8 +75,8 @@ build`, not `poetry build`). There is **no `make bump_version`** in this online 
 target is offline-only. To release, dispatch the workflow with the version: it runs the full test
 suite as a hard gate, tags the commit `vX.Y.Z`, builds, and uploads via OIDC **trusted
 publishing** (`pypa/gh-action-pypi-publish`, `id-token: write`) — no API token stored. Configure a
-GitHub Environment per index (**`release_pypi`** for PyPI, **`release_test_pypi`** for Test PyPI)
-and a **trusted publisher** on each index matching owner `guilhermegor`, repo `wwdates`, the
+GitHub Environment per index (**`release-pypi`** for PyPI, **`release-test-pypi`** for Test PyPI)
+and a **trusted publisher** on each index matching owner `guilhermegor`, repo `purecalendars`, the
 respective workflow filename, and its matching environment; for a first-ever release register a
 **pending publisher**. The changelog is
 generated from tags by `cz changelog` at docs-build time, never committed to `main` by CI. See

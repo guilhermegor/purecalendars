@@ -3,10 +3,10 @@
 
 .. warning::
 
-   **STATUS IN THIS REPO (wwdates): only the classifier is live.**
+   **STATUS IN THIS REPO (purecalendars): only the classifier is live.**
 
    This file is a verbatim port from ``filings-cvm`` (issue #26). Of everything it describes,
-   **wwdates uses exactly one thing**: :func:`classify_risk`, imported by
+   **purecalendars uses exactly one thing**: :func:`classify_risk`, imported by
    ``bin/check_backlog_ledger.py`` to decide whether a branch's paths oblige it to carry a work
    ledger. That import is the single reason the file is here, and it keeps the definition of
    "src/ci path" identical across the three sibling repos instead of forking it.
@@ -20,11 +20,11 @@
    the port is deliberately verbatim, flagged because a tracked file that lies outranks anyone's
    memory:
 
-   - There is **no auto-merge** in wwdates. No ``pr-quality-gate`` ruleset, no
+   - There is **no auto-merge** in purecalendars. No ``pr-quality-gate`` ruleset, no
      ``risk:*``/``size:*``/``gate:*`` labels, no ``do-not-merge`` opt-out label, and
      ``bin/enable_repo_rules.sh`` does not exist. Dependabot PRs here do **not** merge hands-free;
      they are reviewed like any other PR.
-   - The ``_internal/config/contracts/`` / ``date_ref`` example is CVM-flavoured. wwdates does ship
+   - The ``_internal/config/contracts/`` / ``date_ref`` example is CVM-flavoured. purecalendars does ship
      ``_internal/config/contracts/``, but its catastrophic-small-diff cases are calendar sources,
      not regulatory partitions.
    - The docs site here is **English**, not pt-BR; ``mkdocs.yml`` sets no ``theme.language``.
@@ -371,9 +371,9 @@ def render_comment(
 # a bug in the request and is raised at once, since retrying it would only hide it.
 #
 # YES, THE LIBRARY ALREADY HAS A RETRY SEAM, and no, it cannot be reused here. The proper seam is
-# `wwdates._internal.utils.retry.call_with_backoff` — but this script is invoked as a bare
+# `purecalendars._internal.utils.retry.call_with_backoff` — but this script is invoked as a bare
 # `python bin/pr_gate.py`, with the package not necessarily installed. Importing the seam would
-# first execute `wwdates/__init__`, which pulls in pandas, so the import dies. Reusing it would
+# first execute `purecalendars/__init__`, which pulls in pandas, so the import dies. Reusing it would
 # mean installing the whole library — pandas, numpy — into a context whose only purpose is to
 # classify a list of paths, and coupling this script to the library's dependency tree. The lines
 # below are the cheaper trade and keep this script's zero-dependency contract.
