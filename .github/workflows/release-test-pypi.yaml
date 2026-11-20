@@ -151,6 +151,7 @@ jobs:
       - name: Install Dependencies
         if: steps.cached-venv.outputs.cache-hit != 'true'
         run: |
+<<<<<<< HEAD
           # install dependencies, excluding dev and docs groups if present
           without_groups=()
           if grep -q '\[tool.poetry.group.dev\]' pyproject.toml; then
@@ -166,6 +167,10 @@ jobs:
             echo "No groups to exclude, installing all dependencies"
             poetry install --no-interaction --no-root
           fi
+=======
+          # full install on purpose: the `dev` group carries `build` and `twine`, which the release needs
+          poetry install --no-interaction --no-root
+>>>>>>> origin/main
 
           poetry env activate
 
