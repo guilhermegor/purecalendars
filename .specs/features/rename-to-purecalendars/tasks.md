@@ -91,4 +91,4 @@ the upgrade to `purecalendars` (owner decision, 2026-11-19, #75). 3.0.0 shipped 
 - [x] A wheel built locally ships the old package. Installed in a clean venv:
       importing `DatesBRAnbima` from the old name warns once and resolves to the
       `purecalendars` class.
-- [ ] 3.0.1 on Test PyPI, then PyPI, install-verified.
+- [x] 3.0.1 on Test PyPI, then PyPI, install-verified. Superseded by #84, which removed the shim it verified.
