@@ -484,3 +484,146 @@ def test_dependabot_auto_merge_classifies_the_update(str_json: str, str_expected
 	obj_result = _call("dependabot_auto_merge.sh", "classify_update", str_json)
 
 	assert obj_result.stdout.strip() == str_expected
+
+
+# --------------------------
+# bin/check_clean_index.sh + bin/check_docs_sections.py + bin/check_docs_code_refs.py
+# --------------------------
+
+
+def _run_py_gate(str_gate: str, *args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+	"""Run a ``bin/*.py`` gate with its cwd set to a prepared tree.
+
+	Parameters
+	----------
+	str_gate : str
+		Gate filename under ``bin/``.
+	args : str
+		Arguments forwarded to the gate.
+	cwd : pathlib.Path
+		Directory to run the gate in.
+
+	Returns
+	-------
+	subprocess.CompletedProcess[str]
+		The finished process with decoded output.
+	"""
+	str_python = shutil.which("python3") or shutil.which("python") or "python3"
+	return subprocess.run(  # noqa: S603
+		[str_python, str(_bin_script(str_gate)), *args],
+		cwd=cwd,
+		capture_output=True,
+		encoding="utf-8",
+		errors="replace",
+		check=False,
+	)
+
+
+def _init_repo(path_repo: Path) -> str:
+	"""Create a git work tree with one commit and return the ``git`` binary path.
+
+	Parameters
+	----------
+	path_repo : pathlib.Path
+		Directory to initialise.
+
+	Returns
+	-------
+	str
+		Absolute path to ``git``.
+	"""
+	str_git = shutil.which("git")
+	if str_git is None:
+		pytest.skip("git not available")
+	path_repo.mkdir(parents=True, exist_ok=True)
+	_write(path_repo / "seed.txt", "seed\n")
+	list_id = ["-c", "user.email=t@t.invalid", "-c", "user.name=t"]
+	subprocess.run([str_git, "init", "-q", str(path_repo)], check=True)  # noqa: S603
+	subprocess.run([str_git, "-C", str(path_repo), "add", "seed.txt"], check=True)  # noqa: S603
+	subprocess.run(  # noqa: S603
+		[str_git, "-C", str(path_repo), *list_id, "commit", "-q", "--no-verify", "-m", "seed"],
+		check=True,
+		capture_output=True,
+	)
+	return str_git
+
+
+def test_clean_index_guard_allows_an_unstaged_edit(tmp_path: Path) -> None:
+	"""A dirty tree with an empty index is the routine case and must pass."""
+	_init_repo(tmp_path / "repo")
+	_write(tmp_path / "repo" / "seed.txt", "edited\n")
+
+	cls_result = _run("check_clean_index.sh", cwd=tmp_path / "repo")
+
+	assert cls_result.returncode == 0, cls_result.stdout + cls_result.stderr
+
+
+def test_clean_index_guard_blocks_a_populated_index(tmp_path: Path) -> None:
+	"""The should-fail control: staged-but-uncommitted work blocks the push."""
+	str_git = _init_repo(tmp_path / "repo")
+	_write(tmp_path / "repo" / "left_behind.py", "x = 1\n")
+	subprocess.run(  # noqa: S603
+		[str_git, "-C", str(tmp_path / "repo"), "add", "left_behind.py"], check=True
+	)
+
+	cls_result = _run("check_clean_index.sh", cwd=tmp_path / "repo")
+	str_out = cls_result.stdout + cls_result.stderr
+
+	assert cls_result.returncode != 0
+	assert "left_behind.py" in str_out
+
+
+def test_clean_index_guard_is_inert_off_a_git_tree(tmp_path: Path) -> None:
+	"""Outside a git work tree there is nothing to guard."""
+	assert _run("check_clean_index.sh", cwd=tmp_path).returncode == 0
+
+
+def test_docs_sections_gate_fires_on_a_missing_canonical_page(tmp_path: Path) -> None:
+	"""The should-fail control: a nav omitting the canonical pages is reported."""
+	_write(tmp_path / "mkdocs.yml", "site_name: X\nnav:\n  - Home: index.md\n")
+
+	cls_result = _run_py_gate("check_docs_sections.py", cwd=tmp_path)
+
+	assert cls_result.returncode == 1
+	assert "usage.md" in cls_result.stdout + cls_result.stderr
+
+
+def test_docs_sections_gate_announces_its_skip(tmp_path: Path) -> None:
+	"""No ``mkdocs.yml`` is a legitimate skip, but it must say so."""
+	cls_result = _run_py_gate("check_docs_sections.py", cwd=tmp_path)
+
+	assert cls_result.returncode == 0
+	assert "skipping" in cls_result.stdout
+
+
+def test_docs_code_refs_gate_fires_on_a_missing_symbol(tmp_path: Path) -> None:
+	"""A real module cited for a symbol it never defines is reported."""
+	_write(tmp_path / "src" / "chassis" / "__init__.py", "")
+	_write(
+		tmp_path / "src" / "chassis" / "widgets.py", "def build_widget() -> str:\n\treturn 'w'\n"
+	)
+	_write(
+		tmp_path / "docs" / "bad.md",
+		"# Bad\n\n```python\nfrom chassis.widgets import build_gadget\n```\n",
+	)
+
+	cls_result = _run_py_gate("check_docs_code_refs.py", "--root", str(tmp_path), cwd=tmp_path)
+
+	assert cls_result.returncode == 1
+	assert "build_gadget" in cls_result.stdout + cls_result.stderr
+
+
+def test_docs_code_refs_gate_passes_on_the_real_symbol(tmp_path: Path) -> None:
+	"""The should-pass control: the same page citing the symbol that exists."""
+	_write(tmp_path / "src" / "chassis" / "__init__.py", "")
+	_write(
+		tmp_path / "src" / "chassis" / "widgets.py", "def build_widget() -> str:\n\treturn 'w'\n"
+	)
+	_write(
+		tmp_path / "docs" / "good.md",
+		"# Good\n\n```python\nfrom chassis.widgets import build_widget\n```\n",
+	)
+
+	cls_result = _run_py_gate("check_docs_code_refs.py", "--root", str(tmp_path), cwd=tmp_path)
+
+	assert cls_result.returncode == 0, cls_result.stdout + cls_result.stderr
