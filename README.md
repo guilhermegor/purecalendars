@@ -109,6 +109,7 @@ holiday set differs. More recipes in the
 ```text
 purecalendars/
 ├── .github/              workflows, CODEOWNERS, PR template
+├── .specs/               work ledgers and specs
 ├── assets/               logo
 ├── bin/                  gate scripts and helpers
 ├── docs/                 published documentation (mkdocs)
