@@ -85,6 +85,14 @@ I/O. The guard turns that rule into a red test the moment network code creeps ba
 address neither exfiltrates data nor triggers a ban, and blocking it would break code that
 classifies an address before deciding whether to connect.
 
+### The warning policy
+
+`pytest.ini` turns `ResourceWarning`, `pytest.PytestUnraisableExceptionWarning` and
+missing-docstring-parameter warnings into errors. `DeprecationWarning`, `FutureWarning` and
+`UserWarning` are no longer blanket-ignored: only the narrow, named filters in `pytest.ini`
+(PIL, matplotlib, beartype, numpy divide-by-zero) are silenced. Fix a new warning at its
+source; add a filter only with a reason.
+
 ---
 
 ## Linting and formatting
@@ -189,7 +197,7 @@ Every push and pull request triggers the **Run Tests** workflow
 | codespell | Spelling across the repo. |
 | docstring consistency | `pydocstyle` (D412/D417) + `check_docstrings.py` — docstring types/raises match the signatures. |
 | ruff | Lint + format (`ruff check src/ tests/`). |
-| mypy | Static type check (`cd src && mypy .`). |
+| mypy | Static type check (`cd src && mypy .`). `ignore_missing_imports = False`: use a `types-*` stub where one exists, else add a `[mypy-<pkg>.*]` ignore section in `mypy.ini`. |
 | shell / sql / yaml lint | Non-Python lint gates (mirrors the `lint` task). |
 | unit + integration tests | The full pytest suites. |
 
