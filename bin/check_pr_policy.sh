@@ -6,6 +6,10 @@ EXEMPT_BRANCHES='^(release|dependabot|renovate)/'
 ISSUE_BRANCH='^[a-z]+/[0-9]+(-|$)'
 CC_TYPES='feat|fix|chore|test|docs|refactor|perf|build|ci|style|revert'
 
+to_lower() {
+	printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 is_short_lived_branch() {
 	[[ ! "$1" =~ $EXEMPT_BRANCHES ]] && [[ "$1" =~ $ISSUE_BRANCH ]]
 }
@@ -55,12 +59,14 @@ linear_key_present() {
 			echo "LINEAR_TEAM_KEYS must be comma-separated alphanumeric keys." >&2
 			return 2
 		}
-		str_keys="${str_keys,,}"
-		[[ "${str_text,,}" =~ (^|[^[:alnum:]])(${str_keys//,/|})-[0-9]+ ]]
+		str_keys=$(to_lower "$str_keys")
+		str_text=$(to_lower "$str_text")
+		[[ "$str_text" =~ (^|[^[:alnum:]])(${str_keys//,/|})-[0-9]+ ]]
 		return
 	fi
 	while read -r str_key; do
-		[[ "${str_key,,}" =~ ^(utf|sha|iso|pep|es|http|node|py|rfc|md|ipv)$ ]] || return 0
+		str_key=$(to_lower "$str_key")
+		[[ "$str_key" =~ ^(utf|sha|iso|pep|es|http|node|py|rfc|md|ipv)$ ]] || return 0
 	done < <(grep -oiE '(^|[^[:alnum:]])[a-z][a-z0-9]*-[0-9]+' <<<"$str_text" | sed -E 's/^[^[:alnum:]]//; s/-[0-9]+$//')
 	return 1
 }
@@ -68,7 +74,8 @@ linear_key_present() {
 check_linked_issue() {
 	local str_branch="$1" str_title="$2" str_tracker="${3:-github}" int_closing="${4:-0}" str_num str_re="" str_out="" str_err int_rc
 	[[ "$str_branch" =~ ^(dependabot|renovate)/ ]] && return 0
-	case "${str_tracker,,}" in
+	str_tracker=$(to_lower "$str_tracker")
+	case "$str_tracker" in
 	github)
 		[[ "$int_closing" =~ ^[0-9]+$ ]] && ((int_closing > 0)) && return 0
 		if [[ "$str_branch" =~ ^[a-z]+/([0-9]+)(-|$) ]]; then

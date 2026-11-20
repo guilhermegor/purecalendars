@@ -406,6 +406,8 @@ def test_pr_policy_assignee_requires_a_login(str_assignees: str, int_expected: i
 		({"BRANCH": "dependabot/pip/x", "CLOSING_COUNT": "0"}, 0),
 		({"BRANCH": "docs/no-number", "CLOSING_COUNT": "0"}, 1),
 		({"BRANCH": "x", "TITLE": "fix PROJ-12", "TRACKER": "linear"}, 0),
+		({"BRANCH": "x", "TITLE": "fix PROJ-12", "TRACKER": "Linear"}, 0),
+		({"BRANCH": "x", "TITLE": "PROJ-12", "TRACKER": "linear", "LINEAR_TEAM_KEYS": "Proj"}, 0),
 		({"BRANCH": "x", "TITLE": "no key", "TRACKER": "linear", "LINEAR_TEAM_KEYS": "PROJ"}, 1),
 		({"BRANCH": "x", "TITLE": "T-5", "TRACKER": "regex", "TRACKER_REGEX": "T-[0-9]+"}, 0),
 		({"BRANCH": "x", "TITLE": "none", "TRACKER": "regex"}, 2),
