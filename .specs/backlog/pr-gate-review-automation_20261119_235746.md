@@ -20,6 +20,7 @@ automation the scaffold ships with the review-bot roster. Part of #56.
   `test_review_threads_gate`) — blocked on #71, see below
 - [x] Install actionlint in the `tests.yaml` lint step; fix its pre-existing findings (the
   unused, invalid `ready_for_release` output; SC2046 in both release workflows)
+- [x] `bin/lint_actions.sh`: replace `mapfile` with a read loop (macOS bash 3.2 safe)
 - [ ] Owner: run `bin/enable_repo_rules.sh` after merge (changes live rulesets)
 
 ## Not done, on purpose

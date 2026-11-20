@@ -29,7 +29,12 @@ discover_workflows() {
 main() {
 	cd "$SCRIPT_DIR/.."
 
-	mapfile -t list_workflows < <(discover_workflows)
+	# bash 3.2 (macOS /bin/bash) has no mapfile
+	local str_workflow
+	list_workflows=()
+	while IFS= read -r str_workflow; do
+		[ -n "$str_workflow" ] && list_workflows+=("$str_workflow")
+	done < <(discover_workflows)
 
 	if [ "${#list_workflows[@]}" -eq 0 ]; then
 		if [ -d .github/workflows ]; then
