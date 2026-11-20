@@ -141,6 +141,18 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
      stamp keeps only the answers given at scaffold time
    - Details: `docs/contributing.md`, section "Template provenance and drift"
 
+6. **Agent Guidance Files** (for AI coding assistants and human readers alike):
+   - `AGENTS.md`: this repository's layout, architecture, conventions, work trackers and
+     release process (single source; other agents must be told to read it)
+   - `PRINCIPLES.md`: single-responsibility and function-design rules
+   - `.claude/CLAUDE.md`: naming, boundary and tooling conventions shared by every BlueprintX
+     project (Claude Code loads it on its own)
+   - `CLAUDE.md` (root): a bridge that imports `AGENTS.md` and `PRINCIPLES.md`; edit
+     `AGENTS.md`, not the bridge
+   - Directory-level `AGENTS.md` / `CLAUDE.md` pairs (`tests/`, `src/.../_internal/`) follow the
+     same rule; `docs/CLAUDE.md` and `bin/CLAUDE.md` hold their guidance directly
+   - `.greptile/`: configuration for the Greptile review bot
+
 ## Pull Request Process
 
 1. **Create an Issue First**:
