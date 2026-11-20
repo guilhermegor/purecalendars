@@ -46,7 +46,7 @@ is_denied() {
 		return 0
 		;;
 	esac
-	case "${base,,}" in
+	case "$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]')" in
 	*lesson*)
 		echo "a lessons store, not published docs — keep lessons outside docs/; if a" \
 			"lesson has become a rule this project follows, state the RULE in" \
@@ -67,7 +67,7 @@ is_denied() {
 	esac
 	IFS='/' read -ra parts <<<"$rel"
 	for segment in "${parts[@]}"; do
-		case "${segment,,}" in
+		case "$(printf '%s' "$segment" | tr '[:upper:]' '[:lower:]')" in
 		.superpowers*)
 			echo "harness/tooling working material, not published docs — it belongs in" \
 				"the tool's own home (.superpowers/ at the repo root), never under the" \
