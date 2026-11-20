@@ -1,0 +1,6 @@
+tier: lib-minimal
+review_bot_roster: false
+blueprintx_version: 0.12.2
+blueprintx_commit: 12e76053b399708c3e468cb8b2ae0edd65461d9c
+scaffold_commit: 12e76053b399708c3e468cb8b2ae0edd65461d9c
+scaffolded_at: 2026-07-04
