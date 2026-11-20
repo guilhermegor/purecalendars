@@ -68,7 +68,7 @@ Template taken verbatim: `.gitattributes`, `.gitlint`, `.hadolint.yaml`, `.pydoc
 | `mypy.ini` drops the template's `[mypy-purecalendars.*]` ignore | first-party here; it would mask broken imports |
 | `mypy.ini` adds `[mypy-businesstimedelta.*]` | the dependency ships no stubs and no `py.typed` |
 | `mypy.ini` keeps `[mypy-*._internal.utils.typing.*]` `ignore_errors` | the vendored typing engine is metaprogramming |
-| `mypy.ini` `[mypy-...parsers.dicts] disallow_any_explicit = False` | domain helper annotates its payload as `Any` |
+| `mypy.ini` `[mypy-...parsers.dicts] disallow_any_explicit = False` | domain helper annotates its payload as `Any`. Removed by #97 with `parsers/dicts` |
 | `tests/conftest.py` tab-indented; `isolate_git_environment` drops every `GIT_*` key | pre-commit leaks more keys than the template's seven |
 | `.coveragerc` loses the `_internal/` coverage omit comment | the template has no omit; `_internal/` is now measured |
 | `.gitignore` and `.codespellrc` replaced wholesale by the template | local header comments and extra ignore words dropped |

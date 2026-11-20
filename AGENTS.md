@@ -17,7 +17,7 @@ specific to this skeleton.
 
 ⚠️ The shared boundary rule 1 (the seam knows the vendor) has one tier-specific twist here:
 a caller imports the seam **package-qualified** —
-`from <project_name>._internal.utils.http_downloader import download_file` — never a bare
+`from purecalendars._internal.utils.calendars import ABCCalendarOperations` — never a bare
 `from utils…`, which resolves only by accident of `sys.path` and breaks once the wheel is
 installed.
 
@@ -33,17 +33,11 @@ directory and the `pyproject.toml` placeholders via `envsubst`.
 ```
 src/<project_name>/
     __init__.py            # the public API surface (control it with __all__)
-    main.py                # library core / entry point — rename or split as it grows
+    br/  us/               # public calendar providers, one subpackage per country
     _internal/             # PRIVATE — ships in the wheel, but not a public API
-        utils/             # vendored helpers (dtypes, tabular_reader, retry/, http_downloader,
-                           #   text, zip_extractor, br_identifiers, typing/)
-        config/            # ALL private structural declarations (one config/CLAUDE.md maps them)
-            contracts/     # FileContract declarations (one per input source)
-            ports/         # private behavioural ABCs (hexagonal ports; ABCTypeCheckerMeta) — opt-in
-            # schemas/     # (opt-in) Pydantic models mirroring an external standard, or the
-                           #   library's own product — the ONLY home of pydantic models
-                           #   (check-layer-imports allows pydantic only in config and utils);
-                           #   never re-exported: check-all-exports bans `_internal` names in __all__
+        utils/             # calendars/ (the mixin chain), parsers/str.py, and typing/
+                           #   (stdlib runtime type checker — no third-party dependency)
+                           # no config/: zero-dependency path (#97, docs/template-updates.md)
 tests/
     unit/  integration/  performance/
 ```
@@ -52,7 +46,7 @@ tests/
 `<project_name>._internal` is vendored support code: it ships inside the wheel (so imports
 resolve after `pip install`), but the leading underscore marks it off-limits — keep it out
 of your public `__all__`. The internal imports are package-qualified
-(`from <project_name>._internal.utils.dtypes import …`).
+(`from purecalendars._internal.utils.calendars import …`).
 
 **Consumer-built schema models stay in `_internal/config/schemas/`.** When the models are the
 library's product (consumers construct them), the file location is still an implementation
@@ -90,12 +84,10 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   tests, coverage badge.
 - **Tests**: `pytest` — `bash bin/poe_exec.sh unit_tests` (`pytest tests/unit/`). Write
   pytest-style functions with fixtures, not `unittest.TestCase`.
-- **Explicit column typing & Brazilian identifiers** — if the library touches pandas, type
-  every DataFrame on load via `apply_dtypes` (`_internal.utils.dtypes`, never pandas'
-  inference) and use `_internal.utils.br_identifiers` for CNPJ/CPF (alphanumeric-aware for the
-  2026 CNPJ). **purecalendars does no file or database I/O** (`ruff.toml` bans the bare pandas
-  readers): tabular sources are read in `opendata-calendars`, which depends on this package,
-  through `tabular_reader` and a `FileContract`. Do not add reads here.
+- **purecalendars does no file or database I/O** (`ruff.toml` bans the bare pandas readers).
+  Live and tabular sources are read in `opendata-calendars`, which depends on this package,
+  never the reverse. Do not add reads here, and do not re-vendor the template's I/O toolkit
+  (`tabular_reader`, `dtypes`, `br_identifiers`, ...): #97 removed it with its dependencies.
 - **No `.env`** — a distributable library has no runtime env to seed (unlike the service
   tiers), so none is shipped. This does not block the opt-in OTLP log exporter
   (`_internal/utils/otel_logging.py`, blueprintx#438): it reads
@@ -104,9 +96,8 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   `ts_lib.sh` already uses. `configure_otel_logging(logger)` is injected, never auto-run on
   import, matching the dependency-injection rule below.
 - **Logging via dependency injection** — never hard-import a logging backend in a helper;
-  inject a logger (stdlib default), as `_internal/utils/retry/log_emitter.py`'s `LogEmitter`
-  shows. The
-  in-repo `logs.py` helper is **opt-in** at scaffold time; see `_internal/utils/CLAUDE.md`.
+  inject a logger (stdlib default), as the calendar providers' `logger: Logger | None`
+  constructor argument does.
 - **Every imported package is a direct dependency.** If a module `import`s a package, declare
   it in `pyproject.toml` — even when it is already installed transitively via another dep. A
   transitive presence is an accident of another package's tree and breaks silently the day that
@@ -166,12 +157,5 @@ template's mike selector is adopted but inert until a `mike deploy` publishes `v
 ## Extending this template
 
 - Keep `src/<project_name>/` as the importable package root; grow the public API there.
-- Add sub-packages as the project grows — do not dump everything into `main.py`.
+- Add sub-packages as the project grows — do not dump everything into one module.
 - Mirror the test folder hierarchy to match the package structure.
-- Drop `_internal/config/contracts` (and the pandas deps) if the library never reads
-  tabular inputs.
-
-## Placeholder files (remove before 1.0.0)
-
-The example boilerplate is `main()` in `main.py`, its test in `tests/unit/test_main.py` and the `main` re-export in the package
-`__init__.py`. Delete or replace them, and every doc or example that still shows the greeting.
