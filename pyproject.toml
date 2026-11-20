@@ -35,7 +35,7 @@ classifiers = [
 "Documentation" = "https://guilhermegor.github.io/purecalendars/"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.11,<4.0"
 # Calendar core (business-day frames). No I/O dependency belongs here: live fetchers live in
 # opendata-calendars, which depends on this package, never the reverse.
 pandas = ">=2.1.0"
@@ -43,6 +43,11 @@ businesstimedelta = "^1.0.1"
 python-dateutil = "^2.9.0.post0"
 tzdata = "^2026.2"
 holidays = "^0.99"
+beartype = ">=0.22"
+numpy = ">=1.22"
+defusedxml = ">=0.7"
+purepii-br = ">=2.0.0"
+pure-schema-regimes = ">=0.1.0,<0.2"
 
 [tool.commitizen]
 # Conventional-commit driven changelog. The version comes from the git tag
