@@ -152,19 +152,19 @@ everything under `_internal/` is private:
 <!-- slug: publishing -->
 ## Publishing
 
-Releases go out from the release workflows under `.github/workflows/` through PyPI trusted
-publishing (OIDC); the git tag is the version.
+Releases are cut by dispatching the release workflows under `.github/workflows/` with a version
+input, and go out through PyPI trusted publishing (OIDC); the `vX.Y.Z` tag records the release.
 
 <!-- slug: contributing -->
 ## Contributing
 
-Issues and PRs are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first for dev setup,
+Issues and PRs are welcome. Please read [`CONTRIBUTING.md`](https://github.com/guilhermegor/purecalendars/blob/main/CONTRIBUTING.md) first for dev setup,
 tests, the branch/PR workflow, and the CI gate.
 
 <!-- slug: license -->
 ## License
 
-This project is licensed under the **MIT** License — see [`LICENSE`](LICENSE) for details.
+This project is licensed under the **MIT** License — see [`LICENSE`](https://github.com/guilhermegor/purecalendars/blob/main/LICENSE) for details.
 
 <!-- slug: authors -->
 ## Authors
