@@ -148,9 +148,9 @@ workflow with the version: it runs the full test suite as a hard gate, gates on 
 being greater than what is already published, builds with the requested version stamped through
 `POETRY_DYNAMIC_VERSIONING_BYPASS` (so a re-run never collides with an existing tag), uploads
 through **OIDC trusted publishing** (`pypa/gh-action-pypi-publish`, `id-token: write`) — no API
-token stored — and then tags the commit `vX.Y.Z` and cuts the GitHub release. The `pypi` and
-`github_release` jobs both depend on `setup_and_build`, not on each other, so a failed PyPI
-publication does not stop the GitHub release: check both job results.
+token stored. A separate `github_release` job tags the commit `vX.Y.Z` and cuts the GitHub
+release. The `pypi` and `github_release` jobs both depend on `setup_and_build`, not on each
+other, so a failed PyPI publication does not stop the GitHub release: check both job results.
 
 Configure a GitHub Environment per index (**`release-pypi`** for PyPI, **`release-test-pypi`**
 for Test PyPI) and a **trusted publisher** on each index matching owner `guilhermegor`, repo
