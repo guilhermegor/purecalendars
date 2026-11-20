@@ -1,3 +1,5 @@
+# template-drift-tools_20261119_160000
+
 # Ledger — #58 template-drift-tools
 
 Branch: `chore/58-provenance-drift-tools` · Issue: #58 · Class: **ci**
@@ -28,3 +30,5 @@ alignment with the template is a report and never a hand-refined ticket again. P
 - The tools run as `python bin/...` until the poe migration (#59); no task wrapper here.
 - `review_bot_roster` stays `false` until the PR-gate issue (#63) lands.
 - The known limits of the tools are recorded in the docs, not fixed here.
+
+**Completed — kept as a record.**

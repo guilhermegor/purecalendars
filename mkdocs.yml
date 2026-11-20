@@ -50,8 +50,6 @@ extra_css:
 exclude_docs: |
   # NOTE: .gitignore syntax — comments must be on their own line. A trailing
   # "# ..." after a pattern becomes part of the pattern and silently disables it.
-  # work-to-do backlogs / follow-up notes
-  backlog/
   # design specs / working notes, not published
   superpowers/
   # docs/ authoring guidance, not a published page

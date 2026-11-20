@@ -1,3 +1,5 @@
+# masthead-logo-drop-version-pill_20260801_121653
+
 # Ledger — #14 masthead-logo-drop-version-pill
 
 Branch: `docs/14-masthead-logo-drop-version-pill` · Issue: #14 · Class: **docs** (no `src/` diff → no release)
@@ -82,3 +84,5 @@ The logo renders 51×24 in the masthead from a 600×280 source — a wide logoty
 header's 24px height, so the wordmark is small. This is exactly how `filings-cvm` and `filings-b3`
 render theirs, and is inherent to Material's fixed header height, not to this change. A
 header-optimised (squarer, mark-only) asset would read better at that size; out of scope here.
+
+**Completed — kept as a record.**

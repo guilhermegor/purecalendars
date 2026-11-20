@@ -69,7 +69,16 @@ def _run(
 		The finished process with decoded ``stdout`` and ``stderr``.
 	"""
 	str_bash = shutil.which("bash") or "bash"
-	dict_full_env = {**os.environ, **dict_env} if dict_env else None
+	# A pre-commit hook leaks ``GIT_INDEX_FILE`` (and friends) from the outer repository, which
+	# makes a throwaway directory look like a work tree; drop them, then layer the caller's.
+	dict_full_env = {
+		**{
+			str_key: str_val
+			for str_key, str_val in os.environ.items()
+			if not str_key.startswith("GIT_")
+		},
+		**(dict_env or {}),
+	}
 	# The argument vector is constant and trusted -- a resolved bash plus the repo's own
 	# script -- with no untrusted input interpolated, so the bandit subprocess warning is
 	# a false positive here.
@@ -182,3 +191,74 @@ def test_precommit_registers_safe_directory_for_shared_worktree(tmp_path: Path) 
 	assert str(path_repo) in str_cfg or "%(prefix)" in str_cfg
 	# The self-heal never fabricates a repo and never emits the "no git repo" skip.
 	assert "No git repository here" not in str_output
+
+
+# --------------------------
+# bin/check_specs_structure.sh + bin/check_docs_boundary.sh
+# --------------------------
+
+
+def _write(path_file: Path, str_text: str = "x\n") -> None:
+	"""Create a file, and any missing parent directories.
+
+	Parameters
+	----------
+	path_file : pathlib.Path
+		The file to create.
+	str_text : str, optional
+		The file's content.
+	"""
+	path_file.parent.mkdir(parents=True, exist_ok=True)
+	path_file.write_text(str_text, encoding="utf-8")
+
+
+def test_specs_structure_accepts_a_valid_tree(tmp_path: Path) -> None:
+	"""A ``.specs/`` with its CLAUDE.md, a feature tracker and a flat ledger is clean."""
+	_write(tmp_path / ".specs" / "CLAUDE.md")
+	_write(tmp_path / ".specs" / "features" / "calendars" / "tasks.md", "- [x] done\n")
+	_write(tmp_path / ".specs" / "backlog" / "a-topic_20260101_000000.md", "- [ ] todo\n")
+
+	assert _run("check_specs_structure.sh", "--root", str(tmp_path)).returncode == 0
+
+
+@pytest.mark.parametrize(
+	("str_rel", "str_text"),
+	[
+		(".specs/notes.md", "x\n"),
+		(".specs/features/fix/tasks.md", "- [x] done\n"),
+		(".specs/features/calendars/notes.md", "x\n"),
+		(".specs/features/calendars/tasks.md", "- [?] unknown marker\n"),
+		(".specs/backlog/BadName.md", "x\n"),
+	],
+)
+def test_specs_structure_rejects_a_violation(tmp_path: Path, str_rel: str, str_text: str) -> None:
+	"""Each layout rule fails: stray entry, type-named or empty feature, bad marker or name."""
+	_write(tmp_path / ".specs" / "CLAUDE.md")
+	_write(tmp_path / str_rel, str_text)
+
+	assert _run("check_specs_structure.sh", "--root", str(tmp_path)).returncode == 1
+
+
+@pytest.mark.parametrize("str_rel", ["docs/lessons-learned.md", "docs/design.md"])
+def test_docs_boundary_rejects_working_material(tmp_path: Path, str_rel: str) -> None:
+	"""A lessons store or a spec artifact under ``docs/`` fails the boundary gate."""
+	_write(tmp_path / "docs" / "index.md")
+	_write(tmp_path / str_rel)
+
+	assert _run("check_docs_boundary.sh", "--root", str(tmp_path)).returncode == 1
+
+
+def test_docs_boundary_accepts_published_pages(tmp_path: Path) -> None:
+	"""Plain published pages pass."""
+	_write(tmp_path / "docs" / "index.md")
+	_write(tmp_path / "docs" / "api" / "reference.md")
+
+	assert _run("check_docs_boundary.sh", "--root", str(tmp_path)).returncode == 0
+
+
+def test_docs_boundary_rejects_a_backlog_directory(tmp_path: Path) -> None:
+	"""The retired ledger home (a ``backlog`` folder under ``docs/``) fails the gate."""
+	_write(tmp_path / "docs" / "index.md")
+	_write(tmp_path / "docs" / "backlog" / "x_20260101_000000.md")
+
+	assert _run("check_docs_boundary.sh", "--root", str(tmp_path)).returncode == 1
