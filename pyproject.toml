@@ -100,7 +100,7 @@ vcs = "git"
 style = "pep440"
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["openpyxl", "tzdata"]
+DEP002 = ["tzdata"]
 
 [build-system]
 requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.4.0,<2.0.0"]
