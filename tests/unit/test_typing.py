@@ -1,71 +1,263 @@
-# ruff: noqa: E101 -- vendored scaffold docstrings; ruff-format tabs them (docs/template-updates.md)
-"""Smoke test: the runtime type-checking engine resolves in the wheel layout."""
+"""Smoke test: the dependency-free type_checker resolves in the wheel layout."""
+
+from importlib import import_module
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
 from purecalendars._internal.utils.typing import TypeChecker, type_checker
+from purecalendars._internal.utils.typing.type_checker import _plain_class
 
 
-class _Sample(metaclass=TypeChecker):
-	"""Exercise the metaclass after the ``_internal`` import rewrite."""
-
-	@staticmethod
-	def doubled(x: int) -> int:
-		"""Return ``x`` doubled.
-
-		Parameters
-		----------
-		x : int
-		    A number.
-
-		Returns
-		-------
-		int
-		    ``x * 2``.
-		"""
-		return x * 2
+if TYPE_CHECKING:
+    from decimal import Decimal
 
 
-def test_engine_imports_after_rewrite() -> None:
-	"""The rewritten engine imports and accepts a well-typed argument."""
-	assert _Sample.doubled(5) == 10
-
-
-def test_engine_rejects_wrong_type_after_rewrite() -> None:
-	"""The rewritten engine rejects a wrong-typed argument."""
-	with pytest.raises(TypeError):
-		_Sample.doubled("five")
+str_module_path = "purecalendars._internal.utils.typing.type_checker"
+checker_module = import_module(str_module_path)
 
 
 @type_checker
 def _add(a: int, *, b: int) -> int:
-	"""Add two ints — the decorated subject, defined at MODULE level.
+    """Add two ints — the decorated subject, defined at MODULE level.
 
-	Nested inside the test it charged the test 1 for the nested ``def`` (tests/ is capped at
-	complexity 1, ``bin/check_complexity.sh``) while adding nothing: the decorator is applied
-	at definition time either way.
+    Nested inside the test it charged the test 1 for the nested ``def`` (tests/ is capped at
+    complexity 1, ``bin/check_complexity.sh``) while adding nothing: the decorator is applied
+    at definition time either way.
 
-	Parameters
-	----------
-	a : int
-	    First addend.
-	b : int
-	    Second addend.
+    Parameters
+    ----------
+    a : int
+        First addend.
+    b : int
+        Second addend.
 
-	Returns
-	-------
-	int
-	    The sum.
-	"""
-	return a + b
+    Returns
+    -------
+    int
+        The sum.
+    """
+    return a + b
 
 
 def test_decorator_accepts_right_type() -> None:
-	"""The decorator lets a well-typed standalone call through."""
-	assert _add(1, b=2) == 3
+    """The decorator lets a well-typed standalone call through."""
+    assert _add(1, b=2) == 3
 
 
 def test_decorator_rejects_wrong_type() -> None:
-	"""The decorator validates a standalone function's arguments."""
-	with pytest.raises(TypeError):
-		_add(1, b=2.0)
+    """The decorator validates a standalone function's arguments."""
+    with pytest.raises(TypeError):
+        _add(1, b=2.0)  # type: ignore[arg-type]
+
+
+@type_checker
+def _total(*values: int) -> int:
+    """Sum variadic ints.
+
+    Parameters
+    ----------
+    *values : int
+        Numbers to add.
+
+    Returns
+    -------
+    int
+        The sum.
+    """
+    return sum(values)
+
+
+@type_checker
+def _scale(factor: float) -> float:
+    """Return ``factor`` unchanged.
+
+    Parameters
+    ----------
+    factor : float
+        A factor.
+
+    Returns
+    -------
+    float
+        The same factor.
+    """
+    return factor
+
+
+def test_any_annotation_is_accept_anything() -> None:
+    """``Any`` resolves to ``object`` instead of becoming an ``isinstance`` target."""
+    assert _plain_class(Any) is object
+
+
+def test_variadic_elements_are_checked_one_by_one() -> None:
+    """``*args`` annotated ``int`` accepts ints."""
+    assert _total(1, 2) == 3
+
+
+def test_variadic_rejects_wrong_element() -> None:
+    """A wrong element inside ``*args`` is rejected."""
+    with pytest.raises(TypeError):
+        _total(1, 2.5)  # type: ignore[arg-type]
+
+
+def test_int_is_accepted_for_float() -> None:
+    """PEP 484 widening: an int satisfies a ``float`` annotation."""
+    assert _scale(1) == 1
+
+
+def test_bool_is_rejected_for_int() -> None:
+    """A bool is not accepted where ``int`` is annotated."""
+    with pytest.raises(TypeError):
+        _add(True, b=2)
+
+
+def _identity(value: int) -> int:
+    """Return ``value`` unchanged, left undecorated so a test can wrap it.
+
+    Parameters
+    ----------
+    value : int
+        A number.
+
+    Returns
+    -------
+    int
+        The same number.
+    """
+    return value
+
+
+def test_hints_resolve_once_across_calls(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Annotations are resolved on the first call only, not on every call."""
+    list_calls: list[int] = []
+    monkeypatch.setattr(
+        checker_module, "_resolve_hints", lambda fn_target: list_calls.append(1) or {}
+    )
+    fn_checked = checker_module.type_checker(_identity)
+    fn_checked(1)
+    fn_checked(2)
+    assert len(list_calls) == 1
+
+
+@type_checker
+def _probe_mixed(*, int_value: int, value: "Decimal") -> int:
+    """Take one checkable and one ``TYPE_CHECKING``-only annotation.
+
+    Parameters
+    ----------
+    int_value : int
+        A number.
+    value : 'Decimal'
+        A value whose name is unavailable at runtime.
+
+    Returns
+    -------
+    int
+        Always 1.
+    """
+    return 1
+
+
+def test_unavailable_annotation_does_not_disable_other_parameters() -> None:
+    """A ``TYPE_CHECKING``-only name skips its own parameter, not the whole function."""
+    with pytest.raises(TypeError):
+        _probe_mixed(int_value="1", value=2)
+
+
+class _Adder(metaclass=TypeChecker):
+    """Subject class whose public methods the metaclass wraps."""
+
+    def __init__(self, *, base: int = 10) -> None:
+        self._int_base = base
+
+    def add(self, *, value: int) -> int:
+        """Add ``value`` to the base.
+
+        Parameters
+        ----------
+        value : int
+            The addend.
+
+        Returns
+        -------
+        int
+            The base plus ``value``.
+        """
+        return self._int_base + value
+
+    @staticmethod
+    def double(*, value: int) -> int:
+        """Return twice ``value``.
+
+        Parameters
+        ----------
+        value : int
+            The number.
+
+        Returns
+        -------
+        int
+            Twice ``value``.
+        """
+        return value * 2
+
+    @classmethod
+    def triple(cls, *, value: int) -> int:
+        """Return three times ``value``.
+
+        Parameters
+        ----------
+        value : int
+            The number.
+
+        Returns
+        -------
+        int
+            Three times ``value``.
+        """
+        return value * 3
+
+
+def test_metaclass_accepts_right_type() -> None:
+    """A well-typed call to a metaclass-wrapped method goes through."""
+    assert _Adder().add(value=1) == 11
+
+
+def test_metaclass_rejects_wrong_type() -> None:
+    """A wrong-typed argument to a metaclass-wrapped method raises ``TypeError``."""
+    with pytest.raises(TypeError):
+        _Adder().add(value="1")  # type: ignore[arg-type]
+
+
+def test_metaclass_staticmethod_accepts_right_type() -> None:
+    """A staticmethod called with a good argument works."""
+    assert _Adder.double(value=2) == 4
+
+
+def test_metaclass_staticmethod_rejects_wrong_type() -> None:
+    """A staticmethod called with a wrong-typed argument raises ``TypeError``."""
+    with pytest.raises(TypeError):
+        _Adder.double(value="2")  # type: ignore[arg-type]
+
+
+def test_metaclass_classmethod_accepts_right_type() -> None:
+    """A classmethod called with a good argument works."""
+    assert _Adder.triple(value=2) == 6
+
+
+def test_metaclass_classmethod_rejects_wrong_type() -> None:
+    """A classmethod called with a wrong-typed argument raises ``TypeError``."""
+    with pytest.raises(TypeError):
+        _Adder.triple(value="2")  # type: ignore[arg-type]
+
+
+def test_metaclass_init_accepts_right_type() -> None:
+    """A constructor called with a good argument works."""
+    assert _Adder(base=5).add(value=1) == 6
+
+
+def test_metaclass_init_rejects_wrong_type() -> None:
+    """A constructor called with a wrong-typed argument raises ``TypeError``."""
+    with pytest.raises(TypeError):
+        _Adder(base="5")  # type: ignore[arg-type]
