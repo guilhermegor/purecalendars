@@ -35,6 +35,24 @@ none is exported through the public `__all__`.
 | `tests/unit/test_calendar_abc.py` type-error regexes also accept `violates type hint` | the beartype engine words type errors differently |
 | `tabular_reader.int_skip_rows` not re-applied | the repo had no `tabular_reader` to carry the extension; the file is the template's |
 
+## Zero runtime dependencies (#97, part of #56)
+
+Owner decision (2026-11-20), supersedes the 2026-11-19 adoption above: apply the template's
+`zero_dependency=y` path (blueprintx#1207). The wheel keeps only what `purecalendars`,
+`purecalendars.br` and `purecalendars.us` import, directly or transitively. The `retry/`, `logs`
+and `LogEmitter` notes above no longer apply.
+
+| Deviation | Reason |
+|---|---|
+| `main.py` removed (with `tests/unit/test_main.py`) | placeholder `lib-minimal` stub, never used or exposed |
+| `_internal/config/` absent (`contracts/`, `ports/`) | zero-dependency scaffold ships none; `contracts` pulled in `tabular_reader` and `purepii-br` |
+| Removed from `_internal/utils`: `br_identifiers`, `daily_cache`, `dates`, `dbapi`, `dtypes`, `http_downloader`, `logs`, `logs_emitter`, `provenance`, `raw_workspace`, `retry/`, `schema_regimes`, `sidecar_metadata`, `tabular_reader`, `text`, `xml_reader`, `zip_extractor`, `parsers/dicts` | outside the public import closure (`tests/unit/test_dates.py` and `test_schema_regimes.py` went with them) |
+| `typing/` is the template's stdlib engine (`type_checker.py`, `type_checker_meta.py`); `decorators`, `policy`, `protocol_type_checker`, `validate` removed | beartype engine replaced; `tests/unit/test_typing.py` is the template's zero-dependency test |
+| `typing/abc_type_checker.py` kept, built on the stdlib `TypeChecker` | `calendars/_abc_calendar.py` uses `ABCTypeCheckerMeta`; the zero-dependency template ships no ABC variant |
+| `typing/type_checker.py` also checks each member of a union (`X \| Y`, `Optional`) and the origin class of a generic alias (`list[int]` checks `list`) | the template checks plain classes only, which would drop the runtime `TypeError` on 55 of 107 annotated public parameters (every `date_: datetime \| date`); `Literal` values and container elements stay unchecked |
+| `beartype`, `numpy`, `defusedxml`, `purepii-br`, `pure-schema-regimes` removed from `[tool.poetry.dependencies]` | no remaining import; `numpy` still installs transitively through `pandas` |
+| The drift reporter (`bin/check_template_drift.py`) lists the removed files as missing | the stamp records no `zero_dependency` flag, so it compares against the default scaffold; it is a reporter (exit 0), the gap is intended |
+
 ## Tool configuration alignment (#61, part of #56)
 
 Template taken verbatim: `.gitattributes`, `.gitlint`, `.hadolint.yaml`, `.pydocstyle`,
