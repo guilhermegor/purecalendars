@@ -19,10 +19,14 @@ updates:
   # all action bumps arrive as one PR.
   - package-ecosystem: "github-actions"
     directory: "/"
+    assignees:
+      - "guilhermegor"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     groups:
-      github-actions:
+      actions:
         patterns:
           - "*"
     commit-message:
@@ -35,6 +39,8 @@ updates:
   # never main. The floor that matters is pyproject's `python = ">=3.10,<4.0"`.
   - package-ecosystem: "pip"
     directory: "/"
+    assignees:
+      - "guilhermegor"
     schedule:
       interval: "weekly"
     versioning-strategy: "lockfile-only"
