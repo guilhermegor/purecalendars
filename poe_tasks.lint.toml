@@ -1,0 +1,25 @@
+[tool.poe.tasks.lint]
+cmd = "bash bin/lint.sh"
+help = "Run every lint gate in the order CI runs them"
+
+[tool.poe.tasks.install_shell_linters]
+cmd = "bash bin/install_shell_linters.sh"
+help = "Optionally install shellcheck + shfmt as system binaries (choco/scoop/brew/apt)"
+
+[tool.poe.tasks.check_docstrings]
+cmd = "python bin/check_docstrings.py"
+help = "Verify NumPy docstrings against their signatures"
+
+[tool.poe.tasks.template_drift]
+cmd = "python bin/check_template_drift.py"
+help = "Report template files this project never received (needs --blueprintx-root or BLUEPRINTX_TEMPLATE_ROOT)"
+
+[tool.poe.tasks.check_commit_msg]
+cmd = "pre-commit run --hook-stage commit-msg --commit-msg-filename \"${file}\""
+help = "Pre-flight a commit message file against the project's own commit-msg hooks"
+
+	[[tool.poe.tasks.check_commit_msg.args]]
+	name = "file"
+	positional = true
+	required = true
+	help = "path to the commit message file"

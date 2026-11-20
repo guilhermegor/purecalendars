@@ -95,8 +95,7 @@ _RISK_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
 		(
 			".github/",
 			"bin/",
-			"Makefile",
-			"tasks.sh",
+			"poe_tasks",
 			".pre-commit-config.yaml",
 			".coveragerc",
 			".codespellrc",

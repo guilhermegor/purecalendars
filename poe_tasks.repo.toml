@@ -1,0 +1,18 @@
+[tool.poe.tasks.changelog]
+sequence = [
+	{ cmd = "cz changelog" },
+	{ cmd = "echo 'CHANGELOG.md regenerated'" },
+]
+help = "Regenerate CHANGELOG.md from git tags (preview only)"
+
+[tool.poe.tasks.get_corporate_ca]
+cmd = "bash bin/get_corporate_ca.sh"
+help = "Extract a TLS-inspecting proxy's CA into bin/corporate_ca.pem (manual, never automatic)"
+
+[tool.poe.tasks.export_context]
+cmd = "bash bin/export_repo_content.sh"
+help = "Flatten the repo into repo_context.txt for pasting into a web-UI LLM"
+
+[tool.poe.tasks.template_update]
+cmd = "python bin/template_update.py"
+help = "Three-way merge template fixes into this project; dry run unless --apply (needs --blueprintx-root or BLUEPRINTX_TEMPLATE_ROOT)"

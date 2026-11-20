@@ -10,22 +10,16 @@ Everything you need to develop, test, and release `purecalendars`.
 
 ## Setting up for development
 
-Clone the repo and bootstrap the environment. The project ships both a `Makefile` and a
-parallel `tasks.sh`, so use whichever suits your machine — **`make init`**, or **`bash
-tasks.sh init`** when `make` is unavailable (e.g. a stock Windows shell).
-
-**With `make` (preferred):**
+Clone the repo and bootstrap the environment. Every project command is a
+[poe](https://poethepoet.natn.io/) task, run through `bash bin/poe_exec.sh <task>`: the wrapper
+resolves `poe` from `.venv` first, so it works on the first run even when `bin/venv.sh` has just
+installed Poetry somewhere that is not on `PATH` yet.
 
 ```bash
 git clone https://github.com/guilhermegor/purecalendars.git
 cd purecalendars
-make init        # seed .env, create the Poetry venv + install deps, install pre-commit hooks
-```
-
-**Without `make`** — the identical steps run through `tasks.sh`:
-
-```bash
-bash tasks.sh init
+bash bin/venv.sh                # create the Poetry venv and install deps (poe included)
+bash bin/poe_exec.sh init       # seed .env, install pre-commit hooks
 ```
 
 `init` composes three steps you can also run individually: `ensure_env` (seed `.env` from
@@ -33,14 +27,13 @@ bash tasks.sh init
 including the dev tools), and `precommit` (install the git hooks). Poetry is auto-installed if
 missing.
 
-Every command below also has a `bash tasks.sh <name>` equivalent. Run `make help` (or
-`bash tasks.sh help`) to list them all.
+Run `bash bin/poe_exec.sh --help` to list every task.
 
 ---
 
 ## Pre-commit hooks
 
-`make init` installs the pre-commit hooks, which run automatically on every `git commit` and
+`bash bin/poe_exec.sh init` installs the pre-commit hooks, which run automatically on every `git commit` and
 **must pass before a commit is created**. They mirror the CI gate (see below), so a clean
 local commit is a clean CI run. Run them on demand:
 
@@ -52,7 +45,7 @@ If a formatting hook (e.g. `ruff format`) rewrites a file, the commit is aborted
 review and re-stage the change — that is expected, just `git add` and commit again.
 
 The shell linters (`shellcheck`, `shfmt`) install automatically with the dev dependencies —
-no extra step. `make install_shell_linters` exists only as an **optional** fallback for hosts
+no extra step. `bash bin/poe_exec.sh install_shell_linters` exists only as an **optional** fallback for hosts
 where the pip-vendored binaries can't execute; you normally never need it.
 
 ---
@@ -60,9 +53,9 @@ where the pip-vendored binaries can't execute; you normally never need it.
 ## Running tests
 
 ```bash
-make unit_tests         # unit tests only
-make integration_tests  # integration tests only
-make test_cov           # unit tests + coverage report + badge
+bash bin/poe_exec.sh unit_tests         # unit tests only
+bash bin/poe_exec.sh integration_tests  # integration tests only
+bash bin/poe_exec.sh test_cov           # unit tests + coverage report + badge
 ```
 
 `purecalendars` does no I/O, so unit tests never touch a real network, DB, or filesystem.
@@ -97,7 +90,7 @@ classifies an address before deciding whether to connect.
 ## Linting and formatting
 
 ```bash
-make lint          # ruff check + ruff format + codespell + pydocstyle
+bash bin/poe_exec.sh lint   # ruff + mypy + codespell + pydocstyle + docstrings + shell/sql/yaml
 ```
 
 Ruff config lives in `ruff.toml` (line-length 99, tab indent, double quotes, NumPy
@@ -116,13 +109,13 @@ measurement as the commit whose template the vendored files match most (38 of th
 comparable files byte for byte), not by date.
 
 Two tools compare the project with a BlueprintX checkout. Both need one, passed as
-`--blueprintx-root` or exported as `BLUEPRINTX_TEMPLATE_ROOT`, and both run from the project
-root until the poe task migration lands:
+`--blueprintx-root` or exported as `BLUEPRINTX_TEMPLATE_ROOT`, and both run as poe tasks from the project
+root:
 
 ```bash
 export BLUEPRINTX_TEMPLATE_ROOT=~/github/blueprintx   # or pass --blueprintx-root per call
-python bin/check_template_drift.py --root .           # report only; always exits 0
-python bin/template_update.py --root .                # dry run: lists what would change
+bash bin/poe_exec.sh template_drift --root .          # report only; always exits 0
+bash bin/poe_exec.sh template_update --root .         # dry run: lists what would change
 ```
 
 `check_template_drift.py` classifies template-managed files as **missing** (the template ships
@@ -133,8 +126,7 @@ and leaves the result uncommitted. Do not run `--apply` casually: it touches hun
 
 Known limits, recorded rather than fixed:
 
-- It reports only files the template still ships. A file the template dropped (`Makefile`,
-  `tasks.sh`, `docs/api.md`) is not reported as removed here, because the stamped commit
+- It reports only files the template still ships. A file the template dropped (`docs/api.md`) is not reported as removed here, because the stamped commit
   predates the `--list-copies` dry run the removed-file check needs (the run prints
   `SKIPPED removed-file check`).
 - Rendered files (`README.md`, `pyproject.toml`, `LICENSE`, `SECURITY.md`) and the `bin/ci/`
@@ -157,11 +149,11 @@ the Poetry environment, and smoke-imports the package — catching packaging mis
 tests never surface:
 
 ```bash
-make install_dist_locally     # or: bash tasks.sh install_dist_locally
+bash bin/poe_exec.sh install_dist_locally
 ```
 
 A successful run prints `Package import works` followed by the version. If it fails, the wheel
-is broken even when `make unit_tests` is green — fix it before pushing.
+is broken even when `unit_tests` is green — fix it before pushing.
 
 ---
 
@@ -174,20 +166,14 @@ is broken even when `make unit_tests` is green — fix it before pushing.
     git checkout -b feat/my-change
     ```
 
-2. **Bump the version** when the change warrants a release
-   (`patch` \| `minor` \| `major`):
+2. **Verify locally** before pushing — the same gates CI runs:
 
     ```bash
-    make bump_version LEVEL=minor
+    bash bin/poe_exec.sh unit_tests && bash bin/poe_exec.sh lint \
+      && bash bin/poe_exec.sh install_dist_locally
     ```
 
-3. **Verify locally** before pushing — the same gates CI runs:
-
-    ```bash
-    make unit_tests && make lint && make install_dist_locally
-    ```
-
-4. **Open the PR.** GitHub pre-fills the
+3. **Open the PR.** GitHub pre-fills the
    [pull-request template](https://github.com/guilhermegor/purecalendars/blob/main/.github/PULL_REQUEST_TEMPLATE.md);
    fill in every section — **Description** (what / why / how), **Changes Made**
    (added / updated / fixed), **Testing** (manual + automated evidence), **Documentation**, and
@@ -204,7 +190,7 @@ Every push and pull request triggers the **Run Tests** workflow
 | docstring consistency | `pydocstyle` (D412/D417) + `check_docstrings.py` — docstring types/raises match the signatures. |
 | ruff | Lint + format (`ruff check src/ tests/`). |
 | mypy | Static type check (`cd src && mypy .`). |
-| shell / sql / yaml lint | Non-Python lint gates (mirrors `make lint`). |
+| shell / sql / yaml lint | Non-Python lint gates (mirrors the `lint` task). |
 | unit + integration tests | The full pytest suites. |
 
 Because pre-commit mirrors these gates, a commit that passed your local hooks will pass CI.
@@ -252,4 +238,4 @@ committed to `main` by CI**. The published site's Changelog page is regenerated 
 docs build (`docs.yaml` runs `cz changelog` before `mkdocs build`), and each release also gets
 GitHub-generated release notes. This keeps branch protection intact and needs **no stored
 secret** (no PAT, no bypass). The only discipline is writing `feat:` / `fix:` / etc. commit
-messages; preview the changelog locally any time with `make changelog`.
+messages; preview the changelog locally any time with `bash bin/poe_exec.sh changelog`.

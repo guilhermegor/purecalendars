@@ -9,7 +9,7 @@ what actually shipped.
 `cz changelog`. The published page is regenerated **fresh on every docs build**
 (`docs.yaml` runs `cz changelog` before `mkdocs build`), so it always reflects `main` — CI never
 commits `CHANGELOG.md` back to the repo. You never edit it by hand. Regenerate or preview locally
-any time with `make changelog` (or `bash tasks.sh changelog`).
+any time with `bash bin/poe_exec.sh changelog`.
 
 ---
 
