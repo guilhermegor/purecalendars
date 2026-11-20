@@ -106,6 +106,49 @@ docstrings). Docstring parameter/return types **must match** the type hints text
 
 ---
 
+## Template provenance and drift
+
+`purecalendars` was scaffolded from the BlueprintX `lib-minimal` template, and
+`.blueprintx-provenance.yaml` records which one: the tier, the BlueprintX version and commit
+(`blueprintx_commit`, the merge base for every comparison), the review-bot roster choice and
+the scaffold date. The stamp pins BlueprintX `12e76053` (v0.12.2): it was chosen by
+measurement as the commit whose template the vendored files match most (38 of the 47
+comparable files byte for byte), not by date.
+
+Two tools compare the project with a BlueprintX checkout. Both need one, passed as
+`--blueprintx-root` or exported as `BLUEPRINTX_TEMPLATE_ROOT`, and both run from the project
+root until the poe task migration lands:
+
+```bash
+export BLUEPRINTX_TEMPLATE_ROOT=~/github/blueprintx   # or pass --blueprintx-root per call
+python bin/check_template_drift.py --root .           # report only; always exits 0
+python bin/template_update.py --root .                # dry run: lists what would change
+```
+
+`check_template_drift.py` classifies template-managed files as **missing** (the template ships
+it, the project lacks it), **template changed since scaffold** (the project left it alone) or
+**both changed** (the project edited it too). `template_update.py` is a dry run until
+`--apply`, which switches to `chore/template-update-<short-sha>`, merges with `git merge-file`
+and leaves the result uncommitted. Do not run `--apply` casually: it touches hundreds of files.
+
+Known limits, recorded rather than fixed:
+
+- It reports only files the template still ships. A file the template dropped (`Makefile`,
+  `tasks.sh`, `docs/api.md`) is not reported as removed here, because the stamped commit
+  predates the `--list-copies` dry run the removed-file check needs (the run prints
+  `SKIPPED removed-file check`).
+- Rendered files (`README.md`, `pyproject.toml`, `LICENSE`, `SECURITY.md`) and the `bin/ci/`
+  copies are outside the comparison.
+- The vendored package tree appears under the placeholder `src/project/...` in the template,
+  not under `src/purecalendars/...`.
+- The stamp keeps only the answers given at scaffold time (tier, roster choice, versions,
+  commits); the other scaffold answers are not recorded.
+
+Tab-versus-space indentation makes a `ruff format`-ed file differ from the template byte for
+byte, so such files show up as changed on both sides without a real divergence.
+
+---
+
 ## Building and verifying the wheel
 
 **Run this before your final commit / opening a PR.** It builds the wheel, installs it into
