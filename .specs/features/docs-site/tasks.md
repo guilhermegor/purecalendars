@@ -6,7 +6,7 @@ Branch: `docs/14-masthead-logo-drop-version-pill` · Issue: #14 · Class: **docs
 
 ## Goal
 
-Put the logo in the docs top bar next to `wwdates`, and delete the bespoke four-file stack that
+Put the logo in the docs top bar next to `purecalendars`, and delete the bespoke four-file stack that
 injects a version pill into the masthead. Material's native `theme.logo` / `theme.favicon` already
 places the image left of the site name with **no custom CSS** — it is what `filings-cvm` and
 `filings-b3` use, and neither has a version pill. Two lines of config replace four files.
@@ -14,7 +14,7 @@ places the image left of the site name with **no custom CSS** — it is what `fi
 ## Work
 
 - [x] `mkdocs.yml` — added under `theme:`: `logo:` and `favicon:`, both
-      `assets/logo_wwdates_no_description.png`. Asset confirmed present (and a second copy exists
+      `assets/logo_purecalendars_no_description.png`. Asset confirmed present (and a second copy exists
       at the repo root `assets/`, used by the README).
 - [x] `mkdocs.yml` — removed `custom_dir: overrides`, the whole `hooks:` block, and the
       `extra_javascript:` block.
@@ -58,10 +58,10 @@ actually applied):
 | Header logo | hidden by **Material's own stock CSS**, with the drawer logo shown instead at 103×48. Not a regression — this repo now ships no custom header CSS at all |
 | Horizontal overflow | none |
 
-Screenshot reviewed: logo sits left of `wwdates`, no pill, sidebar lists nav items with no
+Screenshot reviewed: logo sits left of `purecalendars`, no pill, sidebar lists nav items with no
 duplicated heading.
 
-Remaining: confirm the deployed site after merge at https://guilhermegor.github.io/wwdates/.
+Remaining: confirm the deployed site after merge at https://guilhermegor.github.io/purecalendars/.
 
 ## Deferred (tracked here, not in this PR)
 

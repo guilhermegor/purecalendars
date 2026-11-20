@@ -20,8 +20,8 @@ Tracked in git but **excluded from the published docs site** (`exclude_docs` in 
 
 ## Work
 
-- [x] Dehydrated the BR/US holiday calendars from `stpstone` into `wwdates`, laid out as
-  `wwdates.<country>.<provider>` (one public class per module).
+- [x] Dehydrated the BR/US holiday calendars from `stpstone` into `purecalendars`, laid out as
+  `purecalendars.<country>.<provider>` (one public class per module).
 - [x] Split the 8-class calendar mixin chain into one file per class under
   `_internal/utils/calendars/`; cache + vendored helpers (parsers, webdriver_tools) under
   `_internal/utils/`.
@@ -32,7 +32,7 @@ Tracked in git but **excluded from the published docs site** (`exclude_docs` in 
 - [x] **US federal holidays reworked into two classes:** `DatesUSFederalHolidays` (offline, via the
   `holidays` package, applies the §6103 observed-day rule — emits statutory + observed) and
   `DatesUSFederalHolidaysWeb` (the Playwright live scrape).
-- [x] **Playwright is now an optional `web` extra** (`pip install "wwdates[web]"` +
+- [x] **Playwright is now an optional `web` extra** (`pip install "purecalendars[web]"` +
   `playwright install chromium`); base install is browser-free; the Web class raises a clear
   `ImportError` when the extra is absent.
 - [x] **`LogEmitter`**: no logger → print to screen; logger → route to it (restored stpstone
@@ -82,7 +82,7 @@ Tracked in git but **excluded from the published docs site** (`exclude_docs` in 
       (2) Version is now the **git tag** via `poetry-dynamic-versioning`: `pyproject` holds a
       `0.0.0` stub, the release workflow tags `vX.Y.Z` and builds with `python -m build` (Test PyPI
       uses `POETRY_DYNAMIC_VERSIONING_BYPASS`). Deleted `make bump_version` (now offline-only).
-      Locally verified: tag→`wwdates-9.9.8`, bypass→`9.9.9`, no-tag→dev version; `install_dist_
+      Locally verified: tag→`purecalendars-9.9.8`, bypass→`9.9.9`, no-tag→dev version; `install_dist_
       locally` green. Two blueprintx lessons captured (`release-gate-runs-tests-not-attestation`,
       `versioning-origin-dependent-tag-driven-online`). Split into two revertable commits.
 - [x] **PyPI publishing switched to OIDC trusted publishing** (own commit for easy rollback).
@@ -90,20 +90,20 @@ Tracked in git but **excluded from the published docs site** (`exclude_docs` in 
       existing `id-token: write` / `environment: release` — no `PYPI_TOKEN` / `TEST_PYPI_TOKEN`
       secret. Docs (`contributing.md`, `CLAUDE.md`) updated; blueprintx lesson
       `pypi-oidc-trusted-publishing` captured. **Maintainer action:** register a trusted publisher
-      on **both** pypi.org and test.pypi.org (owner `guilhermegor`, repo `wwdates`, the workflow
+      on **both** pypi.org and test.pypi.org (owner `guilhermegor`, repo `purecalendars`, the workflow
       filename, environment `release`); use a *pending publisher* for the first release. Roll back
       this commit to return to token-based publishing if OIDC misbehaves.
 - [x] **Orphan assets deleted:** removed `assets/logo_lorem_ipsum.png` and
-      `assets/logo_wwdates_description.png`; only `logo_wwdates_no_description.png` (the sole
+      `assets/logo_purecalendars_description.png`; only `logo_purecalendars_no_description.png` (the sole
       referenced variant) remains.
 - [x] **Placeholder-version ripple fixed** in the docs badge + local smoke. `mkdocs_hooks.py` now
       derives the masthead version from `git describe --tags --always` (falls back to pyproject
       then `?`) instead of the `0.0.0` stub — verified badge renders `v6d445f3` now / `v0.2.0` on a
       tag. `install_dist_locally` (Makefile + tasks.sh) reports the built wheel's real version
-      (e.g. `wwdates-0.0.0.post15.dev0+6d445f3`) rather than the editable `0.0.0`. `docs_server`
+      (e.g. `purecalendars-0.0.0.post15.dev0+6d445f3`) rather than the editable `0.0.0`. `docs_server`
       needed no change (it feeds through the same hook). Lesson updated with the ripple note.
 - [x] **`docs.yaml` proven on the remote:** ran green and the site is **live** at
-      https://guilhermegor.github.io/wwdates/ (HTTP 200). Root cause of the initial 404 was Pages
+      https://guilhermegor.github.io/purecalendars/ (HTTP 200). Root cause of the initial 404 was Pages
       never being enabled (`gh-deploy` publishes the branch but can't enable serving) — fixed by
       enabling Pages this session. (Being migrated to a self-enabling Actions deploy in PR #5.)
 - [x] **BR calendars are offline-first (issue #7), and `DatesBRB3Web` now really scrapes B3.**
@@ -144,7 +144,7 @@ Tracked in git but **excluded from the published docs site** (`exclude_docs` in 
       `1.0.0` release: Test PyPI run 30696472307 (18/18 jobs green) and PyPI run 30696729122
       (20/20 jobs green, twine uploaded both artifacts with attestations). Tag `v1.0.0` exists and
       the GitHub release is not a draft. Install-verified from both indices
-      (`wwdates.__version__ == "1.0.0"` in a clean venv).
+      (`purecalendars.__version__ == "1.0.0"` in a clean venv).
       Earlier failure mode, now resolved: Test PyPI returned `invalid-publisher` while the
       publisher env was the generic `release`.
 

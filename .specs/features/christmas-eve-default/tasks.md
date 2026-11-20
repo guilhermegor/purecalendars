@@ -17,7 +17,7 @@ that matches B3, which publishes the date as a closure. Verified, not assumed.
 
 ## Work
 
-- [x] `src/wwdates/br/b3.py`: default → `True`; parameter docstring rewritten, including the
+- [x] `src/purecalendars/br/b3.py`: default → `True`; parameter docstring rewritten, including the
       weekend caveat and how to restore the old behaviour.
 - [x] `bin/check_calendar_drift.py`: **removed** the Christmas Eve entry from `b3_known_web_only`,
       keeping the 2021 São Paulo group. Docstring rewritten — it asserted
@@ -90,7 +90,7 @@ users at a version that never ships.
 
 - [x] `docs/api.md` — `!!! note "Changed in 1.1"` → `"Changed in 2.0"`, and `pre-1.1 behaviour` →
       `pre-2.0 behaviour`.
-- [x] `src/wwdates/br/b3.py` — `pre-1.1 behaviour` → `pre-2.0 behaviour` in the parameter docstring.
+- [x] `src/purecalendars/br/b3.py` — `pre-1.1 behaviour` → `pre-2.0 behaviour` in the parameter docstring.
 - [x] Confirmed no other `1.1` reference survives in either file, and that the **`1.0.1`** mention
       stays — that one names a real released version and is correct.
 

@@ -7,11 +7,6 @@ on:
         description: 'Version to release (e.g., 1.2.3, 1.2.3a1, 1.2.3b1, 1.2.3rc1)'
         required: true
         type: string
-      backfill:
-        description: 'Rebuild every vX.Y.Z tag under PACKAGE_NAME and upload the missing ones (version is ignored)'
-        required: false
-        type: boolean
-        default: false
 
 env:
   PACKAGE_NAME: "purecalendars"
@@ -23,12 +18,10 @@ jobs:
   # the tests actually pass here — the gate is enforced by the pipeline, never self-attested
   # via a form input.
   run_tests:
-    if: ${{ !inputs.backfill }}
     uses: ./.github/workflows/tests.yaml
     secrets: inherit
 
   details:
-    if: ${{ !inputs.backfill }}
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.release.outputs.new_version }}
@@ -151,21 +144,8 @@ jobs:
       - name: Install Dependencies
         if: steps.cached-venv.outputs.cache-hit != 'true'
         run: |
-          # install dependencies, excluding dev and docs groups if present
-          without_groups=()
-          if grep -q '\[tool.poetry.group.dev\]' pyproject.toml; then
-            without_groups+=("dev")
-          fi
-          if grep -q '\[tool.poetry.group.docs\]' pyproject.toml; then
-            without_groups+=("docs")
-          fi
-          if [ ${#without_groups[@]} -gt 0 ]; then
-            echo "Excluding groups: ${without_groups[*]}"
-            poetry install --no-interaction --no-root --without $(IFS=,; echo "${without_groups[*]}")
-          else
-            echo "No groups to exclude, installing all dependencies"
-            poetry install --no-interaction --no-root
-          fi
+          # full install on purpose: the `dev` group carries `build` and `twine`, which the release needs
+          poetry install --no-interaction --no-root
 
           poetry env activate
 
@@ -209,69 +189,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-
-  # Rename backfill (opendata-cvm#419 mechanism): rebuild every stable vX.Y.Z tag with only the
-  # distribution name rewritten, so the release history of `wwdates` exists under purecalendars.
-  # Each backfilled version keeps its original code and its original `wwdates` import name.
-  # `old` stays the literal old name on purpose: historical tags still carry it.
-  backfill_build:
-    if: ${{ inputs.backfill }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set Up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - name: Build Every Release Tag Under the New Name
-        run: |
-          python -m pip install --upgrade build
-          old="wwdates"
-          mkdir -p dist
-          failed=()
-          for tag in $(git tag --list 'v*' --sort=v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'); do
-            src=$(mktemp -d)
-            git archive "$tag" | tar -x -C "$src"
-            sed -i -E '0,/^name = ".*"/s//name = "'"$PACKAGE_NAME"'"/' "$src/pyproject.toml"
-            { grep -rlE "[\"']${old}[\"']" "$src/src" || true; } | xargs -r sed -i -E "s/([\"'])${old}([\"'])/\1$PACKAGE_NAME\2/g"
-            if POETRY_DYNAMIC_VERSIONING_BYPASS="${tag#v}" python -m build --outdir dist "$src" > "$src.log" 2>&1; then
-              echo "built $tag"
-            else
-              echo "::warning::$tag did not build; skipped"; tail -20 "$src.log"; failed+=("$tag")
-            fi
-          done
-          echo "Built $(find dist -name "*.whl" | wc -l) versions; skipped: ${failed[*]:-none}" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: backfill-dist
-          path: dist/
-
-  backfill:
-    needs: backfill_build
-    runs-on: ubuntu-latest
-    environment:
-      name: release-test-pypi
-    permissions:
-      id-token: write
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: backfill-dist
-          path: dist/
-
-      - name: Publish to Test PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          skip-existing: true
