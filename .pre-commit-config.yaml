@@ -137,6 +137,13 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: readme-structure
+        name: README structure (plain headings, slug sections, Authors links)
+        entry: bash bin/check_readme_structure.sh README.md
+        language: system
+        files: ^(README\.md|bin/check_readme_structure\.sh|bin/lib/md_structure\.sh)$
+        pass_filenames: false
+
       - id: mypy
         name: mypy (static type check)
         # Run from src/ so it is the single package base (bare config.x/utils.x imports
