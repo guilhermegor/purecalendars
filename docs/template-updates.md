@@ -34,3 +34,24 @@ none is exported through the public `__all__`.
 | Added `beartype`, `numpy`, `defusedxml`, `purepii-br>=2`, `pure-schema-regimes<0.2` | needed by the adopted modules (template pins) |
 | `tests/unit/test_calendar_abc.py` type-error regexes also accept `violates type hint` | the beartype engine words type errors differently |
 | `tabular_reader.int_skip_rows` not re-applied | the repo had no `tabular_reader` to carry the extension; the file is the template's |
+
+## Tool configuration alignment (#61, part of #56)
+
+Template taken verbatim: `.gitattributes`, `.gitlint`, `.hadolint.yaml`, `.pydocstyle`,
+`.shellcheckrc`, `.sqlfluff`, `.sqlfluffignore`, `.yamllint`, `requirements.txt`,
+`pytest.ini`, `tests/AGENTS.md`, `tests/CLAUDE.md`.
+
+### Deviations kept
+
+| Deviation | Reason |
+|---|---|
+| `.editorconfig` `[*.py]` and `.vscode/settings.json` `[python]` use tabs | `ruff.toml` formats with tabs until #71 |
+| `mypy.ini` `python_version = 3.11` | pinned to the `requires-python` floor |
+| `mypy.ini` drops the template's `[mypy-purecalendars.*]` ignore | first-party here; it would mask broken imports |
+| `mypy.ini` adds `[mypy-businesstimedelta.*]` | the dependency ships no stubs and no `py.typed` |
+| `mypy.ini` keeps `[mypy-*._internal.utils.typing.*]` `ignore_errors` | the vendored typing engine is metaprogramming |
+| `mypy.ini` `[mypy-...parsers.dicts] disallow_any_explicit = False` | domain helper annotates its payload as `Any` |
+| `tests/conftest.py` tab-indented; `isolate_git_environment` drops every `GIT_*` key | pre-commit leaks more keys than the template's seven |
+| `.coveragerc` loses the `_internal/` coverage omit comment | the template has no omit; `_internal/` is now measured |
+| `.gitignore` and `.codespellrc` replaced wholesale by the template | local header comments and extra ignore words dropped |
+| `[tool.deptry.per_rule_ignores] DEP002` adds `tzdata` | runtime data for `zoneinfo`, never imported |

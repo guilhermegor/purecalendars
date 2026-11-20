@@ -20,6 +20,7 @@ resolves *and* connects, so the hostname path is still caught there.
 
 from __future__ import annotations
 
+import os
 import socket
 from typing import NoReturn
 
@@ -56,7 +57,7 @@ def _blocked(*args: object, **kwargs: object) -> NoReturn:
 class _BlockedSocket(socket.socket):
 	"""A socket whose outbound-connection methods are disabled."""
 
-	def connect(self, *args: object, **kwargs: object) -> NoReturn:
+	def connect(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
 		"""Reject ``socket.socket.connect``.
 
 		Parameters
@@ -73,7 +74,7 @@ class _BlockedSocket(socket.socket):
 		"""
 		_blocked(*args, **kwargs)
 
-	def connect_ex(self, *args: object, **kwargs: object) -> NoReturn:
+	def connect_ex(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
 		"""Reject ``socket.socket.connect_ex``.
 
 		Parameters
@@ -92,7 +93,7 @@ class _BlockedSocket(socket.socket):
 
 
 @pytest.fixture(autouse=True)
-def block_network(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+def block_network(request: pytest.FixtureRequest, *, monkeypatch: pytest.MonkeyPatch) -> None:
 	"""Swap the socket primitives so no test can open a real connection.
 
 	Applied automatically to every test. A test marked ``allow_network`` is left
@@ -105,38 +106,31 @@ def block_network(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatc
 	monkeypatch : pytest.MonkeyPatch
 		Pytest's patcher; restores the real primitives at teardown.
 	"""
-	if request.node.get_closest_marker("allow_network") is not None:
-		return
-	monkeypatch.setattr(socket, "socket", _BlockedSocket)
-	monkeypatch.setattr(socket, "create_connection", _blocked)
-
-
-LIST_GIT_REPOSITORY_POINTERS = (
-	"GIT_DIR",
-	"GIT_WORK_TREE",
-	"GIT_INDEX_FILE",
-	"GIT_COMMON_DIR",
-	"GIT_PREFIX",
-	"GIT_OBJECT_DIRECTORY",
-	"GIT_ALTERNATE_OBJECT_DIRECTORIES",
-)
+	bool_allowed = request.node.get_closest_marker("allow_network") is not None
+	monkeypatch.setattr(socket, "socket", socket.socket if bool_allowed else _BlockedSocket)
+	monkeypatch.setattr(
+		socket,
+		"create_connection",
+		socket.create_connection if bool_allowed else _blocked,
+	)
 
 
 @pytest.fixture(autouse=True)
 def isolate_git_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-	"""Drop the repository pointers git exports to hooks so a test never touches the host repo.
+	"""Drop every ``GIT_*`` variable git exports to hooks so a test never touches the host repo.
 
 	Applied automatically to every test. Under pre-commit, ``GIT_DIR`` and
 	``GIT_INDEX_FILE`` name the calling repository, so a test that runs ``git init`` or
-	``git commit`` would otherwise write there instead of in its temporary directory.
-	``GITHUB_BASE_REF`` is dropped too: a ``pull_request`` run sets it, and the ledger gate
-	then accepts no other base, so a fixture repo without that ``origin`` branch would
-	resolve none.
+	``git commit`` would otherwise write there instead of in its temporary directory. Every
+	``GIT_``-prefixed key is dropped (not a fixed list) because hooks leak more of them than
+	any list names. ``GITHUB_BASE_REF`` is dropped too: a ``pull_request`` run sets it, and
+	the ledger gate then accepts no other base.
 
 	Parameters
 	----------
 	monkeypatch : pytest.MonkeyPatch
 		Pytest's patcher; restores the variables at teardown.
 	"""
-	for str_name in (*LIST_GIT_REPOSITORY_POINTERS, "GITHUB_BASE_REF"):
+	for str_name in [k for k in os.environ if k.startswith("GIT_")]:
 		monkeypatch.delenv(str_name, raising=False)
+	monkeypatch.delenv("GITHUB_BASE_REF", raising=False)
