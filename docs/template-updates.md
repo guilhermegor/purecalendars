@@ -20,7 +20,7 @@ and `templates/lib-minimal`, with the scaffold's import rewrite
 
 **Owner decision (2026-11-19), supersedes the 2026-11-01 omission:** the example modules
 `daily_cache`, `sidecar_metadata`, `xml_reader`, `schema_regimes` (the template's regime
-module), `config/ports/example_port` and `main.py` are adopted. #72 deletes them at 4.0.0, so
+module), `config/ports/example_port` and `main.py` are adopted. #72 closed as already shipped by #99; they are internal, so
 none is exported through the public `__all__`.
 
 ### Deviations kept
