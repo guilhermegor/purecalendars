@@ -3,26 +3,35 @@ site_description: Global calendar system. Python package.
 repo_url: https://github.com/guilhermegor/purecalendars
 nav:
   - Home: index.md
-  - Usage: usage.md
-  - Examples: examples.md
-  - API Reference: api.md
-  - FAQ: faq.md
-  - Contributing: contributing.md
-  - Changelog: changelog.md
+  - Guide:
+      - Usage: usage.md
+      - Examples: examples.md
+  - API Reference:
+      - Overview: api/index.md
+      - Reference: api/reference.md
+  - Project:
+      - FAQ: faq.md
+      - Contributing: contributing.md
+      - Changelog: changelog.md
+      - Incidents: incidents.md
 theme:
   name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
   # Native Material mechanism: places the image in the top bar left of the site name, with no
-  # custom CSS, template override or build hook. Same asset as the README/index.md inline logo.
-  logo: assets/logo_purecalendars_no_description.png
-  favicon: assets/logo_purecalendars_no_description.png
+  # custom CSS, template override or build hook. The template's logo slot, filled with the real
+  # purecalendars logo (same image as the README/index.md inline logo).
+  logo: assets/logo.png
+  favicon: assets/logo.png
   palette:
     - scheme: default
-      primary: indigo
+      primary: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
+      primary: custom
       toggle:
         icon: material/white-balance-sunny
         name: Switch to light mode
@@ -43,7 +52,10 @@ markdown_extensions:
         - .
 
 extra_css:
-  - stylesheets/extra.css
+  - stylesheets/brand.css
+extra:
+  version:
+    provider: mike
 
 # Non-published docs: MkDocs builds every .md under docs/, so working
 # documents must be excluded here or they ship to readers.

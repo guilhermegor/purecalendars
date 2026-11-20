@@ -55,3 +55,18 @@ Template taken verbatim: `.gitattributes`, `.gitlint`, `.hadolint.yaml`, `.pydoc
 | `.coveragerc` loses the `_internal/` coverage omit comment | the template has no omit; `_internal/` is now measured |
 | `.gitignore` and `.codespellrc` replaced wholesale by the template | local header comments and extra ignore words dropped |
 | `[tool.deptry.per_rule_ignores] DEP002` adds `tzdata` | runtime data for `zoneinfo`, never imported |
+
+## Docs layout (#69, part of #56)
+
+Owner decision (2026-11-01): adopt both the template's `extra.version.provider: mike` selector
+(supersedes the drop in closed #14) and its logo slot (`docs/assets/logo.png` as `theme.logo` and
+`theme.favicon`), filled with the real purecalendars logo rather than the placeholder.
+
+| Deviation | Reason |
+|---|---|
+| `docs/stylesheets/extra.css` merged into `brand.css`, not dropped | keeps the desktop sidebar-title hiding rule |
+| `docs/CLAUDE.md` holds the guidance itself instead of `@AGENTS.md` | the repo ships no `docs/AGENTS.md` |
+| nav omits `Releasing 1.0.0` | the repo ships no `releasing-1-0-0.md` |
+| `docs/api/reference.md` keeps the whole API reference as one page | it is the real content; the template's page is a starter |
+| `docs/incidents.md` has no worked example entry | an empty record is truer than a fictional incident |
+| mike selector is inert until a `mike deploy` publishes `versions.json` | `docs.yaml` deploys with Pages, not mike |
