@@ -1,3 +1,5 @@
+# rename-to-purecalendars_20261119_120000
+
 # Ledger — #76 rename-to-purecalendars
 
 Branch: `chore/76-rename-to-purecalendars` · Issue: #76 · Class: **src**
@@ -57,3 +59,36 @@ record what happened under that name, and GitHub redirects the old links.
 
 - Downstream moves (blueprintx#1212, `~/dev` consumers, board, `roadmap_unblock.sh`) — #75.
 - Deleting the old `wwdates` projects on Test PyPI and PyPI — owner, after consumers move (#75).
+
+# import-shim_20261119_150000
+
+# Ledger — #83 import-shim
+
+Branch: `feat/83-wwdates-import-shim` · Issue: #83 · Class: **src**
+
+## Goal
+
+Ship 3.0.1 with a deprecated `import wwdates` alias, so code written for 2.x keeps working after
+the upgrade to `purecalendars` (owner decision, 2026-11-19, #75). 3.0.0 shipped without one.
+
+## Work
+
+- [x] `src/wwdates/__init__.py` re-exports `purecalendars`, emits one `DeprecationWarning`, and
+      binds every `purecalendars` submodule under the old name in `sys.modules` (same module
+      objects, so `isinstance` and monkeypatching agree). Top-level children are also set as
+      attributes, so `import wwdates.br; wwdates.br.X` works.
+- [x] `pyproject.toml` `packages` includes `wwdates`.
+- [x] `tests/unit/test_wwdates_shim.py` pins the warning and the aliases.
+- [x] `README.md` and `docs/index.md` say the alias exists until 4.0.0.
+
+## Removal
+
+#84 removes the shim, and every other `wwdates` reference, in 4.0.0.
+
+## Verification
+
+- [x] `poetry run pytest tests`: 228 passed. ruff, ruff format and mypy are clean.
+- [x] A wheel built locally ships `wwdates/__init__.py`. Installed in a clean venv:
+      `from wwdates.br.anbima import DatesBRAnbima` warns once and resolves to the
+      `purecalendars` class.
+- [ ] 3.0.1 on Test PyPI, then PyPI, install-verified.

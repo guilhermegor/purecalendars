@@ -5,7 +5,7 @@ Balcão) — the Brazilian *financial market* calendar, not ``holidays.Brazil``.
 the statutory-only national set and omits Carnaval (Monday and Tuesday) and Corpus Christi,
 neither of which is a statutory national holiday but on both of which banks and markets close.
 
-Verified equivalence against the live sources (see ``docs/backlog/``):
+Verified equivalence against the live sources (see ``.specs/features/calendars/tasks.md``):
 
 - ANBIMA (``feriados_nacionais.xls``, 2001–2099): identical to ``holidays.B3``, empty
   symmetric difference across all 99 published years.

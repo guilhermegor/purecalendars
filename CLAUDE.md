@@ -62,6 +62,16 @@ of your public `__all__`. The internal imports are package-qualified
   inject a logger (stdlib default), as `_internal/utils/retry.py`'s `LogEmitter` shows. The
   in-repo `logs.py` helper is **opt-in** at scaffold time; see `_internal/utils/CLAUDE.md`.
 
+## Work trackers (`.specs/`)
+
+`docs/` is published documentation only. Working material lives in `.specs/` (see
+`.specs/CLAUDE.md`): `features/<name>/{design,plan,tasks}.md` per feature, and a flat
+`backlog/<kebab-topic>_YYYYMMDD_HHMMSS.md` for work spanning no single feature. A branch touching
+`src/` or CI paths must add a flat `.specs/backlog/` ledger with a checkbox
+(`bin/check_backlog_ledger.py`); `bin/check_specs_structure.sh` and `bin/check_docs_boundary.sh`
+enforce the layout. Trackers are never deleted — tick the last box and add a
+"Completed — kept as a record" note.
+
 ## Releasing to PyPI
 
 Two workflows ship under `.github/workflows/` (present only when a GitHub remote is set up):
