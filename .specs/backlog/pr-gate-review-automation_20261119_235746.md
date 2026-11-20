@@ -21,6 +21,11 @@ automation the scaffold ships with the review-bot roster. Part of #56.
 - [x] Install actionlint in the `tests.yaml` lint step; fix its pre-existing findings (the
   unused, invalid `ready_for_release` output; SC2046 in both release workflows)
 - [x] `bin/lint_actions.sh`: replace `mapfile` with a read loop (macOS bash 3.2 safe)
+- [x] Port blueprintx 976d00a (#1223, closes #1219) over the gate files: `pr_gate.py`,
+  `pr-gate.yml`, `coderabbit-trigger.yml`, `check_review_threads.py`,
+  `retry_rate_limited_review.py`, `pr_reconcile.sh`, `enable_repo_rules.sh`,
+  `check_required_checks_sync.py`; keep only the repo-specific `required-checks.txt`
+- [x] Drop `openpyxl` from the deptry DEP002 ignore list (no longer a dependency)
 - [ ] Owner: run `bin/enable_repo_rules.sh` after merge (changes live rulesets)
 
 ## Not done, on purpose
@@ -29,8 +34,6 @@ automation the scaffold ships with the review-bot roster. Part of #56.
   `ruff.toml` still says `indent-style = "tab"`, so `ruff-format` rewrites them to tabs and
   `ruff` then raises E101 in their docstrings. They land once #71 adopts the template's
   `ruff.toml`. They pass verbatim (627 tests with the ledger tests).
-- `bin/check_review_threads.py` has one comment word respelled (the "un-parse-able" one): the
-  repo's `.codespellrc` lacks the template's ignore entry until #61 lands.
 
 - `Assertion weakening gate` is left out of `bin/required-checks.txt`: no workflow emits it yet
   (#65 ships it). A required check nothing emits blocks every merge. #65 re-adds the line.
