@@ -73,9 +73,10 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   **dependency injection** — otherwise a module of functions is the right shape.
 - **No redundant package-name subfolder.** When the package's whole purpose is one domain
   (e.g. `calendars`), do **not** nest a subfolder that repeats the package name
-  (`src/<project_name>/<project_name>-ish/`) — the package name already conveys the scope. Keep
-  public modules **flat** at `src/<project_name>/` (`src/<project_name>/calendar_br.py`), and put
-  non-exported abstract bases / internals under `_internal/`.
+  (`src/<project_name>/<project_name>-ish/`) — the package name already conveys the scope. Public
+  providers live in the country subpackages (`src/purecalendars/br/`, `src/purecalendars/us/`,
+  imported as `purecalendars.br` / `purecalendars.us`); put non-exported abstract bases /
+  internals under `_internal/`.
 - **On migration, reuse the target's own implementation.** When lifting code in from another
   repo, if this project already has an equivalent module (its own `_internal` typing engine, a
   helper), rewrite the imports to **this** project's version and discard the source's duplicate —
@@ -91,11 +92,10 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   pytest-style functions with fixtures, not `unittest.TestCase`.
 - **Explicit column typing & Brazilian identifiers** — if the library touches pandas, type
   every DataFrame on load via `apply_dtypes` (`_internal.utils.dtypes`, never pandas'
-  inference), route reads through `_internal.utils.tabular_reader`, and use
-  `_internal.utils.br_identifiers` for CNPJ/CPF (alphanumeric-aware for the 2026 CNPJ). Never
-  call `pd.read_excel` / `pd.read_csv` / `pd.read_json` directly: each source declares a
-  `FileContract` in `_internal/config/contracts/` (one file per source, re-exported via that
-  package's `__init__`), so the read is schema-validated at ingestion.
+  inference) and use `_internal.utils.br_identifiers` for CNPJ/CPF (alphanumeric-aware for the
+  2026 CNPJ). **purecalendars does no file or database I/O** (`ruff.toml` bans the bare pandas
+  readers): tabular sources are read in `opendata-calendars`, which depends on this package,
+  through `tabular_reader` and a `FileContract`. Do not add reads here.
 - **No `.env`** — a distributable library has no runtime env to seed (unlike the service
   tiers), so none is shipped. This does not block the opt-in OTLP log exporter
   (`_internal/utils/otel_logging.py`, blueprintx#438): it reads
@@ -112,12 +112,10 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   transitive presence is an accident of another package's tree and breaks silently the day that
   package drops or version-caps it. Run `poetry add <pkg>` for anything you import.
 
-  **This is now enforced, not advised**: `bin/lint_deps.sh` runs `deptry` over `src/` in
-  `poe lint`, the `lint-deps` pre-commit hook and CI. Its first run found the rule already
-  broken in the tiers that ship it, which is the argument for the gate — the DDD tiers imported
-  pandas in five `utils/` modules while declaring it nowhere, reaching them only through a
-  business-day calendar that happens to depend on it. Two things worth knowing before working
-  around it:
+  **Not yet enforced here**: `deptry` is declared in `pyproject.toml` and configured under
+  `[tool.deptry.per_rule_ignores]`, but no `poe lint` task, pre-commit hook or workflow runs it
+  in this repository (the template's `bin/lint_deps.sh` gate has not been adopted). Run
+  `poetry run deptry src` by hand until it is wired in. Two things worth knowing:
 
   - **A guarded import is still an import.** `try: import numpy / except ModuleNotFoundError:`
     degrades gracefully at runtime and changes nothing about the declaration — that pattern is
@@ -150,7 +148,9 @@ workflow with the version: it runs the full test suite as a hard gate, gates on 
 being greater than what is already published, builds with the requested version stamped through
 `POETRY_DYNAMIC_VERSIONING_BYPASS` (so a re-run never collides with an existing tag), uploads
 through **OIDC trusted publishing** (`pypa/gh-action-pypi-publish`, `id-token: write`) — no API
-token stored — and then tags the commit `vX.Y.Z` and cuts the GitHub release.
+token stored — and then tags the commit `vX.Y.Z` and cuts the GitHub release. The `pypi` and
+`github_release` jobs both depend on `setup_and_build`, not on each other, so a failed PyPI
+publication does not stop the GitHub release: check both job results.
 
 Configure a GitHub Environment per index (**`release-pypi`** for PyPI, **`release-test-pypi`**
 for Test PyPI) and a **trusted publisher** on each index matching owner `guilhermegor`, repo
