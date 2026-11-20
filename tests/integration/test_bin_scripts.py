@@ -288,7 +288,8 @@ def _call(
 	str_function : str
 		The shell function to call.
 	args : str
-		Arguments forwarded to the function.
+		Arguments forwarded to the function. They travel in the environment, not on the
+		command line: a lone ``[]`` argument reached Git Bash on Windows as an empty word.
 
 	Returns
 	-------
@@ -297,17 +298,17 @@ def _call(
 	"""
 	str_bash = shutil.which("bash") or "bash"
 	dict_env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-	# Constant, trusted argv: the resolved bash, the repo's own script and a function name
-	# written in this module -- no untrusted input reaches the shell as code.
+	dict_env.update({f"CALL_ARG_{int_idx}": str_arg for int_idx, str_arg in enumerate(args)})
+	str_call = " ".join([str_function, *(f'"$CALL_ARG_{i}"' for i in range(len(args)))])
+	# Constant, trusted argv: the resolved bash, the repo's own script and a call line built
+	# here from a function name written in this module -- the data stays in the environment.
 	return subprocess.run(  # noqa: S603
 		[
 			str_bash,
 			"-c",
-			'source "$1"; shift; "$@"',
+			f'source "$1"; {str_call}',
 			"_",
 			str(_bin_script(str_script)),
-			str_function,
-			*args,
 		],
 		capture_output=True,
 		text=True,
