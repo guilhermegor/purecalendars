@@ -2,7 +2,7 @@
 
 Common questions and fixes when using `purecalendars`.
 
-> **See also:** [Usage](usage.md) · [API Reference](api.md)
+> **See also:** [Usage](usage.md) · [API Reference](api/index.md)
 
 ---
 
@@ -55,7 +55,7 @@ pip show tzdata
 - **US market:** `DatesUSFederalHolidays` is the civil federal-holiday calendar, not the
   exchange's. Nasdaq market closures (e.g. Good Friday) come from `opendata-calendars`.
 
-See the [provider comparison table](api.md) for what each one loads.
+See the [provider comparison table](api/reference.md) for what each one loads.
 
 ---
 

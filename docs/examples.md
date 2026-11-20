@@ -2,7 +2,7 @@
 
 Task-oriented snippets for common date/holiday problems. Each is self-contained.
 
-> **See also:** [Usage](usage.md) for the basics · [API Reference](api.md) for every method.
+> **See also:** [Usage](usage.md) for the basics · [API Reference](api/index.md) for every method.
 
 ---
 

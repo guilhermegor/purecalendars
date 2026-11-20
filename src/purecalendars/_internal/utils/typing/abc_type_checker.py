@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from abc import ABCMeta
 
-from purecalendars._internal.utils.typing.type_checker import TypeChecker
+from purecalendars._internal.utils.typing.type_checker_meta import TypeChecker
 
 
 class ABCTypeCheckerMeta(ABCMeta, TypeChecker):
-    """Metaclass for abstract base classes with runtime type checking.
+	"""Metaclass for abstract base classes with runtime type checking.
 
-    Combines :class:`abc.ABCMeta` (abstract-method enforcement) with
-    :class:`~chassis.typing.type_checker.TypeChecker` (argument validation). Use as
-    ``metaclass=ABCTypeCheckerMeta`` instead of inheriting :class:`abc.ABC`.
-    """
+	Combines :class:`abc.ABCMeta` (abstract-method enforcement) with the stdlib
+	:class:`~purecalendars._internal.utils.typing.type_checker_meta.TypeChecker` (argument
+	validation). Use as ``metaclass=ABCTypeCheckerMeta`` instead of inheriting :class:`abc.ABC`.
+	"""

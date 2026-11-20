@@ -2,6 +2,10 @@
 
 Guidance for working inside this project's `docs/` directory.
 
+Repository-wide rules live in the root `AGENTS.md` (the root `CLAUDE.md` only imports it and
+`PRINCIPLES.md`); naming, boundary and tooling conventions shared by every BlueprintX project
+live in `.claude/CLAUDE.md`. This file keeps only what is specific to `docs/`.
+
 ## Published vs non-published
 
 MkDocs **builds every `.md` under `docs/` into the site**, even files absent from
@@ -28,6 +32,14 @@ exclusion, so keep any comment on its own line.
 
 ## Published pages
 
-Everything else under `docs/` (e.g. `index.md`, `architecture.md`, `api.md`) is a
+Everything else under `docs/` (e.g. `index.md`, `architecture.md`, the `api/` reference section) is a
 published page. Register new published pages in `mkdocs.yml` `nav:` in the same
 commit they are created, or MkDocs silently omits them from navigation.
+
+The API reference is a **directory** (`docs/api/` — `index.md` overview + `reference.md`),
+never a single `api.md`: it grows once per shipped unit, and splitting it later rots every
+published deep link. Group new API pages by the codebase's own top-level split. Brand assets
+live in `docs/assets/` (the real purecalendars logo, `logo.png`, wired as
+`theme.logo`/`favicon` + the landing image), with size/position/border tuned inline on the
+`<img>` (`width` / `align` / `style="border-radius"`) in `docs/index.md` and `README.md`.
+The brand stylesheet is `docs/stylesheets/brand.css` (registered under `extra_css`).

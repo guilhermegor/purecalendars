@@ -2,7 +2,7 @@
 
 Installing and using `purecalendars`.
 
-> **See also:** [API Reference](api.md) for the full method list · [Contributing](contributing.md)
+> **See also:** [API Reference](api/index.md) for the full method list · [Contributing](contributing.md)
 > to develop or release the library.
 
 ---
@@ -25,7 +25,7 @@ Everything works offline after install — no network, no browser.
 
 ## Choosing a provider
 
-Every provider exposes the same calendar-operations surface (see [API Reference](api.md)); they
+Every provider exposes the same calendar-operations surface (see [API Reference](api/index.md)); they
 differ only in **which** holidays they load.
 
 Every provider is computed offline. For the publishers' own live tables, use the separate `opendata-calendars` package.
@@ -71,7 +71,7 @@ cls_cal.working_days_range(date(2024, 12, 1), date(2024, 12, 31))
 ```
 
 `DatesBRB3` here is just an example — the same methods work on every provider
-(`DatesBRAnbima`, `DatesBRFebraban`, `DatesUSFederalHolidays`); only the loaded holiday set differs. See the [API Reference](api.md) for the full list of classes and
+(`DatesBRAnbima`, `DatesBRFebraban`, `DatesUSFederalHolidays`); only the loaded holiday set differs. See the [API Reference](api/index.md) for the full list of classes and
 their shared methods.
 
 ---

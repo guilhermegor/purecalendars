@@ -2,7 +2,7 @@
 
 Everything you need to develop, test, and release `purecalendars`.
 
-> **See also:** [Usage](usage.md) · [API Reference](api.md) · the repository's
+> **See also:** [Usage](usage.md) · [API Reference](api/index.md) · the repository's
 > [`CONTRIBUTING.md`](https://github.com/guilhermegor/purecalendars/blob/main/CONTRIBUTING.md) holds
 > the authoritative branch/PR policy.
 

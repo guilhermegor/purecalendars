@@ -11,7 +11,9 @@ tests-with-every-change rule onto shell like this:
 See ``tests/CLAUDE.md`` (Testing shell scripts) for the convention. Two seams are
 covered: ``bin/poetry_exec.sh`` (the Poetry resolver wrapper every recipe routes
 through) and ``bin/precommit.sh`` (hook install that must skip gracefully off a git
-work tree instead of aborting ``init``).
+work tree instead of aborting ``init``). The repo-policy scripts (``check_pr_policy.sh``,
+``close_linked_issues.sh``, ``dependabot_auto_merge.sh``) are exercised through their
+source-guarded functions, so no network and no ``gh`` call is needed.
 """
 
 import os
@@ -262,3 +264,223 @@ def test_docs_boundary_rejects_a_backlog_directory(tmp_path: Path) -> None:
 	_write(tmp_path / "docs" / "backlog" / "x_20260101_000000.md")
 
 	assert _run("check_docs_boundary.sh", "--root", str(tmp_path)).returncode == 1
+
+
+# --------------------------
+# bin/check_pr_policy.sh + bin/close_linked_issues.sh + bin/dependabot_auto_merge.sh
+# --------------------------
+
+
+def _call(
+	str_script: str,
+	str_function: str,
+	*args: str,
+) -> subprocess.CompletedProcess[str]:
+	"""Source a ``bin/`` script and call one of its functions, without running ``main``.
+
+	The repo-policy scripts guard ``main`` behind ``BASH_SOURCE == $0``, so sourcing them
+	is side-effect free and lets a test reach a function that needs no ``gh`` call.
+
+	Parameters
+	----------
+	str_script : str
+		The script filename under ``bin/``.
+	str_function : str
+		The shell function to call.
+	args : str
+		Arguments forwarded to the function. They travel in the environment, not on the
+		command line: a lone ``[]`` argument reached Git Bash on Windows as an empty word.
+
+	Returns
+	-------
+	subprocess.CompletedProcess[str]
+		The finished process with decoded ``stdout`` and ``stderr``.
+	"""
+	str_bash = shutil.which("bash") or "bash"
+	dict_env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+	dict_env.update({f"CALL_ARG_{int_idx}": str_arg for int_idx, str_arg in enumerate(args)})
+	str_call = " ".join([str_function, *(f'"$CALL_ARG_{i}"' for i in range(len(args)))])
+	# Constant, trusted argv: the resolved bash, the repo's own script and a call line built
+	# here from a function name written in this module -- the data stays in the environment.
+	return subprocess.run(  # noqa: S603
+		[
+			str_bash,
+			"-c",
+			f'source "$1"; {str_call}',
+			"_",
+			str(_bin_script(str_script)),
+		],
+		capture_output=True,
+		text=True,
+		check=False,
+		env=dict_env,
+	)
+
+
+@pytest.mark.parametrize(
+	("str_branch", "int_expected"),
+	[
+		("feat/62-repo-policy", 0),
+		("chore/7", 0),
+		("dependabot/pip/ruff-0.5", 0),
+		("release/1.2.0", 0),
+		("feature-without-number", 1),
+		("feat/no-number-here", 1),
+	],
+)
+def test_pr_policy_branch_requires_an_issue_number(str_branch: str, int_expected: int) -> None:
+	"""A branch passes with ``<type>/<N>-slug`` or an exempt prefix, and fails otherwise."""
+	obj_result = _run("check_pr_policy.sh", "branch", dict_env={"BRANCH": str_branch})
+
+	assert obj_result.returncode == int_expected
+
+
+@pytest.mark.parametrize(
+	("str_title", "int_expected"),
+	[
+		("ci: import the repo-policy workflows", 0),
+		("feat(calendars)!: drop the old API", 0),
+		("Add stuff", 1),
+		("feat:missing space", 1),
+		("unknown(scope): subject", 1),
+	],
+)
+def test_pr_policy_title_requires_a_conventional_commit(str_title: str, int_expected: int) -> None:
+	"""Only ``type(scope)!: subject`` with a known type is accepted."""
+	obj_result = _run("check_pr_policy.sh", "title", dict_env={"TITLE": str_title})
+
+	assert obj_result.returncode == int_expected
+
+
+def test_pr_policy_body_requires_every_template_section(tmp_path: Path) -> None:
+	"""A body missing a template ``## `` heading fails; a complete one passes."""
+	path_template = tmp_path / "template.md"
+	_write(path_template, "## Summary\n\n## Testing\n")
+
+	obj_ok = _run(
+		"check_pr_policy.sh",
+		"body",
+		dict_env={"BODY": "## Summary\nx\n## Testing\ny\n", "TEMPLATE": str(path_template)},
+	)
+	obj_missing = _run(
+		"check_pr_policy.sh",
+		"body",
+		dict_env={"BODY": "## Summary\nx\n", "TEMPLATE": str(path_template)},
+	)
+
+	assert obj_ok.returncode == 0
+	assert obj_missing.returncode == 1
+	assert "Testing" in obj_missing.stderr
+
+
+def test_pr_policy_body_matches_the_shipped_template() -> None:
+	"""The shipped PR template, used verbatim as a body, satisfies its own check."""
+	path_template = Path(__file__).resolve().parents[2] / ".github" / "PULL_REQUEST_TEMPLATE.md"
+
+	obj_result = _run(
+		"check_pr_policy.sh",
+		"body",
+		dict_env={
+			"BODY": path_template.read_text(encoding="utf-8"),
+			"TEMPLATE": str(path_template),
+		},
+	)
+
+	assert obj_result.returncode == 0
+
+
+@pytest.mark.parametrize(
+	("str_assignees", "int_expected"),
+	[("guilhermegor", 0), ("", 1), ("   ", 1)],
+)
+def test_pr_policy_assignee_requires_a_login(str_assignees: str, int_expected: int) -> None:
+	"""An empty or blank assignee list fails the check."""
+	obj_result = _run("check_pr_policy.sh", "assignee", dict_env={"ASSIGNEES": str_assignees})
+
+	assert obj_result.returncode == int_expected
+
+
+@pytest.mark.parametrize(
+	("dict_env", "int_expected"),
+	[
+		({"BRANCH": "feat/9-x", "CLOSING_COUNT": "1"}, 0),
+		({"BRANCH": "dependabot/pip/x", "CLOSING_COUNT": "0"}, 0),
+		({"BRANCH": "docs/no-number", "CLOSING_COUNT": "0"}, 1),
+		({"BRANCH": "x", "TITLE": "fix PROJ-12", "TRACKER": "linear"}, 0),
+		({"BRANCH": "x", "TITLE": "fix PROJ-12", "TRACKER": "Linear"}, 0),
+		({"BRANCH": "x", "TITLE": "PROJ-12", "TRACKER": "linear", "LINEAR_TEAM_KEYS": "Proj"}, 0),
+		({"BRANCH": "x", "TITLE": "no key", "TRACKER": "linear", "LINEAR_TEAM_KEYS": "PROJ"}, 1),
+		({"BRANCH": "x", "TITLE": "T-5", "TRACKER": "regex", "TRACKER_REGEX": "T-[0-9]+"}, 0),
+		({"BRANCH": "x", "TITLE": "none", "TRACKER": "regex"}, 2),
+		({"BRANCH": "x", "TITLE": "none", "TRACKER": "jira"}, 2),
+	],
+)
+def test_pr_policy_linked_issue_by_tracker(dict_env: dict[str, str], int_expected: int) -> None:
+	"""A closing reference satisfies GitHub; Linear and regex trackers read branch and title.
+
+	Exit 2 marks a misconfiguration (unknown tracker, regex tracker without a regex) and is
+	distinct from exit 1, a real policy violation.
+	"""
+	obj_result = _run("check_pr_policy.sh", "linked-issue", dict_env=dict_env)
+
+	assert obj_result.returncode == int_expected
+
+
+def test_pr_policy_unknown_subcommand_prints_usage() -> None:
+	"""An unknown subcommand exits 2 with a usage line."""
+	obj_result = _run("check_pr_policy.sh", "nope")
+
+	assert obj_result.returncode == 2
+	assert "usage:" in obj_result.stderr
+
+
+@pytest.mark.parametrize(
+	("str_branch", "str_body", "str_expected"),
+	[
+		("feat/12-add-x", "", "12"),
+		("feat/12-add-x", "Closes #13", "12\n13"),
+		("chore/5-y", "Fixes #5 and resolves #6", "5\n6"),
+		("chore/5-y", "Refs #5", ""),
+		("chore/5-y", "this does not close #8", "5"),
+		("chore/5-y", "```\nCloses #9\n```\n<!-- Closes #10 -->\n> Closes #11", "5"),
+		("release/1.0.0", "Closes #3", ""),
+		("dependabot/pip/x", "Closes #3", ""),
+		("docs/2026-11-note", "", ""),
+	],
+)
+def test_close_linked_issues_resolves_the_issue_set(
+	str_branch: str, str_body: str, str_expected: str
+) -> None:
+	"""Branch number plus closing keywords, minus negations, code, comments and quotes."""
+	obj_result = _call("close_linked_issues.sh", "resolve_issues", str_branch, str_body)
+
+	assert obj_result.returncode == 0
+	assert obj_result.stdout.strip() == str_expected
+
+
+@pytest.mark.skipif(shutil.which("jq") is None, reason="jq is required to classify updates")
+@pytest.mark.parametrize(
+	("str_json", "str_expected"),
+	[
+		('[{"updateType": "version-update:semver-patch"}]', "minor"),
+		(
+			'[{"updateType": "version-update:semver-minor"},'
+			' {"updateType": "version-update:semver-patch"}]',
+			"minor",
+		),
+		('[{"updateType": "version-update:semver-major"}]', "major"),
+		(
+			'[{"updateType": "version-update:semver-patch"},'
+			' {"updateType": "version-update:semver-major"}]',
+			"major",
+		),
+		("[]", "major"),
+		("", "major"),
+		("not json", "major"),
+	],
+)
+def test_dependabot_auto_merge_classifies_the_update(str_json: str, str_expected: str) -> None:
+	"""Only an all-patch/minor update is ``minor``; anything else, even junk, is ``major``."""
+	obj_result = _call("dependabot_auto_merge.sh", "classify_update", str_json)
+
+	assert obj_result.stdout.strip() == str_expected
