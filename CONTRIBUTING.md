@@ -100,7 +100,7 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
    - Run `poetry install` to set up the development environment
 
 2. **Pre-commit Hooks**:
-   - Install with `make precommit_update`
+   - Install with `bash bin/poe_exec.sh precommit`
    - This enables automatic:
      - Code linting
      - Formatting
@@ -112,7 +112,7 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
    - Maintain the standard file structure:
      - Implementation: `src/<feat_name>.py`
      - Tests: `tests/test_<feat_name>.py`
-   - Run comprehensive validation with: `make test_feat MODULE=<feat_name>`
+   - Run comprehensive validation with: `bash bin/poe_exec.sh test_feat <feat_name>`
         - This command executes:
             - **Ruff**: Linting, formatting, and flagging deprecated Python features
             - **Codespell**: Spelling verification in comments and docstrings
@@ -130,11 +130,11 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
    - `.blueprintx-provenance.yaml` stamps the BlueprintX template this project came from
      (`lib-minimal`, commit `12e76053`)
    - Compare with a BlueprintX checkout (`--blueprintx-root`, or `BLUEPRINTX_TEMPLATE_ROOT`):
-     - `python bin/check_template_drift.py --root .` reports missing, template-changed and
+     - `bash bin/poe_exec.sh template_drift --root .` reports missing, template-changed and
        both-changed files; it always exits 0
-     - `python bin/template_update.py --root .` is a dry run; do not pass `--apply` casually
-   - Known limits: only files the template still ships are reported (not `Makefile`,
-     `tasks.sh`, `docs/api.md`); rendered files and `bin/ci/` copies are outside the
+     - `bash bin/poe_exec.sh template_update --root .` is a dry run; do not pass `--apply` casually
+   - Known limits: only files the template still ships are reported (not `poe_tasks.toml`,
+     `docs/api.md`); rendered files and `bin/ci/` copies are outside the
      comparison; the vendored tree appears under the placeholder `src/project/...`; the
      stamp keeps only the answers given at scaffold time
    - Details: `docs/contributing.md`, section "Template provenance and drift"

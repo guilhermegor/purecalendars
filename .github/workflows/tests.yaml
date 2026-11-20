@@ -146,7 +146,7 @@ jobs:
 
       - name: Run Non-Python Lint Gates (shell, sql, yaml)
         if: runner.os == 'Linux'
-        # Mirrors `make lint` and the pre-commit lint-* hooks (one home, zero drift).
+        # Mirrors `poe lint` and the pre-commit lint-* hooks (one home, zero drift).
         # shellcheck/shfmt are system tools; install them so the shell gate actually runs
         # in CI (the wrappers skip gracefully on a box without them).
         run: |

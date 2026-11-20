@@ -98,9 +98,10 @@ holiday set differs. More recipes in the
 ```bash
 git clone https://github.com/guilhermegor/purecalendars.git
 cd purecalendars
-make init                  # or: bash tasks.sh init  (venv + deps + pre-commit hooks)
-make unit_tests            # run the test suite
-make install_dist_locally  # build the wheel and smoke-import it
+bash bin/venv.sh                            # create the venv and install dependencies
+bash bin/poe_exec.sh init                   # seed .env, install pre-commit hooks
+bash bin/poe_exec.sh unit_tests             # run the test suite
+bash bin/poe_exec.sh install_dist_locally   # build the wheel and smoke-import it
 ```
 
 See [Contributing](https://guilhermegor.github.io/purecalendars/contributing/) for the full branch/PR

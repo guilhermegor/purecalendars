@@ -46,7 +46,7 @@ of your public `__all__`. The internal imports are package-qualified
 - **Ruff**: linter + formatter. Line-length 99, tab indent, double quotes, NumPy docstrings.
 - **Pre-commit**: ruff, pydocstyle, codespell, commitizen, gitlint, unit + integration
   tests, coverage badge.
-- **Tests**: `pytest` — `make unit_tests` (`poetry run pytest tests/unit/`). Write
+- **Tests**: `pytest` — `bash bin/poe_exec.sh unit_tests` (`pytest tests/unit/`). Write
   pytest-style functions with fixtures, not `unittest.TestCase`.
 - **Tabular reads go through `tabular_reader` + a contract — never raw `pd.read_*`.** Any
   time the library ingests a table (Excel/CSV/JSON/SQL), call
@@ -81,7 +81,7 @@ Two workflows ship under `.github/workflows/` (present only when a GitHub remote
 
 **Versioning is tag-driven.** `[tool.poetry] version` is a `0.0.0` placeholder;
 **poetry-dynamic-versioning** stamps the real version from the git tag at build time (`python -m
-build`, not `poetry build`). There is **no `make bump_version`** in this online scaffold — that
+build`, not `poetry build`). There is **no `bump_version` task** in this online scaffold — that
 target is offline-only. To release, dispatch the workflow with the version: it runs the full test
 suite as a hard gate, tags the commit `vX.Y.Z`, builds, and uploads via OIDC **trusted
 publishing** (`pypa/gh-action-pypi-publish`, `id-token: write`) — no API token stored. Configure a
