@@ -1,3 +1,4 @@
+# ruff: noqa: E101 -- vendored scaffold docstrings; ruff-format tabs them (docs/template-updates.md)
 """Text normalisation for matching strings across heterogeneous sources.
 
 Labels and names arrive from different sources with inconsistent casing, accents,
@@ -16,15 +17,17 @@ from typing import TYPE_CHECKING
 import unicodedata
 
 
-# Runtime type-checking engine — layout-agnostic (utils.typing in MVC, chassis.typing in
-# DDD; always injected, just at different paths). mypy reads the single TYPE_CHECKING
-# import (no redefinition); at runtime the try/except picks whichever layout shipped.
 if TYPE_CHECKING:
-	from purecalendars._internal.utils.typing import type_checker
+	from typing import TypeVar
+
+	_F = TypeVar("_F")
+
+	def type_checker(fn: _F) -> _F:
+		"""Type-only stub — see src/utils/CLAUDE.md."""
 else:
 	try:
 		from purecalendars._internal.utils.typing import type_checker
-	except ModuleNotFoundError:  # DDD ships the engine as chassis.typing
+	except ModuleNotFoundError:
 		from purecalendars._internal.utils.typing import type_checker
 
 
@@ -38,12 +41,12 @@ def normalize_text(str_value: str) -> str:
 	Parameters
 	----------
 	str_value : str
-		Raw text (may carry accents, tabs, doubled or edge whitespace).
+	    Raw text (may carry accents, tabs, doubled or edge whitespace).
 
 	Returns
 	-------
 	str
-		Lower-cased, accent-stripped text with whitespace collapsed and trimmed.
+	    Lower-cased, accent-stripped text with whitespace collapsed and trimmed.
 	"""
 	str_decomposed = unicodedata.normalize("NFKD", str(str_value))
 	str_ascii = "".join(ch for ch in str_decomposed if not unicodedata.combining(ch))
@@ -51,7 +54,7 @@ def normalize_text(str_value: str) -> str:
 
 
 @type_checker
-def safe_str(value: object, default: str = "") -> str:
+def safe_str(value: object, *, default: str = "") -> str:
 	"""Stringify ``value`` without ever producing the literal ``"nan"``.
 
 	``str(float("nan"))`` is ``"nan"`` and ``str(None)`` is ``"None"`` — both are
@@ -63,17 +66,14 @@ def safe_str(value: object, default: str = "") -> str:
 	Parameters
 	----------
 	value : object
-		The value to stringify.
+	    The value to stringify.
 	default : str, optional
-		Returned for ``None`` or a NaN float, by default ``""``.
+	    Returned for ``None`` or a NaN float, by default ``""``.
 
 	Returns
 	-------
 	str
-		``str(value).strip()``, or ``default`` when ``value`` is ``None``/NaN.
+	    ``str(value).strip()``, or ``default`` when ``value`` is ``None``/NaN.
 	"""
-	if value is None:
-		return default
-	if isinstance(value, float) and value != value:  # NaN is the only value != itself
-		return default
-	return str(value).strip()
+	bool_missing = value is None or (isinstance(value, float) and value != value)  # noqa: PLR0124
+	return default if bool_missing else str(value).strip()
