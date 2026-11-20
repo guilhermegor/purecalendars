@@ -32,7 +32,7 @@ none is exported through the public `__all__`.
 | `# ruff: noqa: E101` on the vendored files whose docstrings ruff-format tabifies | tab style turns NumPy docstring continuation lines into mixed indentation; fixing it in `ruff.toml` belongs to #61 |
 | `requires-python >=3.11` (was `>=3.10`) | template floor; `purepii-br>=2` requires 3.11 |
 | Added `beartype`, `numpy`, `defusedxml`, `purepii-br>=2`, `pure-schema-regimes<0.2` | needed by the adopted modules (template pins) |
-| `tests/unit/test_calendar_abc.py` type-error regexes also accept `violates type hint` | the beartype engine words type errors differently |
+| `tests/unit/test_calendar_abc.py` type-error regexes also accept `violates type hint` | the beartype engine words type errors differently. Superseded by #97: the regexes now match only `violates type hint` (the stdlib checker's wording) and, for `add_holidays`, the method's own `must be a` guard |
 | `tabular_reader.int_skip_rows` not re-applied | the repo had no `tabular_reader` to carry the extension; the file is the template's |
 
 ## Zero runtime dependencies (#97, part of #56)

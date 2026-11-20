@@ -304,7 +304,7 @@ class TestCalendarCore:
 		-------
 		None
 		"""
-		with pytest.raises(TypeError, match="must be (of type|one of types)|violates type hint"):
+		with pytest.raises(TypeError, match="violates type hint"):
 			calendar_instance.date_only(invalid_input)
 
 	def test_is_weekend_weekday(self, calendar_instance: ABCCalendarOperations) -> None:
@@ -635,7 +635,7 @@ class TestDateManipulation:
 		-------
 		None
 		"""
-		with pytest.raises(TypeError, match="must be of type|must be a|violates type hint"):
+		with pytest.raises(TypeError, match="must be a|violates type hint"):
 			calendar_instance.add_holidays(invalid_input)
 
 	def test_add_holidays_duplicate(
@@ -1473,7 +1473,7 @@ class TestDateManipulation:
 		-------
 		None
 		"""
-		with pytest.raises(TypeError, match="must be one of types|violates type hint"):
+		with pytest.raises(TypeError, match="violates type hint"):
 			calendar_instance.excel_float_to_date(None)  # type: ignore
 
 	def test_excel_float_to_date_negative(self, calendar_instance: ABCCalendarOperations) -> None:
@@ -2957,7 +2957,7 @@ class TestErrorHandling:
 		-------
 		None
 		"""
-		with pytest.raises(TypeError, match="must be (of type|one of types)|violates type hint"):
+		with pytest.raises(TypeError, match="violates type hint"):
 			calendar_instance.date_only(invalid_input)
 
 	@pytest.mark.parametrize(
