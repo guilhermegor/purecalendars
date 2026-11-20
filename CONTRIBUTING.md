@@ -47,7 +47,9 @@ We use the following standardized variable naming conventions:
 
 ### Branch Naming Convention
 
-All branches must follow the pattern: `<purpose>/<branch-task>`
+All branches must follow the pattern: `<purpose>/<issue-number>-<slug>`. The issue number is
+required: the `Branch has issue` check fails a PR whose branch carries none (`release/*`,
+`dependabot/*` and `renovate/*` branches are exempt).
 
 **Available purposes:**
 
@@ -62,9 +64,9 @@ All branches must follow the pattern: `<purpose>/<branch-task>`
 | Chore           | `chore/<description>` | Project maintenance tasks |
 
 **Examples:**
-- `feat/user-authentication`
-- `fix/login-validation-issue`
-- `docs/update-api-reference`
+- `feat/12-user-authentication`
+- `fix/34-login-validation-issue`
+- `docs/56-update-api-reference`
 
 ## Commit Message Standards
 
@@ -153,14 +155,32 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
      - Testing performed
      - Documentation updates
      - Any technical debt created
+   - Put one closing keyword per issue in the body, with no colon (`Closes #12`, then
+     `Closes #13` on its own line); `Closes: #12` and `Closes #12, #13` do not close what
+     follows the first item
 
-3. **Code Review**:
+3. **What happens after the PR opens**: these workflows run on the PR itself, none of them
+   needs a command from you (full detail in `.github/CLAUDE.md`).
+
+   | Workflow | Runs on | What it does |
+   |----------|---------|--------------|
+   | `PR title conventional` | open, edit, push | Fails unless the title is `type(scope): subject` |
+   | `PR body template` | open, edit, push | Fails unless every `## ` heading of `.github/PULL_REQUEST_TEMPLATE.md` is in the body |
+   | `Branch has issue` | open, edit, push, (un)assign | Assigns the author when nobody is assigned, then fails unless the branch carries an issue number, the PR has an assignee and it closes (or its branch names) an open issue |
+   | `Close linked issues` | merge into `main` | Closes each issue named by a closing keyword or the branch number, with the comment `Delivered in #<PR>` |
+   | `Dependabot auto-merge` | Dependabot PRs | Arms squash auto-merge for patch and minor bumps; a major bump waits for a trusted review of the head commit |
+
+   The first three are checks: red means fix the title, body or branch (an edit re-runs
+   them). Dependabot and `release/*` branches skip them. Exit code 2 from a check is an API
+   or configuration error, not a policy violation: re-run the job.
+
+4. **Code Review**:
    - Expect constructive feedback
    - Address all review comments
    - Update documentation as needed
    - Keep commits logically organized
 
-4. **Merge Approval**:
+5. **Merge Approval**:
    - Requires at least one approval
    - All tests must pass
    - Code coverage should not decrease
