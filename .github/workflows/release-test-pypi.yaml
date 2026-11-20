@@ -102,7 +102,7 @@ jobs:
         python-version: ["3.12"]
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
 
       - name: Set Up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
@@ -221,7 +221,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
