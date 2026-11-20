@@ -109,3 +109,34 @@ def block_network(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatc
 		return
 	monkeypatch.setattr(socket, "socket", _BlockedSocket)
 	monkeypatch.setattr(socket, "create_connection", _blocked)
+
+
+LIST_GIT_REPOSITORY_POINTERS = (
+	"GIT_DIR",
+	"GIT_WORK_TREE",
+	"GIT_INDEX_FILE",
+	"GIT_COMMON_DIR",
+	"GIT_PREFIX",
+	"GIT_OBJECT_DIRECTORY",
+	"GIT_ALTERNATE_OBJECT_DIRECTORIES",
+)
+
+
+@pytest.fixture(autouse=True)
+def isolate_git_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+	"""Drop the repository pointers git exports to hooks so a test never touches the host repo.
+
+	Applied automatically to every test. Under pre-commit, ``GIT_DIR`` and
+	``GIT_INDEX_FILE`` name the calling repository, so a test that runs ``git init`` or
+	``git commit`` would otherwise write there instead of in its temporary directory.
+	``GITHUB_BASE_REF`` is dropped too: a ``pull_request`` run sets it, and the ledger gate
+	then accepts no other base, so a fixture repo without that ``origin`` branch would
+	resolve none.
+
+	Parameters
+	----------
+	monkeypatch : pytest.MonkeyPatch
+		Pytest's patcher; restores the variables at teardown.
+	"""
+	for str_name in (*LIST_GIT_REPOSITORY_POINTERS, "GITHUB_BASE_REF"):
+		monkeypatch.delenv(str_name, raising=False)
