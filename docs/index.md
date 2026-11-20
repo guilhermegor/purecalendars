@@ -1,4 +1,4 @@
-# **purecalendars** <img src="assets/logo_purecalendars_no_description.png" align="right" width="200" style="border-radius: 15px;" alt="purecalendars logo">
+# **purecalendars** <img src="assets/logo.png" align="right" width="200" style="border-radius: 15px;" alt="purecalendars logo">
 
 Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline.
 
@@ -20,7 +20,7 @@ timezone-aware conversions, and more. Every calendar is computed locally: no net
 |---------|-------------|
 | [Usage](usage.md) | Installation, choosing a provider, and basic examples |
 | [Examples](examples.md) | Task-oriented recipes (settlement dates, expiry, cross-market) |
-| [API Reference](api.md) | Public providers and every shared calendar operation |
+| [API Reference](api/index.md) | Public providers and every shared calendar operation |
 | [FAQ](faq.md) | Common questions and troubleshooting |
 | [Contributing](contributing.md) | Dev setup, testing, wheel build, PR workflow, releasing |
 | [Changelog](changelog.md) | Per-version release history |

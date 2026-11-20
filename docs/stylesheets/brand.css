@@ -1,0 +1,27 @@
+:root {
+  --md-primary-fg-color: #0d2c54;
+  --md-primary-fg-color--light: #2a4a75;
+  --md-primary-fg-color--dark: #081c38;
+}
+
+[data-md-color-scheme="default"] {
+  --md-accent-fg-color: #3f51b5;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #0b2140;
+  --md-primary-fg-color--light: #1f3a62;
+  --md-primary-fg-color--dark: #06142a;
+  --md-typeset-a-color: #8ab4f8;
+  --md-accent-fg-color: #8c9eff;
+  --md-accent-fg-color--transparent: #8c9eff1a;
+}
+
+/* Hide the site title repeated at the top of the primary sidebar on desktop — the name
+   already appears in the masthead, so it is redundant there. Kept on the mobile drawer,
+   where it is the drawer's own heading. (Carried over from the former extra.css.) */
+@media screen and (min-width: 76.25em) {
+	.md-sidebar--primary .md-nav--primary > .md-nav__title {
+		display: none;
+	}
+}

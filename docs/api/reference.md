@@ -2,7 +2,7 @@
 
 Complete public interface for `purecalendars`.
 
-> **See also:** [Usage](usage.md)
+> **See also:** [Usage](../usage.md)
 
 The public API is the set of **country providers**, one class per module under a two-letter
 country package (`purecalendars.<country>.<provider>`). Every provider **loads a different holiday
