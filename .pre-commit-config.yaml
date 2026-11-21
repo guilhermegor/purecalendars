@@ -144,6 +144,59 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: check-secrets
+        name: secret scan (gitleaks)
+        entry: bash bin/check_secrets.sh --staged
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: check-identifier-masking
+        name: identifier masking (masked CPF/CNPJ in a comparison)
+        entry: bash bin/poetry_exec.sh run python bin/check_identifier_masking.py
+        language: system
+        files: \.(py|sql)$
+        pass_filenames: false
+
+      - id: check-docs-sections
+        name: docs skeleton (slug + nav) check
+        entry: bash bin/poetry_exec.sh run python bin/check_docs_sections.py
+        language: system
+        files: ^(mkdocs\.yml|docs/)
+        pass_filenames: false
+
+      - id: docs-gap
+        name: docs gap (pages registered in nav, nav ceiling)
+        entry: python bin/check_docs_gap.py --root .
+        language: python
+        additional_dependencies: [pathspec, pyyaml]
+        files: ^(mkdocs\.yml|docs/)
+        pass_filenames: false
+
+      - id: check-docs-code-refs
+        name: docs code references (symbols + import paths)
+        entry: bash bin/poetry_exec.sh run python bin/check_docs_code_refs.py
+        language: system
+        files: ^(docs/|README\.md|src/)
+        pass_filenames: false
+
+      - id: check-description-sync
+        name: manifest, mkdocs and GitHub About share one description
+        entry: bash bin/check_description_sync.sh
+        language: system
+        pass_filenames: false
+        files: (^|/)(pyproject\.toml|package\.json|mkdocs\.yml|check_description_sync\.sh)$
+
+      - id: check-clean-index
+        name: pre-push — index must be empty (a rejected commit leaves it populated)
+        entry: bash bin/check_clean_index.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages:
+          - pre-push
+
+
       - id: readme-structure
         name: README structure (plain headings, slug sections, Authors links)
         entry: bash bin/check_readme_structure.sh README.md

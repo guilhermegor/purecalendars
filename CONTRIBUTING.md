@@ -198,6 +198,18 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
    - Code coverage should not decrease
    - Documentation must be updated
 
+## Docs and Hygiene Guards
+
+Each runs in pre-commit and, except `check_clean_index.sh` (pre-push only), in CI; run one by hand with the command shown.
+
+- `check_docs_sections.py`: the docs nav holds the canonical pages (`python3 bin/check_docs_sections.py`).
+- `check_docs_gap.py`: every `docs/` page is in the `mkdocs.yml` nav (`python3 bin/check_docs_gap.py --root .`, needs `pathspec` and `pyyaml`).
+- `check_docs_code_refs.py`: imports cited in docs and README resolve against `src/` (`python3 bin/check_docs_code_refs.py`).
+- `check_identifier_masking.py`: no masked CPF/CNPJ compared in `.py`/`.sql` (`python3 bin/check_identifier_masking.py`).
+- `check_secrets.sh`: gitleaks over the tree and history (`bash bin/check_secrets.sh`); false positives go in `.gitleaks.toml`.
+- `check_description_sync.sh`: one description across `pyproject.toml`, `mkdocs.yml` and GitHub About (`bash bin/check_description_sync.sh`).
+- `check_clean_index.sh`: pre-push only; refuses a push while staged work sits in the index (`bash bin/check_clean_index.sh`).
+
 ## Best Practices
 
 - **Keep branches focused** - one feature/bugfix per branch
