@@ -13,7 +13,11 @@ reaching into `_internal`.
 - [x] Document the subclass contract in the class docstring and `docs/api/reference.md`
 - [x] Pin the public name in `tests/unit/test_public_api.py`
 - [x] Mention it in the README Public API section
+- [x] Pin the documented subclass contract (empty subclass, weekends, `add_holidays`
+      refresh without `super().__init__()`) after the fallback review
 
 ## Not done, on purpose
 
 - The 4.1.0 release: cut separately, not part of this PR.
+
+Completed — kept as a record.

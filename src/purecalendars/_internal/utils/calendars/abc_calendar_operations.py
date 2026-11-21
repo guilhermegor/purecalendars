@@ -16,9 +16,10 @@ class ABCCalendarOperations(DateFormatter):
     internal ``ABCCalendar`` root are already implemented further down the chain, so an
     empty subclass instantiates and simply has no holidays.
 
-    * **Must implement:** ``_source_holidays(self) -> list[tuple[str, date]]``, the
-      ``(name, date)`` pairs of the provider's own calendar. This is the single extension
-      point every bundled provider overrides.
+    * **Override to supply holidays:** ``_source_holidays(self) -> list[tuple[str, date]]``,
+      the ``(name, date)`` pairs of the provider's own calendar. This is the single extension
+      point every bundled provider overrides. Its default returns ``[]``, so a subclass that
+      omits or misspells it raises nothing and has weekends as its only non-working days.
     * **May override:** ``get_holidays_raw(timeout)``, which defaults to an empty
       ``DataFrame`` with ``name`` and ``date`` columns, for providers that expose an
       upstream table.
@@ -48,5 +49,3 @@ class ABCCalendarOperations(DateFormatter):
     >>> DatesXX().is_working_day(date(2026, 1, 1))
     False
     """
-
-    pass
