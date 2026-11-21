@@ -19,6 +19,7 @@ from datetime import date
 import holidays
 
 from purecalendars._internal.utils.parsers.str import StrHandler
+from purecalendars._internal.utils.typing import type_checker
 
 
 # ANBIMA publishes its national holiday table over exactly this span; matching it keeps the
@@ -27,6 +28,7 @@ INT_YEAR_START_DEFAULT = 2001
 INT_YEAR_END_DEFAULT = 2099
 
 
+@type_checker
 def national_holidays(
     int_year_start: int = INT_YEAR_START_DEFAULT,
     int_year_end: int = INT_YEAR_END_DEFAULT,
@@ -58,6 +60,7 @@ def national_holidays(
     ]
 
 
+# type-checker-ok: its isinstance guard raises ValueError, not TypeError, for a bad year
 def validate_year_range(int_year_start: int, int_year_end: int) -> None:
     """Validate a year-range pair.
 

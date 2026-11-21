@@ -210,6 +210,15 @@ Each runs in pre-commit and, except `check_clean_index.sh` (pre-push only), in C
 - `check_description_sync.sh`: one description across `pyproject.toml`, `mkdocs.yml` and GitHub About (`bash bin/check_description_sync.sh`).
 - `check_clean_index.sh`: pre-push only; refuses a push while staged work sits in the index (`bash bin/check_clean_index.sh`).
 
+## Structure and typing guards
+
+Each is a pre-commit hook and a CI step in `tests.yaml` (#67).
+
+- `check_layer_imports.py`: every third-party import in `src/` is allowed for its layer by `.layer-policy.yaml`, with a reason (`python3 bin/check_layer_imports.py`).
+- `check_dynamic_version_stub.py`: `pyproject.toml` keeps the `0.0.0` version stub; the tag sets the real version (`python3 bin/check_dynamic_version_stub.py`).
+- `check_typing.py`: every function and class in `src/`, private ones included (dunders excepted), carries the runtime type checker (`python3 bin/check_typing.py`).
+- `check_dtypes.py`: no float dtype declaration in `src/`; decimals stay exact (`python3 bin/check_dtypes.py`).
+
 ## Best Practices
 
 - **Keep branches focused** - one feature/bugfix per branch
