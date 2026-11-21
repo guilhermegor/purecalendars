@@ -142,7 +142,7 @@ workflow and CI gate.
 
 The package root exports `__version__` and `ABCCalendarOperations`, the base class to subclass for
 your own calendar; each provider is imported from its own module. Nothing under `_internal/` is
-public; `ABCCalendarOperations` lives in the public `purecalendars.calendar_operations` module and
+public; `ABCCalendarOperations` lives in the public `purecalendars.abc_calendar_operations` module and
 is re-exported from the root:
 
 - `purecalendars.ABCCalendarOperations`

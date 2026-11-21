@@ -49,3 +49,6 @@ class ABCCalendarOperations(DateFormatter):
     >>> DatesXX().is_working_day(date(2026, 1, 1))
     False
     """
+
+
+__all__ = ["ABCCalendarOperations"]

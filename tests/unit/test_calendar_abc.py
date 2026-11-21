@@ -22,7 +22,7 @@ from purecalendars._internal.utils.calendars import (
     ABCCalendar,
     TypeDateFormatInput,
 )
-from purecalendars.calendar_operations import ABCCalendarOperations
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 
 import purecalendars
-from purecalendars import ABCCalendarOperations, calendar_operations
+from purecalendars import ABCCalendarOperations, abc_calendar_operations
 
 
 def test_abc_calendar_operations_importable_from_root() -> None:
@@ -20,7 +20,7 @@ def test_abc_calendar_operations_in_all() -> None:
 
 def test_abc_calendar_operations_is_public_module_object() -> None:
     """The root export is the very class defined in the public module."""
-    assert purecalendars.ABCCalendarOperations is calendar_operations.ABCCalendarOperations
+    assert purecalendars.ABCCalendarOperations is abc_calendar_operations.ABCCalendarOperations
 
 
 class _DatesEmpty(ABCCalendarOperations):

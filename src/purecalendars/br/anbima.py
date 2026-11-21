@@ -10,12 +10,12 @@ For the table fetched live from anbima.com.br, use the ``opendata-calendars`` pa
 from datetime import date
 from logging import Logger
 
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
 from purecalendars.br._offline_holidays import (
     _INT_YEAR_END_DEFAULT,
     _INT_YEAR_START_DEFAULT,
     _national_holidays,
 )
-from purecalendars.calendar_operations import ABCCalendarOperations
 
 
 class DatesBRAnbima(ABCCalendarOperations):

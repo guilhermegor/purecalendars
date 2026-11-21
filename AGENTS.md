@@ -33,6 +33,7 @@ directory and the `pyproject.toml` placeholders via `envsubst`.
 ```
 src/<project_name>/
     __init__.py            # the public API surface (control it with __all__)
+    abc_calendar_operations.py  # ABCCalendarOperations, the public base class to subclass
     br/  us/               # public calendar providers, one subpackage per country
     _internal/             # PRIVATE — ships in the wheel, but not a public API
         utils/             # calendars/ (the mixin chain), parsers/str.py, and typing/
@@ -69,7 +70,8 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   (e.g. `calendars`), do **not** nest a subfolder that repeats the package name
   (`src/<project_name>/<project_name>-ish/`) — the package name already conveys the scope. Public
   providers live in the country subpackages (`src/purecalendars/br/`, `src/purecalendars/us/`,
-  imported as `purecalendars.br` / `purecalendars.us`); put non-exported abstract bases /
+  imported as `purecalendars.br` / `purecalendars.us`), and the public base class every provider
+  extends is `src/purecalendars/abc_calendar_operations.py`; put non-exported abstract bases /
   internals under `_internal/`.
 - **On migration, reuse the target's own implementation.** When lifting code in from another
   repo, if this project already has an equivalent module (its own `_internal` typing engine, a

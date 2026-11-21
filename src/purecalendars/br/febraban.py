@@ -13,8 +13,8 @@ For the table fetched live from feriadosbancarios.febraban.org.br, use the
 from datetime import date, timedelta
 from logging import Logger
 
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
 from purecalendars.br._offline_holidays import _national_holidays
-from purecalendars.calendar_operations import ABCCalendarOperations
 
 
 class DatesBRFebraban(ABCCalendarOperations):

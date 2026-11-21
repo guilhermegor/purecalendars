@@ -16,7 +16,7 @@ from logging import Logger
 
 import holidays
 
-from purecalendars.calendar_operations import ABCCalendarOperations
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
 
 
 class DatesUSFederalHolidays(ABCCalendarOperations):
