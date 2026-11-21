@@ -1,5 +1,5 @@
 site_name: purecalendars
-site_description: Global calendar system. Python package.
+site_description: Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline.
 repo_url: https://github.com/guilhermegor/purecalendars
 nav:
   - Home: index.md
@@ -14,6 +14,7 @@ nav:
       - Contributing: contributing.md
       - Changelog: changelog.md
       - Incidents: incidents.md
+      - Template updates: template-updates.md
 theme:
   name: material
   features:
