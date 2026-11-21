@@ -212,7 +212,7 @@ Each runs in pre-commit and, except `check_clean_index.sh` (pre-push only), in C
 
 ## Quality and Comment-Discipline Gates
 
-Each runs in pre-commit and in CI (`tests.yaml`); run one by hand with the command shown. An existing finding is exempted with a reasoned marker (`# complexity-ok: <reason>`, `# one-assert-ok: <reason>`), never by loosening the gate.
+Each runs in pre-commit and in CI (`tests.yaml`), except `check_dead_code.py`, which runs in neither; run one by hand with the command shown. An existing finding is exempted with a reasoned marker (`# complexity-ok: <reason>`, `# one-assert-ok: <reason>`), never by loosening the gate.
 
 - `check_function_length.py`: functions stay within 60 lines, docstring excluded (`poetry run python bin/check_function_length.py`).
 - `check_fixture_scope.py`: a non-function fixture scope carries a written reason (`poetry run python bin/check_fixture_scope.py`).
