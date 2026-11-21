@@ -41,11 +41,11 @@ class DatesUSFederalHolidays(ABCCalendarOperations):
         Parameters
         ----------
         int_year_start : int
-                First year to include (default: last year).
+            First year to include (default: last year).
         int_year_end : int
-                Last year to include (default: current year).
+            Last year to include (default: current year).
         logger : Optional[Logger]
-                Logger object for logging (default: None).
+            Logger object for logging (default: None).
 
         Returns
         -------
@@ -64,7 +64,7 @@ class DatesUSFederalHolidays(ABCCalendarOperations):
         Returns
         -------
         list[tuple[str, date]]
-                Tuples of ``(name, date)``, sorted by date.
+            Tuples of ``(name, date)``, sorted by date.
         """
         self._validate_year_range(self.int_year_start, self.int_year_end)
         dict_holidays = holidays.UnitedStates(
@@ -79,14 +79,14 @@ class DatesUSFederalHolidays(ABCCalendarOperations):
         Parameters
         ----------
         int_year_start : int
-                Starting year.
+            Starting year.
         int_year_end : int
-                Ending year.
+            Ending year.
 
         Raises
         ------
         ValueError
-                If either year is not positive, or the range is inverted.
+            If either year is not positive, or the range is inverted.
         """
         if int_year_start <= 0 or int_year_end <= 0:
             raise ValueError("Year must be a positive integer")

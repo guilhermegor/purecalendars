@@ -41,20 +41,20 @@ class DatesBRB3(ABCCalendarOperations):
         Parameters
         ----------
         bool_add_christmas_eve : bool
-                If True, 24 December is a non-trading day (default: True). This matches B3, whose
-                published calendar carries 24 December as a closure ("não haverá negociação") in
-                every year it falls on a weekday — verified live for 2021, 2024, 2025 and 2026.
-                Pass False for the pre-2.0 behaviour, in which the offline calendar omitted it and
-                therefore disagreed with the exchange. Note that the date is added unconditionally,
-                so in a year where 24 December falls on a weekend it appears in the holiday list
-                even though B3 omits it (harmless for working-day arithmetic — a weekend is already
-                non-working — and excused by the drift job's offline-only weekend rule).
+            If True, 24 December is a non-trading day (default: True). This matches B3, whose
+            published calendar carries 24 December as a closure ("não haverá negociação") in
+            every year it falls on a weekday — verified live for 2021, 2024, 2025 and 2026.
+            Pass False for the pre-2.0 behaviour, in which the offline calendar omitted it and
+            therefore disagreed with the exchange. Note that the date is added unconditionally,
+            so in a year where 24 December falls on a weekend it appears in the holiday list
+            even though B3 omits it (harmless for working-day arithmetic — a weekend is already
+            non-working — and excused by the drift job's offline-only weekend rule).
         int_year_start : int
-                First year to include (default: 2001).
+            First year to include (default: 2001).
         int_year_end : int
-                Last year to include (default: 2099).
+            Last year to include (default: 2099).
         logger : Optional[Logger]
-                Logger object for logging (default: None).
+            Logger object for logging (default: None).
 
         Returns
         -------
@@ -71,7 +71,7 @@ class DatesBRB3(ABCCalendarOperations):
         Returns
         -------
         list[tuple[str, date]]
-                Tuples of ``(name, date)``, sorted by date.
+            Tuples of ``(name, date)``, sorted by date.
         """
         list_national = national_holidays(self.int_year_start, self.int_year_end)
         list_all = list_national + self.holidays_to_add({date_ for _, date_ in list_national})
@@ -83,13 +83,13 @@ class DatesBRB3(ABCCalendarOperations):
         Parameters
         ----------
         set_dates_national : set[date]
-                The national holiday dates, needed to skip them when walking back to the last
-                working day of the year.
+            The national holiday dates, needed to skip them when walking back to the last
+            working day of the year.
 
         Returns
         -------
         list[tuple[str, date]]
-                Tuples of ``(name, date)``.
+            Tuples of ``(name, date)``.
         """
         list_: list[tuple[str, date]] = []
         for int_year in range(self.int_year_start, self.int_year_end + 1):
@@ -106,14 +106,14 @@ class DatesBRB3(ABCCalendarOperations):
         Parameters
         ----------
         int_year : int
-                Year for which to retrieve the last working day.
+            Year for which to retrieve the last working day.
         set_dates_national : set[date]
-                The national holiday dates to skip.
+            The national holiday dates to skip.
 
         Returns
         -------
         date
-                The last day of the year that is neither a weekend nor a national holiday.
+            The last day of the year that is neither a weekend nor a national holiday.
         """
         date_ = date(int_year, 12, 31)
         while self.is_weekend(date_) or date_ in set_dates_national:
@@ -126,11 +126,11 @@ class DatesBRB3(ABCCalendarOperations):
         Parameters
         ----------
         int_year : int
-                Year for which to retrieve Christmas Eve.
+            Year for which to retrieve Christmas Eve.
 
         Returns
         -------
         date
-                Christmas Eve for the given year.
+            Christmas Eve for the given year.
         """
         return date(int_year, 12, 24)

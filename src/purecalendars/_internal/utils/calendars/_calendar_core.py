@@ -21,12 +21,12 @@ class CalendarCore(ABCCalendar):
         Parameters
         ----------
         timeout : int | float | tuple[float, float] | tuple[int, int]
-                Timeout for HTTP request, by default (12.0, 21.0)
+            Timeout for HTTP request, by default (12.0, 21.0)
 
         Returns
         -------
         pd.DataFrame
-                An empty DataFrame.
+            An empty DataFrame.
         """
         return pd.DataFrame(columns=["name", "date"])
 
@@ -41,7 +41,7 @@ class CalendarCore(ABCCalendar):
         Returns
         -------
         list[tuple[str, date]]
-                An empty list.
+            An empty list.
         """
         return []
 
@@ -52,7 +52,7 @@ class CalendarCore(ABCCalendar):
         Returns
         -------
         set[date]
-                Set of holiday dates
+            Set of holiday dates
         """
         if not hasattr(self, "_holidays_cache"):
             self._holidays_cache = {tup_holiday[1] for tup_holiday in self.holidays()}
@@ -64,17 +64,17 @@ class CalendarCore(ABCCalendar):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
 
         Returns
         -------
         date
-                The date component of the input object.
+            The date component of the input object.
 
         Raises
         ------
         TypeError
-                If the input object is not of type datetime or date
+            If the input object is not of type datetime or date
         """
         if not isinstance(date_, datetime | date):
             raise TypeError(f"date_ must be of type datetime or date, got {type(date_).__name__}")
@@ -88,12 +88,12 @@ class CalendarCore(ABCCalendar):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
 
         Returns
         -------
         bool
-                True if the given date is a weekend day, False otherwise.
+            True if the given date is a weekend day, False otherwise.
         """
         date_ = self.date_only(date_)
         return date_.weekday() >= 5  # noqa: PLR2004
@@ -104,12 +104,12 @@ class CalendarCore(ABCCalendar):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
 
         Returns
         -------
         bool
-                True if the given date is a working day, False otherwise.
+            True if the given date is a working day, False otherwise.
         """
         date_ = self.date_only(date_)
         return not self.is_weekend(date_) and date_ not in self._holidays
@@ -120,12 +120,12 @@ class CalendarCore(ABCCalendar):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
 
         Returns
         -------
         bool
-                True if the given date is a holiday, False otherwise.
+            True if the given date is a holiday, False otherwise.
         """
         date_ = self.date_only(date_)
         return date_ in self._holidays
@@ -136,12 +136,12 @@ class CalendarCore(ABCCalendar):
         Parameters
         ----------
         int_year : int
-                The year for which to retrieve holiday days.
+            The year for which to retrieve holiday days.
 
         Returns
         -------
         list[int]
-                A list of holiday days in the given year.
+            A list of holiday days in the given year.
         """
         holidays = [date_ for date_ in self._holidays if int(date_.strftime("%Y")) == int_year]
         return sorted([int(date_.strftime("%d")) for date_ in holidays])

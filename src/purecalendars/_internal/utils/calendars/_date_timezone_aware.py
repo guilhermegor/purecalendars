@@ -23,16 +23,16 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         str_date : str
-                The string representation of the date.
+            The string representation of the date.
         format_input : str | None
-                The format of the input date string, by default "DD/MM/YYYY"
+            The format of the input date string, by default "DD/MM/YYYY"
         str_timezone : Optional[str]
-                The timezone to use for the resulting datetime object, by default "UTC"
+            The timezone to use for the resulting datetime object, by default "UTC"
 
         Returns
         -------
         datetime
-                The datetime object corresponding to the input string.
+            The datetime object corresponding to the input string.
         """
         date_obj = self.str_date_to_date(str_date, format_input)
         return datetime.combine(date_obj, time(0, 0), tzinfo=ZoneInfo(str_timezone or "UTC"))
@@ -45,21 +45,21 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The datetime or date object to change the timezone of.
+            The datetime or date object to change the timezone of.
         target_tz : str
-                The target timezone, by default "UTC"
+            The target timezone, by default "UTC"
         source_tz : Optional[str]
-                The source timezone, by default None
+            The source timezone, by default None
 
         Returns
         -------
         datetime
-                The datetime object with the changed timezone.
+            The datetime object with the changed timezone.
 
         Raises
         ------
         ValueError
-                If date_ is a date object and source_tz is None
+            If date_ is a date object and source_tz is None
         """
         if isinstance(date_, date) and not isinstance(date_, datetime):
             date_ = self.date_to_datetime(date_, str_timezone=target_tz)
@@ -75,14 +75,14 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         date_ : date
-                The date object to convert.
+            The date object to convert.
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         datetime
-                The datetime object corresponding to the input date.
+            The datetime object corresponding to the input date.
         """
         return datetime.combine(date_, time(0, 0), tzinfo=ZoneInfo(str_timezone or "UTC"))
 
@@ -94,14 +94,14 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         date_ : TypeDatetimeDate | time
-                Date to convert.
+            Date to convert.
         str_timezone : Optional[str]
-                Timezone to use, defaults to UTC.
+            Timezone to use, defaults to UTC.
 
         Returns
         -------
         int
-                Unix timestamp.
+            Unix timestamp.
         """
         if isinstance(date_, time):
             today = date.today()
@@ -122,14 +122,14 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         unix_timestamp : float | int
-                The unix timestamp to convert.
+            The unix timestamp to convert.
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         datetime
-                The datetime object corresponding to the input unix timestamp.
+            The datetime object corresponding to the input unix timestamp.
         """
         return datetime.fromtimestamp(unix_timestamp, tz=ZoneInfo(str_timezone or "UTC"))
 
@@ -141,14 +141,14 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         unix_timestamp : float | int
-                The unix timestamp to convert.
+            The unix timestamp to convert.
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         date
-                The date object corresponding to the input unix timestamp.
+            The date object corresponding to the input unix timestamp.
         """
         return self.unix_timestamp_to_datetime(unix_timestamp, str_timezone=str_timezone).date()
 
@@ -158,14 +158,14 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         iso_timestamp : str
-                The ISO timestamp to convert.
+            The ISO timestamp to convert.
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         int
-                The unix timestamp corresponding to the input ISO timestamp.
+            The unix timestamp corresponding to the input ISO timestamp.
         """
         date_ = datetime.fromisoformat(iso_timestamp)
         if date_.tzinfo is None:
@@ -180,19 +180,19 @@ class DateTimezoneAware(DateManipulation):
         Parameters
         ----------
         float_date : float
-                The Excel float date to convert.
+            The Excel float date to convert.
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         datetime
-                The datetime object corresponding to the input Excel float date.
+            The datetime object corresponding to the input Excel float date.
 
         Raises
         ------
         ValueError
-                If float_date is negative
+            If float_date is negative
         """
         if float_date < 0:
             raise ValueError("float_date cannot be negative")

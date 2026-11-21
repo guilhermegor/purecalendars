@@ -36,11 +36,11 @@ class DatesBRFebraban(ABCCalendarOperations):
         Parameters
         ----------
         int_year_start : int
-                Starting year for holidays (default: (date.today() - timedelta(days=22)).year - 1)
+            Starting year for holidays (default: (date.today() - timedelta(days=22)).year - 1)
         int_year_end : int
-                Ending year for holidays (default: (date.today() - timedelta(days=22)).year)
+            Ending year for holidays (default: (date.today() - timedelta(days=22)).year)
         logger : Optional[Logger]
-                Logger object for logging (default: None).
+            Logger object for logging (default: None).
 
         Returns
         -------
@@ -56,6 +56,6 @@ class DatesBRFebraban(ABCCalendarOperations):
         Returns
         -------
         list[tuple[str, date]]
-                Tuples of ``(name, date)``, sorted by date.
+            Tuples of ``(name, date)``, sorted by date.
         """
         return national_holidays(self.int_year_start, self.int_year_end)

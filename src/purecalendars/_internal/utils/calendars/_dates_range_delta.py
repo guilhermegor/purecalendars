@@ -21,19 +21,19 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         date_start : TypeDatetimeDate
-                Start date.
+            Start date.
         date_end : TypeDatetimeDate
-                End date.
+            End date.
 
         Returns
         -------
         set[date]
-                Set of working days between two dates.
+            Set of working days between two dates.
 
         Raises
         ------
         ValueError
-                If date_end is less than date_start
+            If date_end is less than date_start
         """
         date_start = self.date_only(date_start)
         date_end = self.date_only(date_end)
@@ -56,19 +56,19 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         date_start : TypeDatetimeDate
-                Start date.
+            Start date.
         date_end : TypeDatetimeDate
-                End date.
+            End date.
 
         Returns
         -------
         set[date]
-                Set of calendar days between two dates.
+            Set of calendar days between two dates.
 
         Raises
         ------
         ValueError
-                If date_end is less than date_start
+            If date_end is less than date_start
         """
         date_start = self.date_only(date_start)
         date_end = self.date_only(date_end)
@@ -85,19 +85,19 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         date_start : TypeDatetimeDate
-                Start date.
+            Start date.
         date_end : TypeDatetimeDate
-                End date.
+            End date.
 
         Returns
         -------
         set[int]
-                Set of years between two dates.
+            Set of years between two dates.
 
         Raises
         ------
         ValueError
-                If date_end is less than date_start
+            If date_end is less than date_start
         """
         date_start = self.date_only(date_start)
         date_end = self.date_only(date_end)
@@ -113,19 +113,19 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         date_start : TypeDatetimeDate
-                Start date.
+            Start date.
         date_end : TypeDatetimeDate
-                End date.
+            End date.
 
         Returns
         -------
         int
-                Number of working days between two dates.
+            Number of working days between two dates.
 
         Raises
         ------
         ValueError
-                If date_end is less than date_start
+            If date_end is less than date_start
         """
         date_start = self.date_only(date_start)
         date_end = self.date_only(date_end)
@@ -144,19 +144,19 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         date_start : TypeDatetimeDate
-                Start date.
+            Start date.
         date_end : TypeDatetimeDate
-                End date.
+            End date.
 
         Returns
         -------
         int
-                Number of calendar days between two dates.
+            Number of calendar days between two dates.
 
         Raises
         ------
         ValueError
-                If date_end is less than date_start
+            If date_end is less than date_start
         """
         date_start = self.date_only(date_start)
         date_end = self.date_only(date_end)
@@ -173,15 +173,15 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                Date.
+            Date.
         bool_working_days : bool
-                If True, the start and end date will be the nearest working day.
-                Default is False.
+            If True, the start and end date will be the nearest working day.
+            Default is False.
 
         Returns
         -------
         tuple[date, date]
-                Start and end date of the month of the given date.
+            Start and end date of the month of the given date.
         """
         date_ = self.date_only(date_)
 
@@ -212,22 +212,22 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         year : int
-                Year.
+            Year.
         month : int
-                Month.
+            Month.
         weekday : int
-                Weekday.
+            Weekday.
 
         Returns
         -------
         list[date]
-                List of dates for the given year, month, and weekday.
+            List of dates for the given year, month, and weekday.
 
         Raises
         ------
         ValueError
-                If month is not between 1 and 12
-                If weekday is not between 0 (Monday) and 6 (Sunday)
+            If month is not between 1 and 12
+            If weekday is not between 0 (Monday) and 6 (Sunday)
         """
         if not 1 <= month <= 12:  # noqa: PLR2004
             raise ValueError("Month must be between 1 and 12")
@@ -261,32 +261,32 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         year : int
-                Year.
+            Year.
         month : int
-                Month.
+            Month.
         weekday : int
-                Weekday.
+            Weekday.
         n : int
-                Nth.
+            Nth.
         bool_working_days : bool
-                If True, the date will be the nearest working day.
-                Default is True.
+            If True, the date will be the nearest working day.
+            Default is True.
         bool_next_working_day : bool
-                If True, the date will be the next working day.
-                Default is True.
+            If True, the date will be the next working day.
+            Default is True.
 
         Returns
         -------
         date
-                Nth weekday of the month.
+            Nth weekday of the month.
 
         Raises
         ------
         ValueError
-                If month is not between 1 and 12
-                If weekday is not between 0 (Monday) and 6 (Sunday)
-                If n is 0 ("n must be non-zero") or negative ("n must be positive")
-                If n is greater than the number of weekdays in the month
+            If month is not between 1 and 12
+            If weekday is not between 0 (Monday) and 6 (Sunday)
+            If n is 0 ("n must be non-zero") or negative ("n must be positive")
+            If n is greater than the number of weekdays in the month
         """
         if not 1 <= month <= 12:  # noqa: PLR2004
             raise ValueError("Month must be between 1 and 12")
@@ -314,12 +314,12 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         list_years : list[int]
-                List of years.
+            List of years.
 
         Returns
         -------
         list[date]
-                List of last working days in the given years.
+            List of last working days in the given years.
         """
         return [self.add_working_days(date(y + 1, 1, 1), -1) for y in list_years]
 
@@ -343,44 +343,44 @@ class DatesRangeDelta(DateTimezoneAware):
         Parameters
         ----------
         timestamp_start : str
-                Start timestamp.
+            Start timestamp.
         timestamp_end : str
-                End timestamp.
+            End timestamp.
         int_hour_start_office : int
-                Start hour of office.
-                Default is 8.
+            Start hour of office.
+            Default is 8.
         int_minute_start_office : int
-                Start minute of office.
-                Default is 0.
+            Start minute of office.
+            Default is 0.
         int_hour_end_office : int
-                End hour of office.
-                Default is 18.
+            End hour of office.
+            Default is 18.
         int_minute_end_office : int
-                End minute of office.
-                Default is 0.
+            End minute of office.
+            Default is 0.
         int_hour_start_lunch : int
-                Start hour of lunch.
-                Default is 12.
+            Start hour of lunch.
+            Default is 12.
         int_minute_start_lunch : int
-                Start minute of lunch.
-                Default is 0.
+            Start minute of lunch.
+            Default is 0.
         int_hour_end_lunch : int
-                End hour of lunch.
-                Default is 13.
+            End hour of lunch.
+            Default is 13.
         int_minute_end_lunch : int
-                End minute of lunch.
-                Default is 0.
+            End minute of lunch.
+            Default is 0.
         list_working_days_range : Optional[list[int]]
-                List of working days.
-                Default is [0, 1, 2, 3, 4] (monday to friday).
+            List of working days.
+            Default is [0, 1, 2, 3, 4] (monday to friday).
         substr_timestamp : str
-                Substring to remove from the timestamp.
-                Default is "T".
+            Substring to remove from the timestamp.
+            Default is "T".
 
         Returns
         -------
         int
-                Number of working hours between two timestamps.
+            Number of working hours between two timestamps.
         """
         dt_start = self.timestamp_to_datetime(timestamp_start, substr_timestamp)
         dt_end = self.timestamp_to_datetime(timestamp_end, substr_timestamp)

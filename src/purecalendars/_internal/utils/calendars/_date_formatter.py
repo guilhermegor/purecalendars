@@ -21,19 +21,19 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         str_locale : Optional[str]
-                The locale to use, by default None
+            The locale to use, by default None
         str_timezone : Optional[str]
-                The timezone to use, by default None
+            The timezone to use, by default None
 
         Returns
         -------
         str
-                The platform locale.
+            The platform locale.
 
         Raises
         ------
         ValueError
-                If the locale is not found
+            If the locale is not found
         """
         dict_tz_to_locale_map = {
             "America/Sao_Paulo": "pt-BR",
@@ -81,12 +81,12 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the year number from.
+            The date to get the year number from.
 
         Returns
         -------
         int
-                The year number.
+            The year number.
         """
         date_ = self.date_only(date_)
         return int(date_.strftime("%Y"))
@@ -97,12 +97,12 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the month name from.
+            The date to get the month name from.
 
         Returns
         -------
         str
-                The month name.
+            The month name.
         """
         date_ = self.date_only(date_)
         return date_.strftime("%B")
@@ -113,14 +113,14 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the month number from.
+            The date to get the month number from.
         bool_month_mm : bool
-                Whether to return the month number or the month name, by default False
+            Whether to return the month number or the month name, by default False
 
         Returns
         -------
         int | str
-                The month number or the month name.
+            The month number or the month name.
         """
         date_ = self.date_only(date_)
         if not bool_month_mm:
@@ -134,12 +134,12 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the week number from.
+            The date to get the week number from.
 
         Returns
         -------
         str
-                The week number.
+            The week number.
         """
         date_ = self.date_only(date_)
         return date_.strftime("%w")
@@ -150,12 +150,12 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the day number from.
+            The date to get the day number from.
 
         Returns
         -------
         int
-                The day number.
+            The day number.
         """
         date_ = self.date_only(date_)
         return int(date_.strftime("%d"))
@@ -171,16 +171,16 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the month name from.
+            The date to get the month name from.
         bool_abbreviation : bool
-                Whether to return the month name or the month abbreviation, by default False
+            Whether to return the month name or the month abbreviation, by default False
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         str
-                The month name or the month abbreviation.
+            The month name or the month abbreviation.
         """
         date_ = self.date_only(date_)
         str_locale = self.get_platform_locale(str_timezone=str_timezone)
@@ -198,16 +198,16 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the week name from.
+            The date to get the week name from.
         bool_abbreviation : bool
-                Whether to return the week name or the week abbreviation, by default False
+            Whether to return the week name or the week abbreviation, by default False
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         str
-                The week name or the week abbreviation.
+            The week name or the week abbreviation.
         """
         date_ = self.date_only(date_)
         str_locale = self.get_platform_locale(str_timezone=str_timezone)
@@ -220,6 +220,6 @@ class DateFormatter(DatesCurrent):
         Returns
         -------
         datetime
-                The current UTC datetime.
+            The current UTC datetime.
         """
         return datetime.now(timezone.utc)  # noqa: UP017
