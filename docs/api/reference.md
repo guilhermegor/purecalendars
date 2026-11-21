@@ -260,9 +260,9 @@ Each layer below lists the methods it contributes. Throughout, `date_` accepts e
 `ABCCalendarOperations` is public: `from purecalendars import ABCCalendarOperations`. Subclass it
 to build a calendar of your own and inherit every method above.
 
-**Must implement.** `_source_holidays(self) -> list[tuple[str, date]]` — the `(name, date)` pairs
-of your calendar. Nothing else is abstract; a subclass that implements nothing instantiates and
-has no holidays.
+**Override to supply holidays.** `_source_holidays(self) -> list[tuple[str, date]]` — the
+`(name, date)` pairs of your calendar. Its default returns `[]` and nothing is abstract, so a
+subclass that omits or misspells it raises nothing and has weekends as its only non-working days.
 
 **May override.** `get_holidays_raw(timeout)` — returns an empty `DataFrame` (`name`, `date`
 columns) by default; override it to expose an upstream table.
