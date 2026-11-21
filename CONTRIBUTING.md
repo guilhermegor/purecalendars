@@ -200,7 +200,7 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
 
 ## Docs and Hygiene Guards
 
-Each runs in pre-commit and CI; run one by hand with the command shown.
+Each runs in pre-commit and, except `check_clean_index.sh` (pre-push only), in CI; run one by hand with the command shown.
 
 - `check_docs_sections.py`: the docs nav holds the canonical pages (`python3 bin/check_docs_sections.py`).
 - `check_docs_gap.py`: every `docs/` page is in the `mkdocs.yml` nav (`python3 bin/check_docs_gap.py --root .`, needs `pathspec` and `pyyaml`).

@@ -24,8 +24,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         # Must track pyproject's `python = ">=3.11,<4.0"` (the floor #89 raised; the BlueprintX
-        # template matrix starts at 3.11 too). A 3.10 leg is below the floor and lacks tomllib,
-        # which the description-sync guard needs.
+        # template matrix starts at 3.11 too). 3.10 is below the floor: no tomllib, and the
+        # runner installs no tomli, so the description-sync guard cannot read the manifest.
         python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - name: Checkout Code
