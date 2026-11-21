@@ -27,7 +27,7 @@ INT_YEAR_START_DEFAULT = 2001
 INT_YEAR_END_DEFAULT = 2099
 
 
-def national_holidays(  # noqa: PLR0917
+def national_holidays(
     int_year_start: int = INT_YEAR_START_DEFAULT,
     int_year_end: int = INT_YEAR_END_DEFAULT,
 ) -> list[tuple[str, date]]:
@@ -36,15 +36,15 @@ def national_holidays(  # noqa: PLR0917
     Parameters
     ----------
     int_year_start : int
-            First year to include (default: 2001).
+        First year to include (default: 2001).
     int_year_end : int
-            Last year to include (default: 2099).
+        Last year to include (default: 2099).
 
     Returns
     -------
     list[tuple[str, date]]
-            Tuples of ``(name, date)``, sorted by date. Names are diacritic-stripped to match
-            the normalisation the web providers apply.
+        Tuples of ``(name, date)``, sorted by date. Names are diacritic-stripped to match
+        the normalisation the web providers apply.
     """
     validate_year_range(int_year_start, int_year_end)
     cls_str_handler = StrHandler()
@@ -58,20 +58,20 @@ def national_holidays(  # noqa: PLR0917
     ]
 
 
-def validate_year_range(int_year_start: int, int_year_end: int) -> None:  # noqa: PLR0917
+def validate_year_range(int_year_start: int, int_year_end: int) -> None:
     """Validate a year-range pair.
 
     Parameters
     ----------
     int_year_start : int
-            Starting year.
+        Starting year.
     int_year_end : int
-            Ending year.
+        Ending year.
 
     Raises
     ------
     ValueError
-            If either year is outside 1900–2100, or the range is inverted.
+        If either year is outside 1900–2100, or the range is inverted.
     """
     for int_year in (int_year_start, int_year_end):
         if not isinstance(int_year, int) or isinstance(int_year, bool):

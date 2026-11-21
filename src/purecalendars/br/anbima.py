@@ -26,7 +26,7 @@ class DatesBRAnbima(ABCCalendarOperations):
     .. [1] https://www.anbima.com.br/feriados/arqs/feriados_nacionais.xls
     """
 
-    def __init__(  # noqa: PLR0917
+    def __init__(
         self,
         int_year_start: int = INT_YEAR_START_DEFAULT,
         int_year_end: int = INT_YEAR_END_DEFAULT,
@@ -37,11 +37,11 @@ class DatesBRAnbima(ABCCalendarOperations):
         Parameters
         ----------
         int_year_start : int
-                First year to include (default: 2001, ANBIMA's first published year).
+            First year to include (default: 2001, ANBIMA's first published year).
         int_year_end : int
-                Last year to include (default: 2099, ANBIMA's last published year).
+            Last year to include (default: 2099, ANBIMA's last published year).
         logger : Optional[Logger]
-                Logger object for logging (default: None).
+            Logger object for logging (default: None).
 
         Returns
         -------
@@ -57,6 +57,6 @@ class DatesBRAnbima(ABCCalendarOperations):
         Returns
         -------
         list[tuple[str, date]]
-                Tuples of ``(name, date)``, sorted by date.
+            Tuples of ``(name, date)``, sorted by date.
         """
         return national_holidays(self.int_year_start, self.int_year_end)

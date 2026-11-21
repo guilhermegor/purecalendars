@@ -49,12 +49,12 @@ class ABCCalendar(ABC, metaclass=ABCTypeCheckerMeta):
         Parameters
         ----------
         timeout : int | float | tuple[float, float] | tuple[int, int]
-                Timeout for HTTP request, by default (12.0, 21.0)
+            Timeout for HTTP request, by default (12.0, 21.0)
 
         Returns
         -------
         pd.DataFrame
-                DataFrame containing raw holiday data
+            DataFrame containing raw holiday data
         """
         pass
 
@@ -65,6 +65,6 @@ class ABCCalendar(ABC, metaclass=ABCTypeCheckerMeta):
         Returns
         -------
         list[tuple[str, date]]
-                List of tuples containing holiday names and dates
+            List of tuples containing holiday names and dates
         """
         pass

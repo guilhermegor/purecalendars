@@ -79,11 +79,13 @@ select = [
 ]
 ignore = [
     "PLC1901",
-    "S404",
 ]
 fixable = ["I"]
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
+# purecalendars does no file or database I/O: the bare pandas readers are banned so a read
+# cannot creep in. Live and tabular sources are read in opendata-calendars, which depends on
+# this package, never the reverse (see AGENTS.md).
 [lint.flake8-tidy-imports.banned-api]
 "pandas.read_excel".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
 "pandas.read_csv".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
@@ -94,20 +96,8 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 "pandas.read_sql_query".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
 "pandas.read_sql_table".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
 "pandas.ExcelFile".msg = "purecalendars does no I/O; reading files or databases belongs in opendata-calendars."
-"utils.tabular_reader.FileContract".msg = "Construct contracts only in config/contracts/; import the instance."
-"config.contracts.FileContract".msg = "Construct contracts only in config/contracts/; import the instance."
 
 [lint.isort]
-known-first-party = [
-    "app",
-    "capabilities",
-    "chassis",
-    "config",
-    "controller",
-    "model",
-    "utils",
-    "view",
-]
 force-single-line = false
 combine-as-imports = true
 split-on-trailing-comma = true
@@ -116,7 +106,7 @@ lines-after-imports = 2
 
 [lint.pylint]
 max-args = 8
-max-positional-args = 1
+max-positional-args = 12
 
 [lint.pydocstyle]
 convention = "numpy"
@@ -128,14 +118,11 @@ ignore-fully-untyped = false
 allow-star-arg-any = false
 
 [lint.per-file-ignores]
-"bin/**/*.py" = ["PLC2701"]
-
-"src/chassis/db_wschema/infrastructure/joblib_handler.py" = ["E101"]
+"bin/**/*.py" = ["PLC2701", "S404"]
 
 "tests/**/*.py" = [
     "S101",
     "PLC2701",
     "PLR2004",
+    "S404",
 ]
-"src/utils/xml_reader.py" = ["N813"]
-"src/*/_internal/utils/xml_reader.py" = ["N813"]

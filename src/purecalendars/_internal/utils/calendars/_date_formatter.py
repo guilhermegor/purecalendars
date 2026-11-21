@@ -13,7 +13,7 @@ from purecalendars._internal.utils.calendars._dates_current import DatesCurrent
 class DateFormatter(DatesCurrent):
     """Abstract class for date formatting."""
 
-    def get_platform_locale(  # noqa: PLR6301, PLR0917
+    def get_platform_locale(  # noqa: PLR6301
         self, str_locale: str | None = None, str_timezone: str | None = None
     ) -> str:
         """Return the platform locale.
@@ -21,19 +21,19 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         str_locale : Optional[str]
-                The locale to use, by default None
+            The locale to use, by default None
         str_timezone : Optional[str]
-                The timezone to use, by default None
+            The timezone to use, by default None
 
         Returns
         -------
         str
-                The platform locale.
+            The platform locale.
 
         Raises
         ------
         ValueError
-                If the locale is not found
+            If the locale is not found
         """
         dict_tz_to_locale_map = {
             "America/Sao_Paulo": "pt-BR",
@@ -81,12 +81,12 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the year number from.
+            The date to get the year number from.
 
         Returns
         -------
         int
-                The year number.
+            The year number.
         """
         date_ = self.date_only(date_)
         return int(date_.strftime("%Y"))
@@ -97,30 +97,30 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the month name from.
+            The date to get the month name from.
 
         Returns
         -------
         str
-                The month name.
+            The month name.
         """
         date_ = self.date_only(date_)
         return date_.strftime("%B")
 
-    def month_number(self, date_: TypeDatetimeDate, bool_month_mm: bool = False) -> int | str:  # noqa: PLR0917
+    def month_number(self, date_: TypeDatetimeDate, bool_month_mm: bool = False) -> int | str:
         """Return the month number.
 
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the month number from.
+            The date to get the month number from.
         bool_month_mm : bool
-                Whether to return the month number or the month name, by default False
+            Whether to return the month number or the month name, by default False
 
         Returns
         -------
         int | str
-                The month number or the month name.
+            The month number or the month name.
         """
         date_ = self.date_only(date_)
         if not bool_month_mm:
@@ -134,12 +134,12 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the week number from.
+            The date to get the week number from.
 
         Returns
         -------
         str
-                The week number.
+            The week number.
         """
         date_ = self.date_only(date_)
         return date_.strftime("%w")
@@ -150,17 +150,17 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the day number from.
+            The date to get the day number from.
 
         Returns
         -------
         int
-                The day number.
+            The day number.
         """
         date_ = self.date_only(date_)
         return int(date_.strftime("%d"))
 
-    def month_name(  # noqa: PLR0917
+    def month_name(
         self,
         date_: TypeDatetimeDate,
         bool_abbreviation: bool = False,
@@ -171,23 +171,23 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the month name from.
+            The date to get the month name from.
         bool_abbreviation : bool
-                Whether to return the month name or the month abbreviation, by default False
+            Whether to return the month name or the month abbreviation, by default False
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         str
-                The month name or the month abbreviation.
+            The month name or the month abbreviation.
         """
         date_ = self.date_only(date_)
         str_locale = self.get_platform_locale(str_timezone=str_timezone)
         locale.setlocale(locale.LC_TIME, str_locale)
         return date_.strftime("%b" if bool_abbreviation else "%B")
 
-    def weekday_name(  # noqa: PLR0917
+    def weekday_name(
         self,
         date_: TypeDatetimeDate,
         bool_abbreviation: bool = False,
@@ -198,16 +198,16 @@ class DateFormatter(DatesCurrent):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                The date to get the week name from.
+            The date to get the week name from.
         bool_abbreviation : bool
-                Whether to return the week name or the week abbreviation, by default False
+            Whether to return the week name or the week abbreviation, by default False
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         str
-                The week name or the week abbreviation.
+            The week name or the week abbreviation.
         """
         date_ = self.date_only(date_)
         str_locale = self.get_platform_locale(str_timezone=str_timezone)
@@ -220,6 +220,6 @@ class DateFormatter(DatesCurrent):
         Returns
         -------
         datetime
-                The current UTC datetime.
+            The current UTC datetime.
         """
         return datetime.now(timezone.utc)  # noqa: UP017

@@ -15,7 +15,7 @@ class DatesCurrent(DatesRangeDelta):
         Returns
         -------
         date
-                Current date.
+            Current date.
         """
         return date.today()
 
@@ -25,12 +25,12 @@ class DatesCurrent(DatesRangeDelta):
         Parameters
         ----------
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         datetime
-                Current datetime.
+            Current datetime.
         """
         return datetime.now(tz=ZoneInfo(str_timezone or "UTC"))
 
@@ -40,16 +40,16 @@ class DatesCurrent(DatesRangeDelta):
         Parameters
         ----------
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         time
-                Current time.
+            Current time.
         """
         return self.curr_datetime(str_timezone=str_timezone).time()
 
-    def current_timestamp_string(  # noqa: PLR0917
+    def current_timestamp_string(
         self, format_output: str = "%Y%m%d_%H%M%S", str_timezone: str | None = "UTC"
     ) -> str:
         """Return the current timestamp as a string.
@@ -57,13 +57,13 @@ class DatesCurrent(DatesRangeDelta):
         Parameters
         ----------
         format_output : str
-                The format to use, by default "%Y%m%d_%H%M%S"
+            The format to use, by default "%Y%m%d_%H%M%S"
         str_timezone : Optional[str]
-                The timezone to use, by default "UTC"
+            The timezone to use, by default "UTC"
 
         Returns
         -------
         str
-                Current timestamp as a string.
+            Current timestamp as a string.
         """
         return self.curr_datetime(str_timezone=str_timezone).strftime(format_output)

@@ -24,7 +24,7 @@ class DateManipulation(CalendarCore):
         Returns
         -------
         list[tuple[str, date]]
-                The list of ``(name, date)`` holidays injected via ``add_holidays``.
+            The list of ``(name, date)`` holidays injected via ``add_holidays``.
         """
         if not hasattr(self, "_added_holidays"):
             self._added_holidays: list[tuple[str, date]] = []
@@ -40,7 +40,7 @@ class DateManipulation(CalendarCore):
         Returns
         -------
         list[tuple[str, date]]
-                List of tuples containing holiday names and dates
+            List of tuples containing holiday names and dates
         """
         return self._source_holidays() + self._get_added_holidays()
 
@@ -50,15 +50,15 @@ class DateManipulation(CalendarCore):
         Parameters
         ----------
         list_new_holidays : list[tuple[str, date]]
-                A list of tuples containing holiday names and dates to add.
+            A list of tuples containing holiday names and dates to add.
 
         Raises
         ------
         TypeError
-                If list_new_holidays is not a list of tuples or if any tuple does not contain
-                a string and a date object.
+            If list_new_holidays is not a list of tuples or if any tuple does not contain
+            a string and a date object.
         ValueError
-                If list_new_holidays is empty or contains invalid date objects.
+            If list_new_holidays is empty or contains invalid date objects.
         """
         if not isinstance(list_new_holidays, list):
             raise TypeError("list_new_holidays must be a list")
@@ -83,20 +83,20 @@ class DateManipulation(CalendarCore):
         set_new = {tup_holiday[1] for tup_holiday in list_new_holidays}
         self._holidays_cache = set_current | set_new
 
-    def add_working_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:  # noqa: PLR0917
+    def add_working_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:
         """Add the specified number of working days to the given date.
 
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
         int_days_to_add : int
-                The number of working days to add.
+            The number of working days to add.
 
         Returns
         -------
         date
-                The resulting date after adding the specified number of working days.
+            The resulting date after adding the specified number of working days.
         """
         date_current = self.date_only(date_)
         int_days_left = abs(int_days_to_add)
@@ -109,61 +109,61 @@ class DateManipulation(CalendarCore):
 
         return date_current
 
-    def add_calendar_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:  # noqa: PLR0917
+    def add_calendar_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:
         """Add the specified number of calendar days to the given date.
 
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
         int_days_to_add : int
-                The number of calendar days to add.
+            The number of calendar days to add.
 
         Returns
         -------
         date
-                The resulting date after adding the specified number of calendar days.
+            The resulting date after adding the specified number of calendar days.
         """
         date_ = self.date_only(date_)
         return date_ + timedelta(days=int_days_to_add)
 
-    def add_months(self, date_: datetime, int_months_to_add: int) -> datetime:  # noqa: PLR6301, PLR0917
+    def add_months(self, date_: datetime, int_months_to_add: int) -> datetime:  # noqa: PLR6301
         """Add the specified number of months to the given date.
 
         Parameters
         ----------
         date_ : datetime
-                A datetime object.
+            A datetime object.
         int_months_to_add : int
-                The number of months to add.
+            The number of months to add.
 
         Returns
         -------
         datetime
-                The resulting datetime after adding the specified number of months.
+            The resulting datetime after adding the specified number of months.
         """
         return date_ + relativedelta(months=int_months_to_add)
 
-    def build_date(self, year: int, month: int, day: int) -> date:  # noqa: PLR6301, PLR0917
+    def build_date(self, year: int, month: int, day: int) -> date:  # noqa: PLR6301
         """Build a date object from the given year, month, and day.
 
         Parameters
         ----------
         year : int
-                The year component of the date.
+            The year component of the date.
         month : int
-                The month component of the date.
+            The month component of the date.
         day : int
-                The day component of the date.
+            The day component of the date.
 
         Returns
         -------
         date
-                The built date object.
+            The built date object.
         """
         return date(year=year, month=month, day=day)
 
-    def build_datetime(  # noqa: PLR6301, PLR0917
+    def build_datetime(  # noqa: PLR6301
         self,
         year: int,
         month: int,
@@ -178,31 +178,31 @@ class DateManipulation(CalendarCore):
         Parameters
         ----------
         year : int
-                The year component of the datetime.
+            The year component of the datetime.
         month : int
-                The month component of the datetime.
+            The month component of the datetime.
         day : int
-                The day component of the datetime.
+            The day component of the datetime.
         hour : int
-                The hour component of the datetime.
+            The hour component of the datetime.
         minute : int
-                The minute component of the datetime.
+            The minute component of the datetime.
         second : int
-                The second component of the datetime.
+            The second component of the datetime.
         str_timezone : Optional[str]
-                The timezone component of the datetime, by default "UTC".
+            The timezone component of the datetime, by default "UTC".
 
         Returns
         -------
         datetime
-                The built datetime object.
+            The built datetime object.
 
         Raises
         ------
         ZoneInfoNotFoundError
-                If the timezone is empty or None
+            If the timezone is empty or None
         ValueError
-                If the date components are invalid
+            If the date components are invalid
         """
         if str_timezone == "" or str_timezone is None:
             raise ZoneInfoNotFoundError("Timezone cannot be empty or None")
@@ -219,21 +219,21 @@ class DateManipulation(CalendarCore):
         except ValueError as err:
             raise ValueError(f"Invalid date components: {err}") from err
 
-    def nearest_working_day(self, date_: TypeDatetimeDate, bool_next: bool = True) -> date:  # noqa: PLR0917
+    def nearest_working_day(self, date_: TypeDatetimeDate, bool_next: bool = True) -> date:
         """Find the nearest working day to the given date.
 
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
         bool_next : bool
-                If True, returns the nearest working day after the given date; if False,
-                returns the nearest working day before the given date, by default True
+            If True, returns the nearest working day after the given date; if False,
+            returns the nearest working day before the given date, by default True
 
         Returns
         -------
         date
-                The nearest working day to the given date.
+            The nearest working day to the given date.
         """
         date_ = self.date_only(date_)
         date_ref = self.add_working_days(self.add_working_days(date_, -1), 1)
@@ -242,25 +242,25 @@ class DateManipulation(CalendarCore):
         else:  # noqa: RET505
             return self.add_working_days(date_ref, -1) if date_ref > date_ else date_ref
 
-    def str_date_to_date(self, str_date: str, format_input: str | None = "DD/MM/YYYY") -> date:  # noqa: PLR6301, PLR0917
+    def str_date_to_date(self, str_date: str, format_input: str | None = "DD/MM/YYYY") -> date:  # noqa: PLR6301
         """Convert a string representation of a date to a date object.
 
         Parameters
         ----------
         str_date : str
-                The string representation of the date.
+            The string representation of the date.
         format_input : str | None
-                The format of the input date string, by default "DD/MM/YYYY"
+            The format of the input date string, by default "DD/MM/YYYY"
 
         Returns
         -------
         date
-                The date object corresponding to the input string.
+            The date object corresponding to the input string.
 
         Raises
         ------
         ValueError
-                If the input date string is not in the specified format.
+            If the input date string is not in the specified format.
         """
         format_map = {
             "DD/MM/YYYY": "%d/%m/%Y",
@@ -289,7 +289,7 @@ class DateManipulation(CalendarCore):
                 f"Invalid date string '{str_date}' for format {format_input}: {err}"
             ) from err
 
-    def timestamp_to_date(  # noqa: PLR0917
+    def timestamp_to_date(
         self,
         timestamp_: str,
         substr_timestamp: str = "T",
@@ -299,18 +299,18 @@ class DateManipulation(CalendarCore):
         Parameters
         ----------
         timestamp_ : str
-                The string representation of the timestamp.
+            The string representation of the timestamp.
         substr_timestamp : str
-                The substring to split the timestamp on, by default "T"
+            The substring to split the timestamp on, by default "T"
 
         Returns
         -------
         date
-                The date object corresponding to the input timestamp string.
+            The date object corresponding to the input timestamp string.
         """
         return self.str_date_to_date(timestamp_.split(substr_timestamp)[0], "YYYY-MM-DD")  # noqa: PLC0207
 
-    def timestamp_to_datetime(  # noqa: PLR6301, PLR0917
+    def timestamp_to_datetime(  # noqa: PLR6301
         self,
         timestamp_: str,
         substr_timestamp: str = "T",
@@ -320,19 +320,19 @@ class DateManipulation(CalendarCore):
         Parameters
         ----------
         timestamp_ : str
-                The string representation of the timestamp.
+            The string representation of the timestamp.
         substr_timestamp : str
-                The substring to split the timestamp on, by default "T"
+            The substring to split the timestamp on, by default "T"
 
         Returns
         -------
         datetime
-                The datetime object corresponding to the input timestamp string.
+            The datetime object corresponding to the input timestamp string.
 
         Raises
         ------
         ValueError
-                If the input timestamp string is not in the expected format.
+            If the input timestamp string is not in the expected format.
         """
         try:
             return datetime.fromisoformat(timestamp_.replace("Z", "+00:00"))
@@ -351,12 +351,12 @@ class DateManipulation(CalendarCore):
         Parameters
         ----------
         date_ : TypeDatetimeDate
-                A datetime or date object.
+            A datetime or date object.
 
         Returns
         -------
         int
-                The integer representation of the date.
+            The integer representation of the date.
         """
         date_ = self.date_only(date_)
         return 10000 * date_.year + 100 * date_.month + date_.day
@@ -367,17 +367,17 @@ class DateManipulation(CalendarCore):
         Parameters
         ----------
         numeric_excel_date : int | float
-                The Excel float to convert.
+            The Excel float to convert.
 
         Returns
         -------
         date
-                The date object corresponding to the Excel float.
+            The date object corresponding to the Excel float.
 
         Raises
         ------
         ValueError
-                If numeric_excel_date is None or negative
+            If numeric_excel_date is None or negative
         """
         if numeric_excel_date is None:
             raise ValueError("numeric_excel_date cannot be None")

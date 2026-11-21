@@ -102,10 +102,10 @@ bash bin/poe_exec.sh lint   # ruff + mypy + codespell + pydocstyle + docstrings 
 ```
 
 Ruff config lives in `ruff.toml`, the BlueprintX template's (line-length 99, 4-space
-indent, double quotes, NumPy docstrings; rule families `UP E F ANN B SIM I AIR ERA S PD D TID W
-PL PT RET A BLE N` plus `PLR1702`, preview mode on). `bin/*.py` is linted and formatted like
+indent, double quotes, NumPy docstrings, preview mode on); read it for the active rule
+families and the deviations. `bin/*.py` is linted and formatted like
 `src/` and `tests/`. Findings whose fix would change a signature or test strictness
-(`PLR6301`, `PLR0917`, `PLR2004`, `PT011`, ...) are baselined with an inline `# noqa`; remove one
+(`PLR6301`, `PLR2004`, `PT011`, ...) are baselined with an inline `# noqa`; remove one
 when you touch that code and can fix it properly. Docstring parameter/return types **must match** the type hints textually
 (`int | float`, not `Union[int, float]`) — the `check-docstrings` gate enforces this.
 

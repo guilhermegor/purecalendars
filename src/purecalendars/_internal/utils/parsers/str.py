@@ -19,12 +19,12 @@ class StrHandler(metaclass=TypeChecker):
         Parameters
         ----------
         str_ : str
-                The string to convert.
+            The string to convert.
 
         Returns
         -------
         str
-                The converted string, or the original if it cannot be re-decoded.
+            The converted string, or the original if it cannot be re-decoded.
         """
         try:
             return str_.encode("latin1").decode("utf-8")
@@ -37,18 +37,18 @@ class StrHandler(metaclass=TypeChecker):
         Parameters
         ----------
         str_ : str
-                The string with diacritics.
+            The string with diacritics.
 
         Returns
         -------
         str
-                The string with diacritics removed.
+            The string with diacritics removed.
         """
         norm_txt = normalize("NFD", str_)
         shaved = "".join(c for c in norm_txt if not combining(c))
         return normalize("NFC", shaved)
 
-    def convert_case(self, str_: str, from_case: str, to_case: str) -> str:  # noqa: PLR0912, PLR0911, PLR6301, PLR0917
+    def convert_case(self, str_: str, from_case: str, to_case: str) -> str:  # noqa: PLR0912, PLR0911, PLR6301
         """Convert a string between naming conventions.
 
         Supported cases: ``camel``, ``pascal``, ``kebab``, ``upper_constant``,
@@ -58,21 +58,21 @@ class StrHandler(metaclass=TypeChecker):
         Parameters
         ----------
         str_ : str
-                The string to convert.
+            The string to convert.
         from_case : str
-                Current case of the string.
+            Current case of the string.
         to_case : str
-                Desired case of the string.
+            Desired case of the string.
 
         Returns
         -------
         str
-                The converted string.
+            The converted string.
 
         Raises
         ------
         ValueError
-                If ``from_case`` or ``to_case`` are invalid.
+            If ``from_case`` or ``to_case`` are invalid.
         """
         if not str_:
             return ""
