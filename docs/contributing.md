@@ -241,14 +241,18 @@ Configure once:
   [**pending publisher**](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
   (register it before the project exists). No `PYPI_TOKEN` / `TEST_PYPI_TOKEN` secret is needed.
 
-Documentation is published separately — every push to `main` runs
-`.github/workflows/docs.yaml`, which builds this site and deploys it to GitHub Pages.
+Documentation is versioned with [mike](https://github.com/jimporter/mike). On every push and
+pull request, `.github/workflows/docs.yaml` runs a strict build check and deploys nothing. The
+`deploy_docs` job in `release-pypi.yaml` publishes each stable release as `<X.Y>` plus the
+`latest` alias to the `gh-pages` branch; prereleases are skipped. The first release creates
+that branch, and `GITHUB_TOKEN` cannot point Pages at it, so run `bash bin/poe_exec.sh
+enable_pages` once after that release.
 
 ## Changelog (maintainers)
 
 `CHANGELOG.md` is generated from the conventional-commit history and the git tags, **never
 committed to `main` by CI**. The published site's Changelog page is regenerated fresh on every
-docs build (`docs.yaml` runs `cz changelog` before `mkdocs build`), and each release also gets
+docs deploy (`deploy_docs` runs `cz changelog` before `mike deploy`), and each release also gets
 GitHub-generated release notes. This keeps branch protection intact and needs **no stored
 secret** (no PAT, no bypass). The only discipline is writing `feat:` / `fix:` / etc. commit
 messages; preview the changelog locally any time with `bash bin/poe_exec.sh changelog`.

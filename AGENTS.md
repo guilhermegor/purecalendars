@@ -130,7 +130,9 @@ enforce the layout. Trackers are never deleted — tick the last box and add a
 Two workflows ship under `.github/workflows/`:
 
 - `release-test-pypi.yaml` — publish to **Test PyPI** first (`workflow_dispatch`).
-- `release-pypi.yaml` — publish to **PyPI** and cut a GitHub release.
+- `release-pypi.yaml` — publish to **PyPI**, cut a GitHub release, then deploy the **versioned
+  docs** with `mike deploy --update-aliases <X.Y> latest` (skipped for prereleases, so a suffixed
+  version never moves `latest`).
 
 **Versioning is tag-driven.** `[tool.poetry] version` is a `0.0.0` placeholder;
 **poetry-dynamic-versioning** stamps the real version from the git tag at build time (`python -m
@@ -149,10 +151,14 @@ for Test PyPI) and a **trusted publisher** on each index matching owner `guilher
 first-ever release register a **pending publisher**. The changelog is generated from tags by
 `cz changelog` at docs-build time, never committed to `main` by CI. See `docs/contributing.md`.
 
-The docs are **not** versioned with `mike` here: `docs.yaml` builds the site and deploys it with
-GitHub Pages on every push to `main` (no `gh-pages` branch, no `poe enable_pages`). The
-template's mike selector is adopted but inert until a `mike deploy` publishes `versions.json`
-(`docs/template-updates.md`, "Docs layout").
+**Docs are versioned via [mike](https://github.com/jimporter/mike)** and served from the
+`gh-pages` branch — `docs.yaml` is a strict *build check only* and never deploys. Pages must be
+set to "Deploy from a branch → gh-pages" via `poe enable_pages`, which waits until the first
+release creates that branch. See `docs/contributing.md`.
+
+The first `release-pypi.yaml` run creates the `gh-pages` branch, but `GITHUB_TOKEN` cannot set
+the Pages source (it needs admin rights). The `deploy_docs` job prints the remedy in its job
+summary: run `poe enable_pages` once afterwards.
 
 ## Extending this template
 
