@@ -107,3 +107,16 @@ Pruned because this repo has no such module:
 
 Docstring parameter and return descriptions were re-indented from 8 to 4 columns under their
 name line (ruff had expanded tabs to 8); code is unchanged.
+
+## Structure and typing gates (#67, part of #56)
+
+Adopted as the template ships them: `.layer-policy.yaml` (adapted to the `_internal`, `br` and
+`us` layers; no baseline needed, every current import is allowed with a reason),
+`check_layer_imports.py`, `check_dynamic_version_stub.py`, `check_typing.py`, `check_dtypes.py`,
+`.vscode/extensions.json`, and `[tool.commitizen]` moved to `.cz.toml`.
+
+| Dropped | Reason |
+|---|---|
+| `check_provenance.py` | it pairs `read_table(` with `stamp_provenance`; #97 removed both, and this package does no I/O |
+| `check_contract_drift.py` and the `contract-drift.yml` workflow | no `FileContract` and no `http_downloader` since #97; the repo's own `calendar-drift.yaml` keeps watching the live sources |
+| `pin_contract_oracle.py` | pins a contract to a source header, and there are no contracts |

@@ -1,0 +1,29 @@
+# Per-layer import policy, read by bin/check_layer_imports.py (deny-by-default).
+# Adapted from the BlueprintX lib-minimal template to this package's layers. stdlib and
+# first-party imports are always allowed; every third-party import needs an `allow` entry
+# below, with a reason.
+
+# src/purecalendars/<layer>/...: the layer is the first directory below the package.
+src_prefix_depth: 1
+
+layers:
+  # purecalendars/__init__.py and other top-level modules: public re-exports only.
+  __root__:
+    allow: {}
+
+  # Shared machinery: the calendar frames, date helpers and the runtime type checker.
+  _internal:
+    allow:
+      pandas: "business-day frames are the calendar core's data model (_calendar_core, _abc_calendar)"
+      businesstimedelta: "business-hours arithmetic behind _dates_range_delta"
+      dateutil: "relativedelta month/year arithmetic behind _date_manipulation"
+
+  # Brazilian providers (ANBIMA, FEBRABAN, B3).
+  br:
+    allow:
+      holidays: "the offline rule source (holidays.B3) these providers wrap; _offline_holidays.py is the single seam"
+
+  # US providers (Federal Holidays).
+  us:
+    allow:
+      holidays: "the offline rule source (holidays.US) the provider wraps"
