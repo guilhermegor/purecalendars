@@ -227,3 +227,7 @@ jobs:
         with:
           name: coverage-badge-${{ matrix.os }}-${{ matrix.python-version }}
           path: coverage.svg
+
+      - name: Run Docs Language Enforcement
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_docs_language.py

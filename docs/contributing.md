@@ -205,6 +205,7 @@ Every push and pull request triggers the **Run Tests** workflow
 | mypy | Static type check (`cd src && mypy .`). `ignore_missing_imports = False`: use a `types-*` stub where one exists, else add a `[mypy-<pkg>.*]` ignore section in `mypy.ini`. |
 | shell / sql / yaml lint | Non-Python lint gates (mirrors the `lint` task). |
 | unit + integration tests | The full pytest suites. |
+| docs language | `check_docs_language.py` — the README, CONTRIBUTING and every docs page must be written in the locale `mkdocs.yml` declares (`theme.language: en`). Documentation here is US English. |
 
 Because pre-commit mirrors these gates, a commit that passed your local hooks will pass CI.
 
