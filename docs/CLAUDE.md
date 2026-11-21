@@ -2,6 +2,10 @@
 
 Guidance for working inside this project's `docs/` directory.
 
+Repository-wide rules live in the root `AGENTS.md` (the root `CLAUDE.md` only imports it and
+`PRINCIPLES.md`); naming, boundary and tooling conventions shared by every BlueprintX project
+live in `.claude/CLAUDE.md`. This file keeps only what is specific to `docs/`.
+
 ## Published vs non-published
 
 MkDocs **builds every `.md` under `docs/` into the site**, even files absent from

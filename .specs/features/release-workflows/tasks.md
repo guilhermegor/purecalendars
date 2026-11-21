@@ -22,7 +22,7 @@ yields grouped, predictable PRs instead of manual bumps nobody remembers.
 - [x] **No `labels:` key** — Dependabot posts an error comment when a referenced label does not
       exist (the reason filings-cvm dropped it; see its PR #79/#80). The rationale comment was
       adapted, not copied: filings-cvm keys auto-merge off `bin/pr_gate.py` path labels, a script
-      wwdates does not have, so here the only reason is Dependabot's missing-label error.
+      purecalendars does not have, so here the only reason is Dependabot's missing-label error.
 - [x] Carry over the explanatory header comments verbatim in spirit — they are why the settings
       survive review instead of being "simplified" away later.
 - [x] Check the version floors first. **The plan's premise was wrong**: `pyproject.toml` declares
@@ -53,7 +53,7 @@ reporting on a Dependabot PR at all. Shipping the config without this would have
 Verified, not guessed: on run 30725490428, **`Install Dependencies` is `skipped` on all 15 jobs**
 — every leg hit the venv cache. The 3.9 legs never re-resolved the project, so nothing ever
 raised the floor violation. Three coupled defects, all present in `filings-cvm` too (so this is a
-template defect, not a wwdates one):
+template defect, not a purecalendars one):
 
 - **The cache key hashed only `pyproject.toml`.** A `poetry.lock`-only change was therefore always
   a cache hit — and `versioning-strategy: lockfile-only` produces *exactly* lock-only diffs. Every
@@ -73,7 +73,7 @@ locally, rather than a rewritten `pyproject.toml`.
 ## Deferred (tracked here, not in this PR)
 
 - **The win32-stripping `python -c` transform in `Install Dependencies` is dead code here** —
-  wwdates has no `pywin32` dependency (`grep` finds zero matches in `pyproject.toml`), so the
+  purecalendars has no `pywin32` dependency (`grep` finds zero matches in `pyproject.toml`), so the
   transform is a template leftover that copies, rewrites and restores `pyproject.toml` to no
   effect. Deleting it is a separate simplification, not a dependency-automation change.
 - **`actions/cache@v3`** is two majors behind (`filings-cvm` is on `@v6`). Left alone on purpose:

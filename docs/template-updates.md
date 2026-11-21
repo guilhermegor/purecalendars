@@ -20,7 +20,7 @@ and `templates/lib-minimal`, with the scaffold's import rewrite
 
 **Owner decision (2026-11-19), supersedes the 2026-11-01 omission:** the example modules
 `daily_cache`, `sidecar_metadata`, `xml_reader`, `schema_regimes` (the template's regime
-module), `config/ports/example_port` and `main.py` are adopted. #72 deletes them at 4.0.0, so
+module), `config/ports/example_port` and `main.py` are adopted. #72 closed as already shipped by #99; they are internal, so
 none is exported through the public `__all__`.
 
 ### Deviations kept
@@ -32,8 +32,26 @@ none is exported through the public `__all__`.
 | `# ruff: noqa: E101` on the vendored files whose docstrings ruff-format tabifies | tab style turns NumPy docstring continuation lines into mixed indentation; fixing it in `ruff.toml` belongs to #61 |
 | `requires-python >=3.11` (was `>=3.10`) | template floor; `purepii-br>=2` requires 3.11 |
 | Added `beartype`, `numpy`, `defusedxml`, `purepii-br>=2`, `pure-schema-regimes<0.2` | needed by the adopted modules (template pins) |
-| `tests/unit/test_calendar_abc.py` type-error regexes also accept `violates type hint` | the beartype engine words type errors differently |
+| `tests/unit/test_calendar_abc.py` type-error regexes also accept `violates type hint` | the beartype engine words type errors differently. Superseded by #97: the regexes now match only `violates type hint` (the stdlib checker's wording) and, for `add_holidays`, the method's own `must be a` guard |
 | `tabular_reader.int_skip_rows` not re-applied | the repo had no `tabular_reader` to carry the extension; the file is the template's |
+
+## Zero runtime dependencies (#97, part of #56)
+
+Owner decision (2026-11-20), supersedes the 2026-11-19 adoption above: apply the template's
+`zero_dependency=y` path (blueprintx#1207). The wheel keeps only what `purecalendars`,
+`purecalendars.br` and `purecalendars.us` import, directly or transitively. The `retry/`, `logs`
+and `LogEmitter` notes above no longer apply.
+
+| Deviation | Reason |
+|---|---|
+| `main.py` removed (with `tests/unit/test_main.py`) | placeholder `lib-minimal` stub, never used or exposed |
+| `_internal/config/` absent (`contracts/`, `ports/`) | zero-dependency scaffold ships none; `contracts` pulled in `tabular_reader` and `purepii-br` |
+| Removed from `_internal/utils`: `br_identifiers`, `daily_cache`, `dates`, `dbapi`, `dtypes`, `http_downloader`, `logs`, `logs_emitter`, `provenance`, `raw_workspace`, `retry/`, `schema_regimes`, `sidecar_metadata`, `tabular_reader`, `text`, `xml_reader`, `zip_extractor`, `parsers/dicts` | outside the public import closure (`tests/unit/test_dates.py` and `test_schema_regimes.py` went with them) |
+| `typing/` is the template's stdlib engine (`type_checker.py`, `type_checker_meta.py`); `decorators`, `policy`, `protocol_type_checker`, `validate` removed | beartype engine replaced; `tests/unit/test_typing.py` is the template's zero-dependency test |
+| `typing/abc_type_checker.py` kept, built on the stdlib `TypeChecker` | `calendars/_abc_calendar.py` uses `ABCTypeCheckerMeta`; the zero-dependency template ships no ABC variant |
+| `typing/type_checker.py` also checks each member of a union (`X \| Y`, `Optional`) and the origin class of a generic alias (`list[int]` checks `list`) | the template checks plain classes only, which would drop the runtime `TypeError` on 55 of 107 annotated public parameters (every `date_: datetime \| date`); `Literal` values and container elements stay unchecked |
+| `beartype`, `numpy`, `defusedxml`, `purepii-br`, `pure-schema-regimes` removed from `[tool.poetry.dependencies]` | no remaining import; `numpy` still installs transitively through `pandas` |
+| The drift reporter (`bin/check_template_drift.py`) lists the removed files as missing | the stamp records no `zero_dependency` flag, so it compares against the default scaffold; it is a reporter (exit 0), the gap is intended |
 
 ## Tool configuration alignment (#61, part of #56)
 
@@ -50,7 +68,7 @@ Template taken verbatim: `.gitattributes`, `.gitlint`, `.hadolint.yaml`, `.pydoc
 | `mypy.ini` drops the template's `[mypy-purecalendars.*]` ignore | first-party here; it would mask broken imports |
 | `mypy.ini` adds `[mypy-businesstimedelta.*]` | the dependency ships no stubs and no `py.typed` |
 | `mypy.ini` keeps `[mypy-*._internal.utils.typing.*]` `ignore_errors` | the vendored typing engine is metaprogramming |
-| `mypy.ini` `[mypy-...parsers.dicts] disallow_any_explicit = False` | domain helper annotates its payload as `Any` |
+| `mypy.ini` `[mypy-...parsers.dicts] disallow_any_explicit = False` | domain helper annotates its payload as `Any`. Removed by #97 with `parsers/dicts` |
 | `tests/conftest.py` tab-indented; `isolate_git_environment` drops every `GIT_*` key | pre-commit leaks more keys than the template's seven |
 | `.coveragerc` loses the `_internal/` coverage omit comment | the template has no omit; `_internal/` is now measured |
 | `.gitignore` and `.codespellrc` replaced wholesale by the template | local header comments and extra ignore words dropped |
@@ -70,3 +88,22 @@ Owner decision (2026-11-01): adopt both the template's `extra.version.provider: 
 | `docs/api/reference.md` keeps the whole API reference as one page | it is the real content; the template's page is a starter |
 | `docs/incidents.md` has no worked example entry | an empty record is truer than a fictional incident |
 | mike selector is inert until a `mike deploy` publishes `versions.json` | `docs.yaml` deploys with Pages, not mike |
+
+## Ruff config pruning (#107)
+
+| Deviation | Reason |
+|---|---|
+| `[lint.pylint] max-positional-args = 12` (template: 1); the `# noqa: PLR0917` baselines are gone | the widest public signature (`delta_working_hours`) takes 12 positionals; keyword-only would break the public API |
+| `S404` no longer ignored globally; ignored under `bin/**` and `tests/**` only | no `src/` file imports `subprocess`, so the library keeps the signal |
+| no-I/O banned-api block carries its explanatory comment again | AGENTS.md cites it |
+
+Pruned because this repo has no such module:
+
+- banned-api `utils.tabular_reader.FileContract` and `config.contracts.FileContract`
+- `known-first-party`: `app`, `capabilities`, `chassis`, `config`, `controller`, `model`,
+  `utils`, `view` (the whole list; ruff detects `purecalendars` from `src/`)
+- per-file ignores `src/chassis/db_wschema/infrastructure/joblib_handler.py` (E101),
+  `src/utils/xml_reader.py` and `src/*/_internal/utils/xml_reader.py` (N813)
+
+Docstring parameter and return descriptions were re-indented from 8 to 4 columns under their
+name line (ruff had expanded tabs to 8); code is unchanged.

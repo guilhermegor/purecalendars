@@ -1,6 +1,6 @@
 # **Changelog**
 
-Release history for `wwdates`. Entries are generated from
+Release history for `purecalendars`. Entries are generated from
 [Conventional Commit](https://www.conventionalcommits.org/) messages via
 [commitizen](https://commitizen-tools.github.io/commitizen/), so the version headings below track
 what actually shipped.

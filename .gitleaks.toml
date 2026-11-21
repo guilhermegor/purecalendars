@@ -1,0 +1,28 @@
+title = "purecalendars — gitleaks"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "narrow, reasoned entries only"
+paths = [
+  '''\.gitleaks\.toml''',
+  '''poetry\.lock''',
+]
+stopwords = [
+  "example",
+  "placeholder",
+  "your-key-here",
+  "your-secret-here",
+  "your-token-here",
+  "changeme",
+]
+
+# Historical false positive: a cache *key* literal passed to CacheManager.cache_df in the
+# pre-rename src/wwdates/br/b3.py (generic-api-key, entropy 3.57). Not a credential; pinned
+# to its commit and path so a real secret elsewhere is still caught.
+[[allowlists]]
+description = "cache key literal in pre-rename src/wwdates/br/b3.py (commit d22f50e)"
+commits = ["d22f50e55ccac4025f0d99b64df7eb0eeaea46ca"]
+paths = ['''src/wwdates/br/b3\.py''']
+condition = "AND"

@@ -14,8 +14,6 @@ repository = "https://github.com/guilhermegor/purecalendars"
 keywords = ["calendar", "holidays", "business-days", "b3", "anbima", "febraban"]
 packages = [
 	{ include = "purecalendars", from = "src" },
-	# Deprecated `import wwdates` alias (#83); remove in 4.0.0.
-	{ include = "wwdates", from = "src" },
 ]
 # Keep internal dev docs out of the distributed wheel/sdist.
 exclude = ["src/**/CLAUDE.md"]
@@ -43,11 +41,6 @@ businesstimedelta = "^1.0.1"
 python-dateutil = "^2.9.0.post0"
 tzdata = "^2026.2"
 holidays = "^0.99"
-beartype = ">=0.22"
-numpy = ">=1.22"
-defusedxml = ">=0.7"
-purepii-br = ">=2.0.0"
-pure-schema-regimes = ">=0.1.0,<0.2"
 
 [tool.commitizen]
 # Conventional-commit driven changelog. The version comes from the git tag
@@ -107,7 +100,7 @@ vcs = "git"
 style = "pep440"
 
 [tool.deptry.per_rule_ignores]
-DEP002 = ["openpyxl", "tzdata"]
+DEP002 = ["tzdata"]
 
 [build-system]
 requires = ["poetry-core>=1.7.0", "poetry-dynamic-versioning>=1.4.0,<2.0.0"]

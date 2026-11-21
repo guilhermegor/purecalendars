@@ -116,7 +116,7 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
      - Tests: `tests/test_<feat_name>.py`
    - Run comprehensive validation with: `bash bin/poe_exec.sh test_feat <feat_name>`
         - This command executes:
-            - **Ruff**: Linting, formatting, and flagging deprecated Python features
+            - **Ruff**: Linting, formatting, and flagging deprecated Python features (4-space indent, line length 99; see `ruff.toml`)
             - **Codespell**: Spelling verification in comments and docstrings
             - **Automated tests**: All test cases matching the project's testing standards
    - Ensure 100% test coverage for critical components
@@ -140,6 +140,18 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
      comparison; the vendored tree appears under the placeholder `src/project/...`; the
      stamp keeps only the answers given at scaffold time
    - Details: `docs/contributing.md`, section "Template provenance and drift"
+
+6. **Agent Guidance Files** (for AI coding assistants and human readers alike):
+   - `AGENTS.md`: this repository's layout, architecture, conventions, work trackers and
+     release process (single source; other agents must be told to read it)
+   - `PRINCIPLES.md`: single-responsibility and function-design rules
+   - `.claude/CLAUDE.md`: naming, boundary and tooling conventions shared by every BlueprintX
+     project (Claude Code loads it on its own)
+   - `CLAUDE.md` (root): a bridge that imports `AGENTS.md` and `PRINCIPLES.md`; edit
+     `AGENTS.md`, not the bridge
+   - Directory-level `AGENTS.md` / `CLAUDE.md` pairs (`tests/`, `src/.../_internal/`) follow the
+     same rule; `docs/CLAUDE.md` and `bin/CLAUDE.md` hold their guidance directly
+   - `.greptile/`: configuration for the Greptile review bot
 
 ## Pull Request Process
 
@@ -185,6 +197,18 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
    - All tests must pass
    - Code coverage should not decrease
    - Documentation must be updated
+
+## Docs and Hygiene Guards
+
+Each runs in pre-commit and, except `check_clean_index.sh` (pre-push only), in CI; run one by hand with the command shown.
+
+- `check_docs_sections.py`: the docs nav holds the canonical pages (`python3 bin/check_docs_sections.py`).
+- `check_docs_gap.py`: every `docs/` page is in the `mkdocs.yml` nav (`python3 bin/check_docs_gap.py --root .`, needs `pathspec` and `pyyaml`).
+- `check_docs_code_refs.py`: imports cited in docs and README resolve against `src/` (`python3 bin/check_docs_code_refs.py`).
+- `check_identifier_masking.py`: no masked CPF/CNPJ compared in `.py`/`.sql` (`python3 bin/check_identifier_masking.py`).
+- `check_secrets.sh`: gitleaks over the tree and history (`bash bin/check_secrets.sh`); false positives go in `.gitleaks.toml`.
+- `check_description_sync.sh`: one description across `pyproject.toml`, `mkdocs.yml` and GitHub About (`bash bin/check_description_sync.sh`).
+- `check_clean_index.sh`: pre-push only; refuses a push while staged work sits in the index (`bash bin/check_clean_index.sh`).
 
 ## Best Practices
 

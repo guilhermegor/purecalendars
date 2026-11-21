@@ -46,7 +46,7 @@ Model to copy in shape: `filings-cvm/bin/check_contract_drift.py` +
       disabling the weekend allowance, dropping Christmas Eve from the allowlist, removing the span
       clamp and making `main()` return 1 each turned exactly the intended test red, then restored.
 - [x] Verify on the remote: run
-      [30725271837](https://github.com/guilhermegor/wwdates/actions/runs/30725271837) —
+      [30725271837](https://github.com/guilhermegor/purecalendars/actions/runs/30725271837) —
       `workflow_dispatch` on `main`, **cold runner, no cache**, all 10 steps green including the
       Chromium install. Output: `no calendar drift detected (0 source(s) could not be checked)` —
       all four pairs fetched live, zero divergence. Independently reconfirms PR #10's hand
@@ -113,7 +113,7 @@ dead win32 transform in `tests.yaml`, and the never-executed **write** half of t
 
 ## Work
 
-- [x] **Removed the win32 transform** from `tests.yaml`'s `Install Dependencies`. wwdates declares
+- [x] **Removed the win32 transform** from `tests.yaml`'s `Install Dependencies`. purecalendars declares
       no `pywin32` — verified: zero hits in `pyproject.toml`; the `win32` strings in `poetry.lock`
       are transitive wheel *filenames*, not declarations. The step now just installs. Left a comment
       saying why, so it is not "restored" as a template drift-fix later.

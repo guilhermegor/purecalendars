@@ -8,8 +8,7 @@ Common questions and fixes when using `purecalendars`.
 
 ## Where did `DatesBRB3Web`, `DatesUSNasdaq` and the other live fetchers go?
 
-They moved to the separate `opendata-calendars` package when `wwdates` became `purecalendars`
-(3.0.0). `purecalendars` does no I/O: every provider here is computed offline, with no network,
+They moved to the separate `opendata-calendars` package in 3.0.0. `purecalendars` does no I/O: every provider here is computed offline, with no network,
 no cache and no browser. `opendata-calendars` fetches the publishers' live tables and returns
 them as `purecalendars` calendars.
 
