@@ -12,9 +12,9 @@ from logging import Logger
 
 from purecalendars._internal.utils.calendars.abc_calendar_operations import ABCCalendarOperations
 from purecalendars.br._offline_holidays import (
-    INT_YEAR_END_DEFAULT,
-    INT_YEAR_START_DEFAULT,
-    national_holidays,
+    _INT_YEAR_END_DEFAULT,
+    _INT_YEAR_START_DEFAULT,
+    _national_holidays,
 )
 
 
@@ -28,8 +28,8 @@ class DatesBRAnbima(ABCCalendarOperations):
 
     def __init__(
         self,
-        int_year_start: int = INT_YEAR_START_DEFAULT,
-        int_year_end: int = INT_YEAR_END_DEFAULT,
+        int_year_start: int = _INT_YEAR_START_DEFAULT,
+        int_year_end: int = _INT_YEAR_END_DEFAULT,
         logger: Logger | None = None,
     ) -> None:
         """Initialize the offline ANBIMA holiday calendar.
@@ -59,4 +59,4 @@ class DatesBRAnbima(ABCCalendarOperations):
         list[tuple[str, date]]
             Tuples of ``(name, date)``, sorted by date.
         """
-        return national_holidays(self.int_year_start, self.int_year_end)
+        return _national_holidays(self.int_year_start, self.int_year_end)

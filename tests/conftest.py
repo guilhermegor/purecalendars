@@ -150,7 +150,9 @@ def block_network(request: pytest.FixtureRequest, *, monkeypatch: pytest.MonkeyP
 
 
 @pytest.fixture(autouse=True)
-def isolate_git_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+def isolate_git_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:  # complexity-ok: legacy #65
     """Drop every ``GIT_*`` variable git exports to hooks so a test never touches the host repo.
 
     Applied automatically to every test. Under pre-commit, ``GIT_DIR`` and

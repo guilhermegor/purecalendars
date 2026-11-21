@@ -25,9 +25,6 @@ from purecalendars._internal.utils.calendars import (
 )
 
 
-# --------------------------
-# Fixtures
-# --------------------------
 @pytest.fixture
 def mock_setlocale() -> MagicMock:
     """Fixture mocking locale.setlocale to return the locale string.
@@ -127,13 +124,10 @@ def new_holidays() -> list[tuple[str, date]]:
     ]
 
 
-# --------------------------
-# Tests for ABCCalendar
-# --------------------------
 class TestABCCalendar:
     """Test cases for ABCCalendar abstract base class."""
 
-    def test_abstract_methods_exist(self) -> None:  # noqa: PLR6301
+    def test_abstract_methods_exist(self) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test that ABCCalendar has required abstract methods.
 
         Verifies
@@ -166,15 +160,12 @@ class TestABCCalendar:
             ABCCalendar()  # type: ignore
 
 
-# --------------------------
-# Tests for CalendarCore
-# --------------------------
 class TestCalendarCore:
     """Test cases for CalendarCore class functionality."""
 
     def test_get_holidays_raw_default_implementation(  # noqa: PLR6301
         self, calendar_instance: ABCCalendarOperations
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test default implementation of get_holidays_raw.
 
         Verifies
@@ -219,7 +210,7 @@ class TestCalendarCore:
 
     def test_date_only_with_date(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, sample_date: date
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test date_only method with date input.
 
         Verifies
@@ -245,7 +236,7 @@ class TestCalendarCore:
 
     def test_date_only_with_datetime(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, sample_datetime: datetime
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test date_only method with datetime input.
 
         Verifies
@@ -366,7 +357,7 @@ class TestCalendarCore:
 
     def test_is_working_day_weekday_no_holiday(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, mock_holidays: MagicMock
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test is_working_day with weekday that's not a holiday.
 
         Verifies
@@ -535,15 +526,12 @@ class TestCalendarCore:
         assert result == []
 
 
-# --------------------------
-# Tests for DateManipulation
-# --------------------------
 class TestDateManipulation:  # noqa: PLR0904
     """Test cases for DateManipulation class functionality."""
 
     def test_add_holidays_valid(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, new_holidays: list[tuple[str, date]]
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test add_holidays with valid holiday list.
 
         Verifies
@@ -640,7 +628,7 @@ class TestDateManipulation:  # noqa: PLR0904
 
     def test_add_holidays_duplicate(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, new_holidays: list[tuple[str, date]]
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test add_holidays with duplicate holidays.
 
         Verifies
@@ -678,7 +666,7 @@ class TestDateManipulation:  # noqa: PLR0904
         calendar_instance: ABCCalendarOperations,
         mock_holidays: MagicMock,
         new_holidays: list[tuple[str, date]],
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65  # complexity-ok: pre-existing, baselined in #65
         """Test add_holidays with existing holidays in cache.
 
         Verifies
@@ -725,7 +713,7 @@ class TestDateManipulation:  # noqa: PLR0904
 
     def test_add_holidays_affects_working_days(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, new_holidays: list[tuple[str, date]]
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test that adding holidays affects working day calculations.
 
         Verifies
@@ -760,7 +748,7 @@ class TestDateManipulation:  # noqa: PLR0904
 
     def test_add_holidays_empty_cache(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, new_holidays: list[tuple[str, date]]
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65  # complexity-ok: pre-existing, baselined in #65
         """Test add_holidays when cache is not initialized.
 
         Verifies
@@ -956,7 +944,7 @@ class TestDateManipulation:  # noqa: PLR0904
         expected = datetime(2023, 10, 25, 10, 30, 45)
         assert result == expected
 
-    def test_build_date_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_build_date_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test build_date with valid inputs.
 
         Verifies
@@ -1014,7 +1002,7 @@ class TestDateManipulation:  # noqa: PLR0904
         with pytest.raises(ValueError):  # noqa: PT011
             calendar_instance.build_date(year, month, day)
 
-    def test_build_datetime_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_build_datetime_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test build_datetime with valid inputs.
 
         Verifies
@@ -1120,7 +1108,7 @@ class TestDateManipulation:  # noqa: PLR0904
 
     def test_nearest_working_day_next(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, mock_holidays: MagicMock
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test nearest_working_day with next=True.
 
         Verifies
@@ -1152,7 +1140,7 @@ class TestDateManipulation:  # noqa: PLR0904
 
     def test_nearest_working_day_previous(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, mock_holidays: MagicMock
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test nearest_working_day with next=False.
 
         Verifies
@@ -1532,13 +1520,10 @@ class TestDateManipulation:  # noqa: PLR0904
             calendar_instance.excel_float_to_date(-1.0)
 
 
-# --------------------------
-# Tests for DateTimezoneAware
-# --------------------------
 class TestDateTimezoneAware:
     """Test cases for DateTimezoneAware class functionality."""
 
-    def test_str_date_to_datetime_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_str_date_to_datetime_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test str_date_to_datetime with valid input.
 
         Verifies
@@ -1652,7 +1637,7 @@ class TestDateTimezoneAware:
         with pytest.raises(ValueError, match="Cannot change timezone of naive datetime"):
             calendar_instance.change_timezone(naive_dt, "UTC")
 
-    def test_date_to_datetime_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_date_to_datetime_valid(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test date_to_datetime with valid input.
 
         Verifies
@@ -1861,9 +1846,6 @@ class TestDateTimezoneAware:
         assert pytest.approx(abs((result - expected).total_seconds()), abs=1e-4) == 3024000.0000
 
 
-# --------------------------
-# Tests for DatesRangeDelta
-# --------------------------
 class TestDatesRangeDelta:
     """Test cases for DatesRangeDelta class functionality."""
 
@@ -2233,7 +2215,7 @@ class TestDatesRangeDelta:
         month: int,
         weekday: int,
         expected_count: int,
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65  # complexity-ok: pre-existing, baselined in #65
         """Test get_dates_weekday_month with valid inputs.
 
         Verifies
@@ -2377,13 +2359,10 @@ class TestDatesRangeDelta:
         assert result == expected
 
 
-# --------------------------
-# Tests for DatesCurrent
-# --------------------------
 class TestDatesCurrent:
     """Test cases for DatesCurrent class functionality."""
 
-    def test_curr_date(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_curr_date(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test curr_date method.
 
         Verifies
@@ -2404,7 +2383,7 @@ class TestDatesCurrent:
         assert isinstance(result, date)
         assert result == date.today()
 
-    def test_curr_datetime_utc(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_curr_datetime_utc(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test curr_datetime with UTC timezone.
 
         Verifies
@@ -2447,7 +2426,7 @@ class TestDatesCurrent:
 
     def test_current_timestamp_string_default(  # noqa: PLR6301
         self, calendar_instance: ABCCalendarOperations
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test current_timestamp_string with default format.
 
         Verifies
@@ -2474,7 +2453,7 @@ class TestDatesCurrent:
 
     def test_current_timestamp_string_custom_format(  # noqa: PLR6301
         self, calendar_instance: ABCCalendarOperations
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test current_timestamp_string with custom format.
 
         Verifies
@@ -2500,9 +2479,6 @@ class TestDatesCurrent:
         assert " " in result
 
 
-# --------------------------
-# Tests for DateFormatter
-# --------------------------
 class TestDateFormatter:
     """Test cases for DateFormatter class functionality."""
 
@@ -2618,7 +2594,7 @@ class TestDateFormatter:
 
     def test_year_number(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, sample_date: date
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test year_number method.
 
         Verifies
@@ -2641,7 +2617,7 @@ class TestDateFormatter:
         assert result == 2023
         assert isinstance(result, int)
 
-    def test_month_str(self, calendar_instance: ABCCalendarOperations, sample_date: date) -> None:  # noqa: PLR6301, PLR0917
+    def test_month_str(self, calendar_instance: ABCCalendarOperations, sample_date: date) -> None:  # noqa: PLR6301, PLR0917  # one-assert-ok: legacy #65
         """Test month_str method.
 
         Verifies
@@ -2666,7 +2642,7 @@ class TestDateFormatter:
 
     def test_month_number_numeric(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, sample_date: date
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test month_number with numeric output.
 
         Verifies
@@ -2691,7 +2667,7 @@ class TestDateFormatter:
 
     def test_month_number_string(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, sample_date: date
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test month_number with string output.
 
         Verifies
@@ -2716,7 +2692,7 @@ class TestDateFormatter:
 
     def test_week_number(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, sample_date: date
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test week_number method.
 
         Verifies
@@ -2740,7 +2716,7 @@ class TestDateFormatter:
         assert result == "1"
         assert isinstance(result, str)
 
-    def test_day_number(self, calendar_instance: ABCCalendarOperations, sample_date: date) -> None:  # noqa: PLR6301, PLR0917
+    def test_day_number(self, calendar_instance: ABCCalendarOperations, sample_date: date) -> None:  # noqa: PLR6301, PLR0917  # one-assert-ok: legacy #65
         """Test day_number method.
 
         Verifies
@@ -2768,7 +2744,7 @@ class TestDateFormatter:
         calendar_instance: ABCCalendarOperations,
         sample_date: date,
         mocker: MockerFixture,
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test month_name with full name.
 
         Verifies
@@ -2799,7 +2775,7 @@ class TestDateFormatter:
         calendar_instance: ABCCalendarOperations,
         sample_date: date,
         mocker: MockerFixture,
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test month_name with abbreviation.
 
         Verifies
@@ -2830,7 +2806,7 @@ class TestDateFormatter:
         calendar_instance: ABCCalendarOperations,
         sample_date: date,
         mocker: MockerFixture,
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test weekday_name with full name.
 
         Verifies
@@ -2861,7 +2837,7 @@ class TestDateFormatter:
         calendar_instance: ABCCalendarOperations,
         sample_date: date,
         mocker: MockerFixture,
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test weekday_name with abbreviation.
 
         Verifies
@@ -2887,7 +2863,7 @@ class TestDateFormatter:
         assert isinstance(result, str)
         assert len(result) <= 4  # Typically 3-4 characters for abbreviations
 
-    def test_utc_log_ts(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_utc_log_ts(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test utc_log_ts method.
 
         Verifies
@@ -2909,15 +2885,12 @@ class TestDateFormatter:
         assert result.tzinfo == timezone.utc  # noqa: UP017
 
 
-# --------------------------
-# Integration Tests
-# --------------------------
 class TestIntegration:
     """Integration tests for calendar operations."""
 
     def test_complete_date_workflow(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, mock_holidays: MagicMock
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65
         """Test complete date manipulation workflow.
 
         Verifies
@@ -2959,7 +2932,7 @@ class TestIntegration:
         assert isinstance(is_working, bool)
         assert isinstance(date_int, int)
 
-    def test_timezone_conversion_workflow(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
+    def test_timezone_conversion_workflow(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301  # one-assert-ok: legacy #65
         """Test complete timezone conversion workflow.
 
         Verifies
@@ -2994,9 +2967,6 @@ class TestIntegration:
         assert est_dt == restored_dt
 
 
-# --------------------------
-# Error Handling Tests
-# --------------------------
 class TestErrorHandling:
     """Test cases for error handling and edge cases."""
 
@@ -3049,7 +3019,7 @@ class TestErrorHandling:
     )
     def test_build_datetime_invalid_timezone(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, invalid_timezone: str | None
-    ) -> None:
+    ) -> None:  # one-assert-ok: legacy #65  # complexity-ok: pre-existing, baselined in #65
         """Test build_datetime with invalid timezone.
 
         Verifies

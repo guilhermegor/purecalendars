@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from logging import Logger
 
 from purecalendars._internal.utils.calendars.abc_calendar_operations import ABCCalendarOperations
-from purecalendars.br._offline_holidays import national_holidays
+from purecalendars.br._offline_holidays import _national_holidays
 
 
 class DatesBRFebraban(ABCCalendarOperations):
@@ -58,4 +58,4 @@ class DatesBRFebraban(ABCCalendarOperations):
         list[tuple[str, date]]
             Tuples of ``(name, date)``, sorted by date.
         """
-        return national_holidays(self.int_year_start, self.int_year_end)
+        return _national_holidays(self.int_year_start, self.int_year_end)
