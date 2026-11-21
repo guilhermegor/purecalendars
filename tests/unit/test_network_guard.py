@@ -14,6 +14,9 @@ def test_sendto_is_blocked() -> None:
 		sock.sendto(b"x", ("127.0.0.1", 9))
 
 
+@pytest.mark.skipif(
+	not hasattr(socket.socket, "sendmsg"), reason="socket.sendmsg is absent on Windows"
+)
 def test_sendmsg_is_blocked() -> None:
 	"""A UDP ``sendmsg`` without ``connect`` raises the guard error."""
 	with (
@@ -31,6 +34,9 @@ def test_allow_network_keeps_sendto_working() -> None:
 
 
 @pytest.mark.allow_network
+@pytest.mark.skipif(
+	not hasattr(socket.socket, "sendmsg"), reason="socket.sendmsg is absent on Windows"
+)
 def test_allow_network_keeps_sendmsg_working() -> None:
 	"""An ``allow_network`` test still sends a datagram through ``sendmsg``."""
 	with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
