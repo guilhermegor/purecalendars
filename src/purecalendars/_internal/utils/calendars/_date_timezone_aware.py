@@ -12,7 +12,7 @@ from purecalendars._internal.utils.calendars._date_manipulation import DateManip
 class DateTimezoneAware(DateManipulation):
     """Abstract class for date manipulation with timezone support."""
 
-    def str_date_to_datetime(  # noqa: PLR0917
+    def str_date_to_datetime(
         self,
         str_date: str,
         format_input: str | None = "DD/MM/YYYY",
@@ -37,7 +37,7 @@ class DateTimezoneAware(DateManipulation):
         date_obj = self.str_date_to_date(str_date, format_input)
         return datetime.combine(date_obj, time(0, 0), tzinfo=ZoneInfo(str_timezone or "UTC"))
 
-    def change_timezone(  # noqa: PLR0917
+    def change_timezone(
         self, date_: TypeDatetimeDate, target_tz: str = "UTC", source_tz: str | None = None
     ) -> datetime:
         """Change the timezone of a datetime or date object.
@@ -69,7 +69,7 @@ class DateTimezoneAware(DateManipulation):
             date_ = date_.replace(tzinfo=ZoneInfo(source_tz))
         return date_.astimezone(ZoneInfo(target_tz))
 
-    def date_to_datetime(self, date_: date, str_timezone: str | None = "UTC") -> datetime:  # noqa: PLR6301, PLR0917
+    def date_to_datetime(self, date_: date, str_timezone: str | None = "UTC") -> datetime:  # noqa: PLR6301
         """Convert a date object to a datetime object.
 
         Parameters
@@ -86,7 +86,7 @@ class DateTimezoneAware(DateManipulation):
         """
         return datetime.combine(date_, time(0, 0), tzinfo=ZoneInfo(str_timezone or "UTC"))
 
-    def to_unix_timestamp(  # noqa: PLR0917
+    def to_unix_timestamp(
         self, date_: TypeDatetimeDate | time, str_timezone: str | None = "UTC"
     ) -> int:
         """Convert date to unix timestamp (seconds since January 1, 1970, 00:00:00 UTC).
@@ -114,7 +114,7 @@ class DateTimezoneAware(DateManipulation):
 
         return int(date_.timestamp())
 
-    def unix_timestamp_to_datetime(  # noqa: PLR6301, PLR0917
+    def unix_timestamp_to_datetime(  # noqa: PLR6301
         self, unix_timestamp: float | int, str_timezone: str | None = "UTC"
     ) -> datetime:
         """Convert unix timestamp to datetime object.
@@ -133,7 +133,7 @@ class DateTimezoneAware(DateManipulation):
         """
         return datetime.fromtimestamp(unix_timestamp, tz=ZoneInfo(str_timezone or "UTC"))
 
-    def unix_timestamp_to_date(  # noqa: PLR0917
+    def unix_timestamp_to_date(
         self, unix_timestamp: float | int, str_timezone: str | None = "UTC"
     ) -> date:
         """Convert unix timestamp to date object.
@@ -152,7 +152,7 @@ class DateTimezoneAware(DateManipulation):
         """
         return self.unix_timestamp_to_datetime(unix_timestamp, str_timezone=str_timezone).date()
 
-    def iso_to_unix_timestamp(self, iso_timestamp: str, str_timezone: str | None = "UTC") -> int:  # noqa: PLR6301, PLR0917
+    def iso_to_unix_timestamp(self, iso_timestamp: str, str_timezone: str | None = "UTC") -> int:  # noqa: PLR6301
         """Convert ISO timestamp to unix timestamp (seconds since January 1, 1970, 00:00:00 UTC).
 
         Parameters
@@ -172,7 +172,7 @@ class DateTimezoneAware(DateManipulation):
             date_ = date_.replace(tzinfo=ZoneInfo(str_timezone or "UTC"))
         return int(date_.timestamp())
 
-    def excel_float_to_datetime(  # noqa: PLR6301, PLR0917
+    def excel_float_to_datetime(  # noqa: PLR6301
         self, float_date: float, str_timezone: str | None = "UTC"
     ) -> datetime:
         """Convert Excel float date to datetime object.

@@ -29,7 +29,7 @@ class DatesBRB3(ABCCalendarOperations):
     .. [1] https://www.b3.com.br/pt_br/solucoes/plataformas/puma-trading-system/para-participantes-e-traders/calendario-de-negociacao/feriados/
     """
 
-    def __init__(  # noqa: PLR0917
+    def __init__(
         self,
         bool_add_christmas_eve: bool = True,
         int_year_start: int = INT_YEAR_START_DEFAULT,
@@ -100,7 +100,7 @@ class DatesBRB3(ABCCalendarOperations):
                 list_.append(("Vespera de Natal", self.get_christmas_eve(int_year)))
         return list_
 
-    def get_last_working_day(self, int_year: int, set_dates_national: set[date]) -> date:  # noqa: PLR0917
+    def get_last_working_day(self, int_year: int, set_dates_national: set[date]) -> date:
         """Get the last working day of a given year.
 
         Parameters

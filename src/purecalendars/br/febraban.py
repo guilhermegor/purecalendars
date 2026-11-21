@@ -25,7 +25,7 @@ class DatesBRFebraban(ABCCalendarOperations):
     .. [1] https://feriadosbancarios.febraban.org.br/
     """
 
-    def __init__(  # noqa: PLR0917
+    def __init__(
         self,
         int_year_start: int = (date.today() - timedelta(days=22)).year - 1,
         int_year_end: int = (date.today() - timedelta(days=22)).year,

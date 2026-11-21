@@ -48,7 +48,7 @@ class StrHandler(metaclass=TypeChecker):
         shaved = "".join(c for c in norm_txt if not combining(c))
         return normalize("NFC", shaved)
 
-    def convert_case(self, str_: str, from_case: str, to_case: str) -> str:  # noqa: PLR0912, PLR0911, PLR6301, PLR0917
+    def convert_case(self, str_: str, from_case: str, to_case: str) -> str:  # noqa: PLR0912, PLR0911, PLR6301
         """Convert a string between naming conventions.
 
         Supported cases: ``camel``, ``pascal``, ``kebab``, ``upper_constant``,

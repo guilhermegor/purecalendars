@@ -13,7 +13,7 @@ from purecalendars._internal.utils.calendars._date_timezone_aware import DateTim
 class DatesRangeDelta(DateTimezoneAware):
     """Abstract class for range dates and delta operations."""
 
-    def working_days_range(  # noqa: PLR0917
+    def working_days_range(
         self, date_start: TypeDatetimeDate, date_end: TypeDatetimeDate
     ) -> set[date]:
         """Return a set of working days between two dates.
@@ -48,7 +48,7 @@ class DatesRangeDelta(DateTimezoneAware):
             if self.is_working_day(date_)
         }
 
-    def calendar_days_range(  # noqa: PLR0917
+    def calendar_days_range(
         self, date_start: TypeDatetimeDate, date_end: TypeDatetimeDate
     ) -> set[date]:
         """Return a set of calendar days between two dates.
@@ -77,7 +77,7 @@ class DatesRangeDelta(DateTimezoneAware):
 
         return {date_start + timedelta(days=i) for i in range((date_end - date_start).days + 1)}
 
-    def years_between_dates(  # noqa: PLR0917
+    def years_between_dates(
         self, date_start: TypeDatetimeDate, date_end: TypeDatetimeDate
     ) -> set[int]:
         """Return a set of years between two dates.
@@ -107,7 +107,7 @@ class DatesRangeDelta(DateTimezoneAware):
         list_ = self.calendar_days_range(date_start, date_end)
         return set(int(date_.strftime("%Y")) for date_ in list_)
 
-    def delta_working_days(self, date_start: TypeDatetimeDate, date_end: TypeDatetimeDate) -> int:  # noqa: PLR0917
+    def delta_working_days(self, date_start: TypeDatetimeDate, date_end: TypeDatetimeDate) -> int:
         """Return the number of working days between two dates.
 
         Parameters
@@ -138,7 +138,7 @@ class DatesRangeDelta(DateTimezoneAware):
             else len(self.working_days_range(date_start, date_end))
         )
 
-    def delta_calendar_days(self, date_start: TypeDatetimeDate, date_end: TypeDatetimeDate) -> int:  # noqa: PLR0917
+    def delta_calendar_days(self, date_start: TypeDatetimeDate, date_end: TypeDatetimeDate) -> int:
         """Return the number of calendar days between two dates.
 
         Parameters
@@ -165,7 +165,7 @@ class DatesRangeDelta(DateTimezoneAware):
 
         return (date_end - date_start).days
 
-    def get_start_end_day_month(  # noqa: PLR0917
+    def get_start_end_day_month(
         self, date_: TypeDatetimeDate, bool_working_days: bool = False
     ) -> tuple[date, date]:
         """Return the start and end date of the month of the given date.
@@ -201,7 +201,7 @@ class DatesRangeDelta(DateTimezoneAware):
 
         return date_start, date_end
 
-    def get_dates_weekday_month(  # noqa: PLR6301, PLR0917
+    def get_dates_weekday_month(  # noqa: PLR6301
         self,
         year: int,
         month: int,
@@ -247,7 +247,7 @@ class DatesRangeDelta(DateTimezoneAware):
 
         return list_
 
-    def get_nth_weekday_month(  # noqa: PLR0917
+    def get_nth_weekday_month(
         self,
         year: int,
         month: int,
@@ -323,7 +323,7 @@ class DatesRangeDelta(DateTimezoneAware):
         """
         return [self.add_working_days(date(y + 1, 1, 1), -1) for y in list_years]
 
-    def delta_working_hours(  # noqa: PLR0917, PLR0913
+    def delta_working_hours(  # noqa: PLR0913
         self,
         timestamp_start: str,
         timestamp_end: str,

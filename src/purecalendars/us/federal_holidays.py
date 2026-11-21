@@ -30,7 +30,7 @@ class DatesUSFederalHolidays(ABCCalendarOperations):
     [1] 5 U.S.C. §6103 — Holidays (observed-day rule).
     """
 
-    def __init__(  # noqa: PLR0917
+    def __init__(
         self,
         int_year_start: int = date.today().year - 1,
         int_year_end: int = date.today().year,
@@ -73,7 +73,7 @@ class DatesUSFederalHolidays(ABCCalendarOperations):
         )
         return [(str_name, date_) for date_, str_name in sorted(dict_holidays.items())]
 
-    def _validate_year_range(self, int_year_start: int, int_year_end: int) -> None:  # noqa: PLR6301, PLR0917
+    def _validate_year_range(self, int_year_start: int, int_year_end: int) -> None:  # noqa: PLR6301
         """Validate the year-range parameters.
 
         Parameters

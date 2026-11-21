@@ -26,7 +26,7 @@ class DatesBRAnbima(ABCCalendarOperations):
     .. [1] https://www.anbima.com.br/feriados/arqs/feriados_nacionais.xls
     """
 
-    def __init__(  # noqa: PLR0917
+    def __init__(
         self,
         int_year_start: int = INT_YEAR_START_DEFAULT,
         int_year_end: int = INT_YEAR_END_DEFAULT,

@@ -13,7 +13,7 @@ from purecalendars._internal.utils.calendars._dates_current import DatesCurrent
 class DateFormatter(DatesCurrent):
     """Abstract class for date formatting."""
 
-    def get_platform_locale(  # noqa: PLR6301, PLR0917
+    def get_platform_locale(  # noqa: PLR6301
         self, str_locale: str | None = None, str_timezone: str | None = None
     ) -> str:
         """Return the platform locale.
@@ -107,7 +107,7 @@ class DateFormatter(DatesCurrent):
         date_ = self.date_only(date_)
         return date_.strftime("%B")
 
-    def month_number(self, date_: TypeDatetimeDate, bool_month_mm: bool = False) -> int | str:  # noqa: PLR0917
+    def month_number(self, date_: TypeDatetimeDate, bool_month_mm: bool = False) -> int | str:
         """Return the month number.
 
         Parameters
@@ -160,7 +160,7 @@ class DateFormatter(DatesCurrent):
         date_ = self.date_only(date_)
         return int(date_.strftime("%d"))
 
-    def month_name(  # noqa: PLR0917
+    def month_name(
         self,
         date_: TypeDatetimeDate,
         bool_abbreviation: bool = False,
@@ -187,7 +187,7 @@ class DateFormatter(DatesCurrent):
         locale.setlocale(locale.LC_TIME, str_locale)
         return date_.strftime("%b" if bool_abbreviation else "%B")
 
-    def weekday_name(  # noqa: PLR0917
+    def weekday_name(
         self,
         date_: TypeDatetimeDate,
         bool_abbreviation: bool = False,

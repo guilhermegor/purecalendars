@@ -83,7 +83,7 @@ class TypeChecker(type):
     ``check_typing`` gate holds in zero-dependency mode too.
     """
 
-    def __new__(  # noqa: PLR0917 - type.__new__ fixes this positional signature
+    def __new__(
         mcs, str_name: str, tuple_bases: tuple[type, ...], dict_namespace: dict[str, object]
     ) -> TypeChecker:
         """Build the class with its public methods wrapped.

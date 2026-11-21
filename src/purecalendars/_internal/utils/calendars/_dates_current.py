@@ -49,7 +49,7 @@ class DatesCurrent(DatesRangeDelta):
         """
         return self.curr_datetime(str_timezone=str_timezone).time()
 
-    def current_timestamp_string(  # noqa: PLR0917
+    def current_timestamp_string(
         self, format_output: str = "%Y%m%d_%H%M%S", str_timezone: str | None = "UTC"
     ) -> str:
         """Return the current timestamp as a string.

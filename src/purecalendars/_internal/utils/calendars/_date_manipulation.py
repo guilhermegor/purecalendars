@@ -83,7 +83,7 @@ class DateManipulation(CalendarCore):
         set_new = {tup_holiday[1] for tup_holiday in list_new_holidays}
         self._holidays_cache = set_current | set_new
 
-    def add_working_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:  # noqa: PLR0917
+    def add_working_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:
         """Add the specified number of working days to the given date.
 
         Parameters
@@ -109,7 +109,7 @@ class DateManipulation(CalendarCore):
 
         return date_current
 
-    def add_calendar_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:  # noqa: PLR0917
+    def add_calendar_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:
         """Add the specified number of calendar days to the given date.
 
         Parameters
@@ -127,7 +127,7 @@ class DateManipulation(CalendarCore):
         date_ = self.date_only(date_)
         return date_ + timedelta(days=int_days_to_add)
 
-    def add_months(self, date_: datetime, int_months_to_add: int) -> datetime:  # noqa: PLR6301, PLR0917
+    def add_months(self, date_: datetime, int_months_to_add: int) -> datetime:  # noqa: PLR6301
         """Add the specified number of months to the given date.
 
         Parameters
@@ -144,7 +144,7 @@ class DateManipulation(CalendarCore):
         """
         return date_ + relativedelta(months=int_months_to_add)
 
-    def build_date(self, year: int, month: int, day: int) -> date:  # noqa: PLR6301, PLR0917
+    def build_date(self, year: int, month: int, day: int) -> date:  # noqa: PLR6301
         """Build a date object from the given year, month, and day.
 
         Parameters
@@ -163,7 +163,7 @@ class DateManipulation(CalendarCore):
         """
         return date(year=year, month=month, day=day)
 
-    def build_datetime(  # noqa: PLR6301, PLR0917
+    def build_datetime(  # noqa: PLR6301
         self,
         year: int,
         month: int,
@@ -219,7 +219,7 @@ class DateManipulation(CalendarCore):
         except ValueError as err:
             raise ValueError(f"Invalid date components: {err}") from err
 
-    def nearest_working_day(self, date_: TypeDatetimeDate, bool_next: bool = True) -> date:  # noqa: PLR0917
+    def nearest_working_day(self, date_: TypeDatetimeDate, bool_next: bool = True) -> date:
         """Find the nearest working day to the given date.
 
         Parameters
@@ -242,7 +242,7 @@ class DateManipulation(CalendarCore):
         else:  # noqa: RET505
             return self.add_working_days(date_ref, -1) if date_ref > date_ else date_ref
 
-    def str_date_to_date(self, str_date: str, format_input: str | None = "DD/MM/YYYY") -> date:  # noqa: PLR6301, PLR0917
+    def str_date_to_date(self, str_date: str, format_input: str | None = "DD/MM/YYYY") -> date:  # noqa: PLR6301
         """Convert a string representation of a date to a date object.
 
         Parameters
@@ -289,7 +289,7 @@ class DateManipulation(CalendarCore):
                 f"Invalid date string '{str_date}' for format {format_input}: {err}"
             ) from err
 
-    def timestamp_to_date(  # noqa: PLR0917
+    def timestamp_to_date(
         self,
         timestamp_: str,
         substr_timestamp: str = "T",
@@ -310,7 +310,7 @@ class DateManipulation(CalendarCore):
         """
         return self.str_date_to_date(timestamp_.split(substr_timestamp)[0], "YYYY-MM-DD")  # noqa: PLC0207
 
-    def timestamp_to_datetime(  # noqa: PLR6301, PLR0917
+    def timestamp_to_datetime(  # noqa: PLR6301
         self,
         timestamp_: str,
         substr_timestamp: str = "T",

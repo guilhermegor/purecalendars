@@ -27,7 +27,7 @@ INT_YEAR_START_DEFAULT = 2001
 INT_YEAR_END_DEFAULT = 2099
 
 
-def national_holidays(  # noqa: PLR0917
+def national_holidays(
     int_year_start: int = INT_YEAR_START_DEFAULT,
     int_year_end: int = INT_YEAR_END_DEFAULT,
 ) -> list[tuple[str, date]]:
@@ -58,7 +58,7 @@ def national_holidays(  # noqa: PLR0917
     ]
 
 
-def validate_year_range(int_year_start: int, int_year_end: int) -> None:  # noqa: PLR0917
+def validate_year_range(int_year_start: int, int_year_end: int) -> None:
     """Validate a year-range pair.
 
     Parameters
