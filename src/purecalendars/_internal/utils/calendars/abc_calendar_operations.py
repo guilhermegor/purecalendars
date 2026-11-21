@@ -4,6 +4,6 @@ from purecalendars._internal.utils.calendars._date_formatter import DateFormatte
 
 
 class ABCCalendarOperations(DateFormatter):
-	"""Abstract class for calendar operations."""
+    """Abstract class for calendar operations."""
 
-	pass
+    pass

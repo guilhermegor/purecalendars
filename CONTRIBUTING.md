@@ -116,7 +116,7 @@ All commits must follow the [Conventional Commits](https://www.conventionalcommi
      - Tests: `tests/test_<feat_name>.py`
    - Run comprehensive validation with: `bash bin/poe_exec.sh test_feat <feat_name>`
         - This command executes:
-            - **Ruff**: Linting, formatting, and flagging deprecated Python features
+            - **Ruff**: Linting, formatting, and flagging deprecated Python features (4-space indent, line length 99; see `ruff.toml`)
             - **Codespell**: Spelling verification in comments and docstrings
             - **Automated tests**: All test cases matching the project's testing standards
    - Ensure 100% test coverage for critical components

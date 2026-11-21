@@ -101,8 +101,12 @@ source; add a filter only with a reason.
 bash bin/poe_exec.sh lint   # ruff + mypy + codespell + pydocstyle + docstrings + shell/sql/yaml
 ```
 
-Ruff config lives in `ruff.toml` (line-length 99, tab indent, double quotes, NumPy
-docstrings). Docstring parameter/return types **must match** the type hints textually
+Ruff config lives in `ruff.toml`, the BlueprintX template's (line-length 99, 4-space
+indent, double quotes, NumPy docstrings; rule families `UP E F ANN B SIM I AIR ERA S PD D TID W
+PL PT RET A BLE N` plus `PLR1702`, preview mode on). `bin/*.py` is linted and formatted like
+`src/` and `tests/`. Findings whose fix would change a signature or test strictness
+(`PLR6301`, `PLR0917`, `PLR2004`, `PT011`, ...) are baselined with an inline `# noqa`; remove one
+when you touch that code and can fix it properly. Docstring parameter/return types **must match** the type hints textually
 (`int | float`, not `Union[int, float]`) — the `check-docstrings` gate enforces this.
 
 ---
@@ -144,8 +148,9 @@ Known limits, recorded rather than fixed:
 - The stamp keeps only the answers given at scaffold time (tier, roster choice, versions,
   commits); the other scaffold answers are not recorded.
 
-Tab-versus-space indentation makes a `ruff format`-ed file differ from the template byte for
-byte, so such files show up as changed on both sides without a real divergence.
+A file the repository has since reformatted (`ruff format`, plus inline `# noqa` baselines)
+differs from the template byte for byte, so it shows up as changed on both sides without a
+real divergence.
 
 ---
 
