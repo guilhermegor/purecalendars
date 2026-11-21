@@ -1451,8 +1451,8 @@ class TestDateManipulation:  # noqa: PLR0904
         -------
         None
         """
-        # Excel date for 2023-12-25
-        excel_date = 45291.0  # This is the Excel representation for 2023-12-25
+        # Excel serial 45291 is 2023-12-31
+        excel_date = 45291.0
         result = calendar_instance.excel_float_to_date(excel_date)
         expected = date(2023, 12, 31)
         assert result == expected
