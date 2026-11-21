@@ -7,10 +7,7 @@ import pytest
 from purecalendars.us import DatesUSFederalHolidays
 
 
-# --------------------------
-# Tests for DatesUSFederalHolidays (offline, holidays package)
-# --------------------------
-def test_federal_offline_init_valid() -> None:
+def test_federal_offline_init_valid() -> None:  # one-assert-ok: legacy #65
     """Test initialization of the offline DatesUSFederalHolidays.
 
     Verifies
@@ -28,7 +25,9 @@ def test_federal_offline_init_valid() -> None:
     assert not hasattr(instance, "cls_cache_manager")
 
 
-def test_federal_offline_holidays_emit_statutory_and_observed() -> None:
+def test_federal_offline_holidays_emit_statutory_and_observed() -> (
+    None
+):  # one-assert-ok: legacy #65
     """Test that a weekend holiday emits both statutory and observed dates.
 
     1 January 2023 fell on a Sunday, so both that Sunday (statutory) and the following
@@ -46,7 +45,7 @@ def test_federal_offline_holidays_emit_statutory_and_observed() -> None:
     assert instance.is_working_day(date(2023, 1, 2)) is False
 
 
-def test_federal_offline_holidays_offline_no_network() -> None:
+def test_federal_offline_holidays_offline_no_network() -> None:  # one-assert-ok: legacy #65
     """Test that the offline calendar returns a non-empty (name, date) list.
 
     Returns

@@ -101,7 +101,9 @@ _EXPANDERS: dict[inspect._ParameterKind, Callable[[object], list[object]]] = {
 }
 
 
-def _plain_class(hint: object) -> type:
+def _plain_class(
+    hint: object,
+) -> type:  # complexity-ok: legacy #65
     """Return the annotation when it is a plain class, else ``object`` (always satisfied).
 
     Parameters

@@ -206,7 +206,7 @@ class DatesRangeDelta(DateTimezoneAware):
         year: int,
         month: int,
         weekday: int,
-    ) -> list[date]:
+    ) -> list[date]:  # complexity-ok: legacy #65
         """Return a list of dates for the given year, month, and weekday.
 
         Parameters
@@ -255,7 +255,7 @@ class DatesRangeDelta(DateTimezoneAware):
         n: int,
         bool_working_days: bool = True,
         bool_next_working_day: bool = True,
-    ) -> date:
+    ) -> date:  # complexity-ok: legacy #65
         """Return the nth weekday of the month.
 
         Parameters
@@ -337,7 +337,7 @@ class DatesRangeDelta(DateTimezoneAware):
         int_minute_end_lunch: int = 0,
         list_working_days_range: list[int] | None = None,
         substr_timestamp: str = "T",
-    ) -> int:
+    ) -> int:  # complexity-ok: legacy #65
         """Return the number of working hours between two timestamps.
 
         Parameters
