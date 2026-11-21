@@ -69,7 +69,7 @@ def test_anbima_matches_published_table() -> None:
 
 def test_anbima_carnival_and_corpus_christi_are_not_working_days(
     anbima_instance: DatesBRAnbima,
-) -> None:
+) -> None:  # complexity-ok: legacy #65
     """Carnival and Corpus Christi close the banks, so they are not working days.
 
     Parameters
@@ -85,7 +85,7 @@ def test_anbima_carnival_and_corpus_christi_are_not_working_days(
         assert anbima_instance.is_working_day(date_) is False
 
 
-def test_anbima_default_range_covers_the_published_span() -> None:
+def test_anbima_default_range_covers_the_published_span() -> None:  # one-assert-ok: legacy #65
     """The default year range matches the span ANBIMA publishes, so it is a drop-in.
 
     Returns
@@ -108,7 +108,9 @@ def test_febraban_matches_anbima_for_the_same_years() -> None:
     assert [date_ for _, date_ in cls_febraban._source_holidays()] == LIST_DATES_ANBIMA_2026
 
 
-def test_b3_adds_the_last_working_day_of_the_year(b3_instance: DatesBRB3) -> None:
+def test_b3_adds_the_last_working_day_of_the_year(
+    b3_instance: DatesBRB3,
+) -> None:  # one-assert-ok: legacy #65
     """B3 does not trade on the last working day of the year, unlike the banks.
 
     Returns
@@ -147,7 +149,7 @@ def test_last_working_day_skips_weekends(  # noqa: PLR0917
     assert cls_cal.get_last_working_day(int_year, set_dates) == date_expected
 
 
-def test_b3_christmas_eve_is_opt_out() -> None:
+def test_b3_christmas_eve_is_opt_out() -> None:  # one-assert-ok: legacy #65
     """Christmas Eve is a non-trading day by default, and can be opted out of.
 
     B3's published calendar carries 24 December as a closure in every year it falls on a weekday,
@@ -223,7 +225,9 @@ def test_invalid_year_range_raises(int_year_start: int, int_year_end: int) -> No
         cls_cal._source_holidays()
 
 
-def test_add_holidays_merges_into_the_offline_provider(anbima_instance: DatesBRAnbima) -> None:
+def test_add_holidays_merges_into_the_offline_provider(
+    anbima_instance: DatesBRAnbima,
+) -> None:  # one-assert-ok: legacy #65
     """A runtime-injected holiday reaches both `holidays()` and the working-day set.
 
     Parameters
@@ -242,7 +246,7 @@ def test_add_holidays_merges_into_the_offline_provider(anbima_instance: DatesBRA
     assert anbima_instance.is_working_day(date_custom) is False
 
 
-def test_febraban_default_range_is_recent_years() -> None:
+def test_febraban_default_range_is_recent_years() -> None:  # one-assert-ok: legacy #65
     """FEBRABAN keeps its narrow rolling default rather than the full ANBIMA span.
 
     Returns

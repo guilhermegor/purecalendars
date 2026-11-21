@@ -39,7 +39,7 @@ class DateTimezoneAware(DateManipulation):
 
     def change_timezone(
         self, date_: TypeDatetimeDate, target_tz: str = "UTC", source_tz: str | None = None
-    ) -> datetime:
+    ) -> datetime:  # complexity-ok: legacy #65
         """Change the timezone of a datetime or date object.
 
         Parameters
@@ -88,7 +88,7 @@ class DateTimezoneAware(DateManipulation):
 
     def to_unix_timestamp(
         self, date_: TypeDatetimeDate | time, str_timezone: str | None = "UTC"
-    ) -> int:
+    ) -> int:  # complexity-ok: legacy #65
         """Convert date to unix timestamp (seconds since January 1, 1970, 00:00:00 UTC).
 
         Parameters
@@ -174,7 +174,7 @@ class DateTimezoneAware(DateManipulation):
 
     def excel_float_to_datetime(  # noqa: PLR6301
         self, float_date: float, str_timezone: str | None = "UTC"
-    ) -> datetime:
+    ) -> datetime:  # complexity-ok: legacy #65
         """Convert Excel float date to datetime object.
 
         Parameters
