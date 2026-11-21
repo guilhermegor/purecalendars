@@ -272,8 +272,8 @@ through `add_holidays`, so overriding it drops those additions.
 
 **May rely on.**
 
-- The whole surface (`is_holiday`, `is_working_day`, `add_working_days`, ...) reading the calendar
-  through `_source_holidays`; weekends are non-working on top of it.
+- `holidays()` and the whole surface (`is_holiday`, `is_working_day`, `add_working_days`, ...)
+  reading the calendar through `_source_holidays`; weekends are non-working on top of it.
 - `add_holidays` working even when your `__init__` does not call `super().__init__()`.
 
 **Must not assume.** That `_source_holidays` is re-read on every call: the date set behind

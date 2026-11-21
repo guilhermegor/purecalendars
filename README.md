@@ -141,8 +141,8 @@ workflow and CI gate.
 ## Public API
 
 The package root exports `__version__` and `ABCCalendarOperations`, the base class to subclass for
-your own calendar; each provider is imported from its own module, and everything else under
-`_internal/` is private:
+your own calendar; each provider is imported from its own module. Nothing under `_internal/` is
+public, so import `ABCCalendarOperations` from the root, never from its `_internal` path:
 
 - `purecalendars.ABCCalendarOperations`
 - `purecalendars.br.anbima.DatesBRAnbima`
