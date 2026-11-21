@@ -384,11 +384,11 @@ class DateManipulation(CalendarCore):
         if numeric_excel_date < 0:
             raise ValueError("numeric_excel_date cannot be negative")
 
-        # Excel's epoch starts at January 1, 1900, but there's a bug where
-        # Excel treats 1900 as a leap year, so we use December 30, 1899 as base
-        base_date = date(1899, 12, 30)
-
-        # Excel has a leap year bug for 1900, so dates >= 60 need adjustment  # noqa: ERA001
+        # Serial 1 is 1900-01-01, so the base is 1899-12-31 for serials below 60. Excel
+        # then counts a non-existent 1900-02-29 (serial 60); every later serial is one
+        # ahead of the real calendar, hence the shift. Serial 60 has no real date and
+        # maps to 1900-02-28, matching excel_float_to_datetime.
+        base_date = date(1899, 12, 31)
         if numeric_excel_date >= 60:  # noqa: PLR2004
             numeric_excel_date -= 1
 

@@ -285,17 +285,17 @@ class DatesRangeDelta(DateTimezoneAware):
         ValueError
                 If month is not between 1 and 12
                 If weekday is not between 0 (Monday) and 6 (Sunday)
-                If n is 0
+                If n is 0 ("n must be non-zero") or negative ("n must be positive")
                 If n is greater than the number of weekdays in the month
         """
         if not 1 <= month <= 12:  # noqa: PLR2004
             raise ValueError("Month must be between 1 and 12")
         if not 0 <= weekday <= 6:  # noqa: PLR2004
             raise ValueError("Weekday must be between 0 (Monday) and 6 (Sunday)")
-        if n < 1:
-            raise ValueError("n must be positive")
         if n == 0:
             raise ValueError("n must be non-zero")
+        if n < 0:
+            raise ValueError("n must be positive")
 
         dates = self.get_dates_weekday_month(year, month, weekday)
         if n > len(dates):

@@ -1454,8 +1454,44 @@ class TestDateManipulation:  # noqa: PLR0904
         # Excel date for 2023-12-25
         excel_date = 45291.0  # This is the Excel representation for 2023-12-25
         result = calendar_instance.excel_float_to_date(excel_date)
-        expected = date(2023, 12, 30)
+        expected = date(2023, 12, 31)
         assert result == expected
+
+    @pytest.mark.parametrize(
+        ("serial", "expected"),
+        [
+            (1, date(1900, 1, 1)),
+            (59, date(1900, 2, 28)),
+            (60, date(1900, 2, 28)),  # Excel's fake 1900-02-29 has no real date
+            (61, date(1900, 3, 1)),
+            (45000, date(2023, 3, 15)),
+        ],
+    )
+    def test_excel_float_to_date_known_serials(  # noqa: PLR6301, PLR0917
+        self, calendar_instance: ABCCalendarOperations, serial: int, expected: date
+    ) -> None:
+        """Test excel_float_to_date against serials Excel displays.
+
+        Verifies
+        --------
+        - Serial 1 is 1900-01-01 and 61 is 1900-03-01
+        - Serial 60 (non-existent 1900-02-29) maps to 1900-02-28
+        - Serial 45000 is 2023-03-15
+
+        Parameters
+        ----------
+        calendar_instance : ABCCalendarOperations
+                Calendar instance from fixture
+        serial : int
+                Excel serial number
+        expected : date
+                Date Excel displays for the serial
+
+        Returns
+        -------
+        None
+        """
+        assert calendar_instance.excel_float_to_date(serial) == expected
 
     def test_excel_float_to_date_none(self, calendar_instance: ABCCalendarOperations) -> None:  # noqa: PLR6301
         """Test excel_float_to_date with None input.
@@ -1830,6 +1866,48 @@ class TestDateTimezoneAware:
 # --------------------------
 class TestDatesRangeDelta:
     """Test cases for DatesRangeDelta class functionality."""
+
+    def test_get_nth_weekday_month_zero_message(  # noqa: PLR6301
+        self, calendar_instance: ABCCalendarOperations
+    ) -> None:
+        """Test get_nth_weekday_month raises the zero-specific error for n=0.
+
+        Verifies
+        --------
+        - n=0 raises ValueError("n must be non-zero"), as documented
+
+        Parameters
+        ----------
+        calendar_instance : ABCCalendarOperations
+                Calendar instance from fixture
+
+        Returns
+        -------
+        None
+        """
+        with pytest.raises(ValueError, match="n must be non-zero"):
+            calendar_instance.get_nth_weekday_month(2023, 3, 0, 0)
+
+    def test_get_nth_weekday_month_negative_message(  # noqa: PLR6301
+        self, calendar_instance: ABCCalendarOperations
+    ) -> None:
+        """Test get_nth_weekday_month keeps the positive-n error for n<0.
+
+        Verifies
+        --------
+        - n=-1 raises ValueError("n must be positive")
+
+        Parameters
+        ----------
+        calendar_instance : ABCCalendarOperations
+                Calendar instance from fixture
+
+        Returns
+        -------
+        None
+        """
+        with pytest.raises(ValueError, match="n must be positive"):
+            calendar_instance.get_nth_weekday_month(2023, 3, 0, -1)
 
     def test_working_days_range_valid(  # noqa: PLR6301, PLR0917
         self, calendar_instance: ABCCalendarOperations, mock_holidays: MagicMock
@@ -2267,7 +2345,7 @@ class TestDatesRangeDelta:
         -------
         None
         """
-        with pytest.raises(ValueError, match="n must be positive"):
+        with pytest.raises(ValueError, match="n must be non-zero"):
             calendar_instance.get_nth_weekday_month(2023, 12, 0, 0, True, True)
 
     def test_last_working_day_years_valid(  # noqa: PLR6301, PLR0917
