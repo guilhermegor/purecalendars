@@ -1,32 +1,24 @@
-name: Docs - GitHub Pages Deployment
+name: Docs - Strict Build Check
 
-# Build the MkDocs site and deploy it to GitHub Pages via the official Actions deployment
-# (configure-pages -> upload-pages-artifact -> deploy-pages). `configure-pages` with
-# `enablement: true` self-enables Pages on the first run using the built-in GITHUB_TOKEN
-# (scoped `pages: write`) — so there is NO manual "enable Pages in Settings" step (the classic
-# first-publish 404), NO gh-pages branch, and NO stored PAT. Runs on every push to the default
-# branch, so every merged PR redeploys the docs.
+# A build check only: it never deploys. The published, versioned site is deployed by the
+# `deploy_docs` job of release-pypi.yaml (mike -> gh-pages), on each stable release.
 on:
   push:
     branches:
       - main
       - master
+  pull_request:
+    branches:
+      - main
+      - master
 
-# GITHUB_TOKEN scopes: read the repo, write the Pages deployment, mint the OIDC token
-# deploy-pages verifies. This is the sanctioned path that lets CI enable/deploy Pages without a PAT.
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-# One deployment at a time; don't cancel an in-progress deploy (GitHub's recommended Pages setup).
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,15 +31,6 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Cache mkdocs-material build
-        run: echo "cache_id=$(date --utc '+%V')" >> "$GITHUB_ENV"
-      - uses: actions/cache@v6
-        with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
-          restore-keys: |
-            mkdocs-material-
-
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -57,35 +40,8 @@ jobs:
       - name: Install Docs Dependencies
         run: poetry install --with docs
 
-      # Regenerate CHANGELOG.md from the commit/tag history so the published Changelog page is
-      # current. The changelog is never committed to main by CI; the site's copy is produced
-      # fresh at build time here (cz derives sections from git tags).
       - name: Regenerate CHANGELOG.md
         run: poetry run cz changelog
 
-      # Enables GitHub Pages for the repo on the first run (enablement: true) and exports the
-      # base path. No-op once Pages is already enabled as build_type=workflow.
-      - name: Configure Pages
-        uses: actions/configure-pages@v6
-        with:
-          enablement: true
-
       - name: Build Site (strict)
         run: poetry run mkdocs build --strict
-
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          # MkDocs' default output directory.
-          path: site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
