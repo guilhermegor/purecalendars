@@ -99,7 +99,7 @@ class _BlockedSocket(socket.socket):
 		*args : object
 			Positional arguments (data, address); forwarded to the reporter.
 		**kwargs : object
-			Keyword arguments (ignored).
+			Keyword arguments; forwarded to the reporter.
 
 		Raises
 		------
@@ -116,7 +116,7 @@ class _BlockedSocket(socket.socket):
 		*args : object
 			Positional arguments (buffers, ancillary data, flags, address); forwarded.
 		**kwargs : object
-			Keyword arguments (ignored).
+			Keyword arguments; forwarded to the reporter.
 
 		Raises
 		------

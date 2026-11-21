@@ -28,3 +28,10 @@ def test_allow_network_keeps_sendto_working() -> None:
 	"""An ``allow_network`` test still sends a datagram (loopback, no listener needed)."""
 	with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
 		assert sock.sendto(b"x", ("127.0.0.1", 9)) == 1
+
+
+@pytest.mark.allow_network
+def test_allow_network_keeps_sendmsg_working() -> None:
+	"""An ``allow_network`` test still sends a datagram through ``sendmsg``."""
+	with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+		assert sock.sendmsg([b"x"], [], 0, ("127.0.0.1", 9)) == 1

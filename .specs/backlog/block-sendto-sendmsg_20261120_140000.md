@@ -11,3 +11,7 @@ The test network guard also blocks `sendto` and `sendmsg`, so an unmarked test c
 - [x] Confirm `origin/main` `_BlockedSocket` does not override `sendto` or `sendmsg`
 - [x] Override both in `tests/conftest.py`
 - [x] Add `tests/unit/test_network_guard.py` (fails if the guard is removed; `allow_network` still works)
+
+## Completed — kept as a record
+
+All boxes ticked; the new tests fail when the `sendto`/`sendmsg` overrides are removed.
