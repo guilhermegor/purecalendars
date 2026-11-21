@@ -287,8 +287,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          str_source="$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.source.branch + ":" + .source.path' 2>/dev/null || true)"
-          if [ "$str_source" = "gh-pages:/" ]; then
+          str_source="$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.build_type + ":" + .source.branch + ":" + .source.path' 2>/dev/null || true)"
+          if [ "$str_source" = "legacy:gh-pages:/" ]; then
             if gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds" >/dev/null 2>&1; then
               echo 'Requested a Pages build: pushes made with `GITHUB_TOKEN` do not trigger one.' >> "$GITHUB_STEP_SUMMARY"
             else
@@ -297,7 +297,7 @@ jobs:
           else
             {
               echo '### Action required: enable GitHub Pages'
-              echo 'The `gh-pages` branch now exists, but the Pages source is not `gh-pages` at `/`. `GITHUB_TOKEN` cannot change it (the endpoint needs repository admin rights).'
+              echo 'The `gh-pages` branch now exists, but Pages is not set to deploy from the `gh-pages` branch at `/` (build type `legacy`). `GITHUB_TOKEN` cannot change it (the endpoint needs repository admin rights).'
               echo 'Now run `poe enable_pages` once as a repository admin, or set Settings > Pages > Deploy from a branch > `gh-pages`.'
             } >> "$GITHUB_STEP_SUMMARY"
           fi
