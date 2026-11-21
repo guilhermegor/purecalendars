@@ -140,9 +140,11 @@ workflow and CI gate.
 <!-- slug: public-api -->
 ## Public API
 
-The package root exports only `__version__`; each provider is imported from its own module, and
-everything under `_internal/` is private:
+The package root exports `__version__` and `ABCCalendarOperations`, the base class to subclass for
+your own calendar; each provider is imported from its own module, and everything else under
+`_internal/` is private:
 
+- `purecalendars.ABCCalendarOperations`
 - `purecalendars.br.anbima.DatesBRAnbima`
 - `purecalendars.br.febraban.DatesBRFebraban`
 - `purecalendars.br.b3.DatesBRB3`
