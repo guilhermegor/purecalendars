@@ -91,6 +91,40 @@ class _BlockedSocket(socket.socket):
         """
         _blocked(*args, **kwargs)
 
+    def sendto(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
+        """Reject ``socket.socket.sendto`` (a UDP send needs no ``connect``).
+
+        Parameters
+        ----------
+        *args : object
+            Positional arguments (data, address); forwarded to the reporter.
+        **kwargs : object
+            Keyword arguments; forwarded to the reporter.
+
+        Raises
+        ------
+        NetworkAccessError
+            Always.
+        """
+        _blocked(*args, **kwargs)
+
+    def sendmsg(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
+        """Reject ``socket.socket.sendmsg`` (a UDP send needs no ``connect``).
+
+        Parameters
+        ----------
+        *args : object
+            Positional arguments (buffers, ancillary, flags, address); forwarded.
+        **kwargs : object
+            Keyword arguments; forwarded to the reporter.
+
+        Raises
+        ------
+        NetworkAccessError
+            Always.
+        """
+        _blocked(*args, **kwargs)
+
 
 @pytest.fixture(autouse=True)
 def block_network(request: pytest.FixtureRequest, *, monkeypatch: pytest.MonkeyPatch) -> None:
