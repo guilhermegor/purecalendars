@@ -196,6 +196,13 @@ repos:
         stages:
           - pre-push
 
+      - id: lint-deps
+        name: deptry (every imported package is a direct dependency)
+        entry: bash bin/lint_deps.sh
+        language: system
+        files: ^(pyproject\.toml|src/.*\.py)$
+        pass_filenames: false
+
 
       - id: readme-structure
         name: README structure (plain headings, slug sections, Authors links)
