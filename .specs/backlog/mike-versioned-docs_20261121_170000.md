@@ -15,5 +15,5 @@ Branch: `docs/64-mike-versioned-docs`.
 
 - [ ] Owner, once after the first release that runs `deploy_docs`: `bash bin/poe_exec.sh
       enable_pages` (points Pages at `gh-pages`; `GITHUB_TOKEN` cannot).
-- [ ] Follow-up: the template's PEP 440 version validation step and `timeout-minutes` were not
-      adopted here.
+- [ ] Follow-up: the template's PEP 440 version validation step was not adopted here
+      (`timeout-minutes` was, on `docs.yaml` and `deploy_docs`).

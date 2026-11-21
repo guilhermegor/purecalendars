@@ -230,15 +230,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-  # Versioned docs: deployed from the release, never from a push to main. Stable versions only
-  # (no suffix), so a prerelease never moves `latest`. mike pushes to `gh-pages`; Pages serves
+  # Versioned docs: deployed from the release tag (after `github_release` creates it, so
+  # `cz changelog` sees it), never from a push to main. Stable versions only (no suffix, no
+  # `-`), so a prerelease never moves `latest`. mike pushes to `gh-pages`; Pages serves
   # that branch once its source is set to it (`poe enable_pages`, admin, once).
   deploy_docs:
     name: Deploy Versioned Docs (mike)
-    needs: [pypi, details]
-    if: needs.details.outputs.suffix == ''
+    needs: [pypi, github_release, details]
+    if: needs.details.outputs.suffix == '' && !contains(needs.details.outputs.new_version, '-')
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     permissions:
       contents: write
       pages: write
@@ -248,6 +252,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ needs.details.outputs.tag_name }}
           fetch-depth: 0
 
       - name: Set Up Python

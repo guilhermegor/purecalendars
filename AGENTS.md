@@ -153,8 +153,8 @@ first-ever release register a **pending publisher**. The changelog is generated 
 
 **Docs are versioned via [mike](https://github.com/jimporter/mike)** and served from the
 `gh-pages` branch — `docs.yaml` is a strict *build check only* and never deploys. Pages must be
-set to "Deploy from a branch → gh-pages" via `poe enable_pages`, which waits until the first
-release creates that branch. See `docs/contributing.md`.
+set to "Deploy from a branch → gh-pages" via `poe enable_pages`, a no-op until the first
+release creates that branch (run it again then). See `docs/contributing.md`.
 
 The first `release-pypi.yaml` run creates the `gh-pages` branch, but `GITHUB_TOKEN` cannot set
 the Pages source (it needs admin rights). The `deploy_docs` job prints the remedy in its job
