@@ -181,7 +181,7 @@ source siblings at runtime paths shellcheck cannot resolve. Any other
 
 ## Docs and hygiene guards
 
-Each is a pre-commit hook and, except `check_clean_index.sh` (pre-push only), a CI step in
+Each is a pre-commit hook (`check_clean_index.sh` at the pre-push stage) and a CI step in
 `tests.yaml`.
 
 - `check_docs_sections.py`: the docs nav holds the canonical pages (`python3 bin/check_docs_sections.py`).
@@ -190,4 +190,5 @@ Each is a pre-commit hook and, except `check_clean_index.sh` (pre-push only), a 
 - `check_identifier_masking.py`: no masked CPF/CNPJ compared in `.py`/`.sql` (`python3 bin/check_identifier_masking.py`).
 - `check_secrets.sh`: gitleaks over the tree and history (`bash bin/check_secrets.sh`); false positives go in `.gitleaks.toml`.
 - `check_description_sync.sh`: one description across `pyproject.toml`, `mkdocs.yml` and GitHub About (`bash bin/check_description_sync.sh`).
-- `check_clean_index.sh`: pre-push only; refuses a push while staged work sits in the index (`bash bin/check_clean_index.sh`).
+- `check_clean_index.sh`: refuses a push while staged work sits in the index (`bash bin/check_clean_index.sh`).
+- `lint_deps.sh`: deptry; every package `src/` imports is a declared direct dependency (`bash bin/lint_deps.sh`, needs `poetry install --with dev`).

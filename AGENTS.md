@@ -103,10 +103,9 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
   transitive presence is an accident of another package's tree and breaks silently the day that
   package drops or version-caps it. Run `poetry add <pkg>` for anything you import.
 
-  **Not yet enforced here**: `deptry` is declared in `pyproject.toml` and configured under
-  `[tool.deptry.per_rule_ignores]`, but no `poe lint` task, pre-commit hook or workflow runs it
-  in this repository (the template's `bin/lint_deps.sh` gate has not been adopted). Run
-  `poetry run deptry src` by hand until it is wired in. Two things worth knowing:
+  **Enforced**: `bin/lint_deps.sh` runs `deptry` over `src/` as the `lint-deps` pre-commit
+  hook and a `tests.yaml` step, configured under `[tool.deptry.per_rule_ignores]`. Two things
+  worth knowing:
 
   - **A guarded import is still an import.** `try: import numpy / except ModuleNotFoundError:`
     degrades gracefully at runtime and changes nothing about the declaration — that pattern is
