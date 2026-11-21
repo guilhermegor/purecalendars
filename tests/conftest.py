@@ -28,143 +28,143 @@ import pytest
 
 
 class NetworkAccessError(RuntimeError):
-	"""Raised when a test attempts to open a real network connection."""
+    """Raised when a test attempts to open a real network connection."""
 
 
 def _blocked(*args: object, **kwargs: object) -> NoReturn:
-	"""Reject a network call, naming the target and the fix.
+    """Reject a network call, naming the target and the fix.
 
-	Parameters
-	----------
-	*args : object
-		Positional arguments from the patched socket primitive; the first is the
-		connection target shown in the error message.
-	**kwargs : object
-		Keyword arguments from the patched socket primitive (ignored).
+    Parameters
+    ----------
+    *args : object
+            Positional arguments from the patched socket primitive; the first is the
+            connection target shown in the error message.
+    **kwargs : object
+            Keyword arguments from the patched socket primitive (ignored).
 
-	Raises
-	------
-	NetworkAccessError
-		Always — a real network call is never allowed in a test.
-	"""
-	raise NetworkAccessError(
-		f"A test tried to reach the network ({args[:1]!r}). "
-		"Mock the I/O boundary (the download / HTTP seam) instead, or mark the "
-		"test @pytest.mark.allow_network if it truly must hit the wire."
-	)
+    Raises
+    ------
+    NetworkAccessError
+            Always — a real network call is never allowed in a test.
+    """
+    raise NetworkAccessError(
+        f"A test tried to reach the network ({args[:1]!r}). "
+        "Mock the I/O boundary (the download / HTTP seam) instead, or mark the "
+        "test @pytest.mark.allow_network if it truly must hit the wire."
+    )
 
 
 class _BlockedSocket(socket.socket):
-	"""A socket whose outbound-connection methods are disabled."""
+    """A socket whose outbound-connection methods are disabled."""
 
-	def connect(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
-		"""Reject ``socket.socket.connect``.
+    def connect(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
+        """Reject ``socket.socket.connect``.
 
-		Parameters
-		----------
-		*args : object
-			Positional arguments (the address tuple); forwarded to the reporter.
-		**kwargs : object
-			Keyword arguments (ignored).
+        Parameters
+        ----------
+        *args : object
+                Positional arguments (the address tuple); forwarded to the reporter.
+        **kwargs : object
+                Keyword arguments (ignored).
 
-		Raises
-		------
-		NetworkAccessError
-			Always.
-		"""
-		_blocked(*args, **kwargs)
+        Raises
+        ------
+        NetworkAccessError
+                Always.
+        """
+        _blocked(*args, **kwargs)
 
-	def connect_ex(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
-		"""Reject ``socket.socket.connect_ex``.
+    def connect_ex(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
+        """Reject ``socket.socket.connect_ex``.
 
-		Parameters
-		----------
-		*args : object
-			Positional arguments (the address tuple); forwarded to the reporter.
-		**kwargs : object
-			Keyword arguments (ignored).
+        Parameters
+        ----------
+        *args : object
+                Positional arguments (the address tuple); forwarded to the reporter.
+        **kwargs : object
+                Keyword arguments (ignored).
 
-		Raises
-		------
-		NetworkAccessError
-			Always.
-		"""
-		_blocked(*args, **kwargs)
+        Raises
+        ------
+        NetworkAccessError
+                Always.
+        """
+        _blocked(*args, **kwargs)
 
-	def sendto(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
-		"""Reject ``socket.socket.sendto`` (a UDP send needs no ``connect``).
+    def sendto(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
+        """Reject ``socket.socket.sendto`` (a UDP send needs no ``connect``).
 
-		Parameters
-		----------
-		*args : object
-			Positional arguments (data, address); forwarded to the reporter.
-		**kwargs : object
-			Keyword arguments; forwarded to the reporter.
+        Parameters
+        ----------
+        *args : object
+            Positional arguments (data, address); forwarded to the reporter.
+        **kwargs : object
+            Keyword arguments; forwarded to the reporter.
 
-		Raises
-		------
-		NetworkAccessError
-			Always.
-		"""
-		_blocked(*args, **kwargs)
+        Raises
+        ------
+        NetworkAccessError
+            Always.
+        """
+        _blocked(*args, **kwargs)
 
-	def sendmsg(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
-		"""Reject ``socket.socket.sendmsg`` (a UDP send needs no ``connect``).
+    def sendmsg(self, *args: object, **kwargs: object) -> NoReturn:  # noqa: PLR6301 -- fixed foreign/port signature
+        """Reject ``socket.socket.sendmsg`` (a UDP send needs no ``connect``).
 
-		Parameters
-		----------
-		*args : object
-			Positional arguments (buffers, ancillary data, flags, address); forwarded.
-		**kwargs : object
-			Keyword arguments; forwarded to the reporter.
+        Parameters
+        ----------
+        *args : object
+            Positional arguments (buffers, ancillary, flags, address); forwarded.
+        **kwargs : object
+            Keyword arguments; forwarded to the reporter.
 
-		Raises
-		------
-		NetworkAccessError
-			Always.
-		"""
-		_blocked(*args, **kwargs)
+        Raises
+        ------
+        NetworkAccessError
+            Always.
+        """
+        _blocked(*args, **kwargs)
 
 
 @pytest.fixture(autouse=True)
 def block_network(request: pytest.FixtureRequest, *, monkeypatch: pytest.MonkeyPatch) -> None:
-	"""Swap the socket primitives so no test can open a real connection.
+    """Swap the socket primitives so no test can open a real connection.
 
-	Applied automatically to every test. A test marked ``allow_network`` is left
-	untouched. ``monkeypatch`` restores the real primitives after the test.
+    Applied automatically to every test. A test marked ``allow_network`` is left
+    untouched. ``monkeypatch`` restores the real primitives after the test.
 
-	Parameters
-	----------
-	request : pytest.FixtureRequest
-		The active test request; inspected for the ``allow_network`` opt-out marker.
-	monkeypatch : pytest.MonkeyPatch
-		Pytest's patcher; restores the real primitives at teardown.
-	"""
-	bool_allowed = request.node.get_closest_marker("allow_network") is not None
-	monkeypatch.setattr(socket, "socket", socket.socket if bool_allowed else _BlockedSocket)
-	monkeypatch.setattr(
-		socket,
-		"create_connection",
-		socket.create_connection if bool_allowed else _blocked,
-	)
+    Parameters
+    ----------
+    request : pytest.FixtureRequest
+            The active test request; inspected for the ``allow_network`` opt-out marker.
+    monkeypatch : pytest.MonkeyPatch
+            Pytest's patcher; restores the real primitives at teardown.
+    """
+    bool_allowed = request.node.get_closest_marker("allow_network") is not None
+    monkeypatch.setattr(socket, "socket", socket.socket if bool_allowed else _BlockedSocket)
+    monkeypatch.setattr(
+        socket,
+        "create_connection",
+        socket.create_connection if bool_allowed else _blocked,
+    )
 
 
 @pytest.fixture(autouse=True)
 def isolate_git_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-	"""Drop every ``GIT_*`` variable git exports to hooks so a test never touches the host repo.
+    """Drop every ``GIT_*`` variable git exports to hooks so a test never touches the host repo.
 
-	Applied automatically to every test. Under pre-commit, ``GIT_DIR`` and
-	``GIT_INDEX_FILE`` name the calling repository, so a test that runs ``git init`` or
-	``git commit`` would otherwise write there instead of in its temporary directory. Every
-	``GIT_``-prefixed key is dropped (not a fixed list) because hooks leak more of them than
-	any list names. ``GITHUB_BASE_REF`` is dropped too: a ``pull_request`` run sets it, and
-	the ledger gate then accepts no other base.
+    Applied automatically to every test. Under pre-commit, ``GIT_DIR`` and
+    ``GIT_INDEX_FILE`` name the calling repository, so a test that runs ``git init`` or
+    ``git commit`` would otherwise write there instead of in its temporary directory. Every
+    ``GIT_``-prefixed key is dropped (not a fixed list) because hooks leak more of them than
+    any list names. ``GITHUB_BASE_REF`` is dropped too: a ``pull_request`` run sets it, and
+    the ledger gate then accepts no other base.
 
-	Parameters
-	----------
-	monkeypatch : pytest.MonkeyPatch
-		Pytest's patcher; restores the variables at teardown.
-	"""
-	for str_name in [k for k in os.environ if k.startswith("GIT_")]:
-		monkeypatch.delenv(str_name, raising=False)
-	monkeypatch.delenv("GITHUB_BASE_REF", raising=False)
+    Parameters
+    ----------
+    monkeypatch : pytest.MonkeyPatch
+            Pytest's patcher; restores the variables at teardown.
+    """
+    for str_name in [k for k in os.environ if k.startswith("GIT_")]:
+        monkeypatch.delenv(str_name, raising=False)
+    monkeypatch.delenv("GITHUB_BASE_REF", raising=False)

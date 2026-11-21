@@ -78,8 +78,8 @@ pickles) shows the `_internal` path, so moving the file later is a pickle-compat
 
 ## Conventions (inherited from `templates/python-common/`)
 
-- **Ruff**: linter + formatter. Line-length 99, double quotes, NumPy docstrings. **Tab
-  indent in this repository** (`ruff.toml`), not the template's 4 spaces, until #71.
+- **Ruff**: linter + formatter. Line-length 99, double quotes, NumPy docstrings, 4-space
+  indent (`ruff.toml` is the template's).
 - **Pre-commit**: ruff, pydocstyle, codespell, commitizen, gitlint, unit + integration
   tests, coverage badge.
 - **Tests**: `pytest` — `bash bin/poe_exec.sh unit_tests` (`pytest tests/unit/`). Write
