@@ -147,7 +147,9 @@ def compare_types(hint: object, doc: str) -> bool:  # noqa: PLR0917
     return set_doc <= set_hint
 
 
-def parse_raises_section(docstring: str) -> dict[str, str]:
+def parse_raises_section(
+    docstring: str,
+) -> dict[str, str]:  # complexity-ok: legacy #65
     """Parse the Raises section of a NumPy-style docstring.
 
     Parameters

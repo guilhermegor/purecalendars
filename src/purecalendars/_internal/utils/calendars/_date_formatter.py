@@ -15,7 +15,7 @@ class DateFormatter(DatesCurrent):
 
     def get_platform_locale(  # noqa: PLR6301
         self, str_locale: str | None = None, str_timezone: str | None = None
-    ) -> str:
+    ) -> str:  # complexity-ok: legacy #65
         """Return the platform locale.
 
         Parameters

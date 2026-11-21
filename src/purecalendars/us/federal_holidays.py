@@ -73,7 +73,7 @@ class DatesUSFederalHolidays(ABCCalendarOperations):
         )
         return [(str_name, date_) for date_, str_name in sorted(dict_holidays.items())]
 
-    def _validate_year_range(self, int_year_start: int, int_year_end: int) -> None:  # noqa: PLR6301
+    def _validate_year_range(self, int_year_start: int, int_year_end: int) -> None:  # noqa: PLR6301  # complexity-ok: legacy #65
         """Validate the year-range parameters.
 
         Parameters
