@@ -20,9 +20,9 @@ from pytest_mock import MockerFixture
 
 from purecalendars._internal.utils.calendars import (
     ABCCalendar,
-    ABCCalendarOperations,
     TypeDateFormatInput,
 )
+from purecalendars.calendar_operations import ABCCalendarOperations
 
 
 @pytest.fixture

@@ -17,7 +17,7 @@ specific to this skeleton.
 
 ⚠️ The shared boundary rule 1 (the seam knows the vendor) has one tier-specific twist here:
 a caller imports the seam **package-qualified** —
-`from purecalendars._internal.utils.calendars import ABCCalendarOperations` — never a bare
+`from purecalendars._internal.utils.calendars import DateFormatter` — never a bare
 `from utils…`, which resolves only by accident of `sys.path` and breaks once the wheel is
 installed.
 

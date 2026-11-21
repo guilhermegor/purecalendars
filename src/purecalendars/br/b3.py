@@ -10,12 +10,12 @@ For the calendar built from the live ANBIMA fetch, use the ``opendata-calendars`
 from datetime import date, timedelta
 from logging import Logger
 
-from purecalendars._internal.utils.calendars.abc_calendar_operations import ABCCalendarOperations
 from purecalendars.br._offline_holidays import (
     _INT_YEAR_END_DEFAULT,
     _INT_YEAR_START_DEFAULT,
     _national_holidays,
 )
+from purecalendars.calendar_operations import ABCCalendarOperations
 
 
 class DatesBRB3(ABCCalendarOperations):

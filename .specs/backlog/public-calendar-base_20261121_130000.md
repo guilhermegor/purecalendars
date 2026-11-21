@@ -15,6 +15,8 @@ reaching into `_internal`.
 - [x] Mention it in the README Public API section
 - [x] Pin the documented subclass contract (empty subclass, weekends, `add_holidays`
       refresh without `super().__init__()`) after the fallback review
+- [x] Move the class out of `_internal` into the public `purecalendars.calendar_operations`
+      module, as the `check_all_exports` gate merged in #114 requires
 
 ## Not done, on purpose
 

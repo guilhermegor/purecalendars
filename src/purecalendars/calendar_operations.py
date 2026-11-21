@@ -1,4 +1,4 @@
-"""DateFormatter-derived — calendar mixin."""
+"""Public base class every calendar provider extends: ``purecalendars.ABCCalendarOperations``."""
 
 from purecalendars._internal.utils.calendars._date_formatter import DateFormatter
 

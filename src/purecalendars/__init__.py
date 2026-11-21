@@ -8,7 +8,7 @@ Live calendars fetched from their publishers live in the separate ``opendata-cal
 
 from importlib.metadata import PackageNotFoundError, version
 
-from purecalendars._internal.utils.calendars.abc_calendar_operations import ABCCalendarOperations
+from purecalendars.calendar_operations import ABCCalendarOperations
 
 
 try:
