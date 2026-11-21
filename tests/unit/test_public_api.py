@@ -16,7 +16,7 @@ def test_abc_calendar_operations_importable_from_root() -> None:
 
 def test_abc_calendar_operations_in_all() -> None:
     """The base class is listed in ``__all__``."""
-    assert "ABCCalendarOperations" in purecalendars.__all__
+    assert sorted(purecalendars.__all__) == ["ABCCalendarOperations", "__version__"]
 
 
 def test_abc_calendar_operations_is_internal_object() -> None:
@@ -71,3 +71,9 @@ def test_add_holidays_refreshes_cache_without_super_init() -> None:
     cls_calendar.is_working_day(date(2026, 1, 2))
     cls_calendar.add_holidays([("Bridge", date(2026, 1, 2))])
     assert not cls_calendar.is_working_day(date(2026, 1, 2))
+
+
+def test_add_holidays_does_not_leak_into_another_instance() -> None:
+    """Holidays added to one instance leave a fresh instance of the same subclass untouched."""
+    _DatesXX().add_holidays([("Bridge", date(2026, 1, 2))])
+    assert _DatesXX().is_working_day(date(2026, 1, 2))
