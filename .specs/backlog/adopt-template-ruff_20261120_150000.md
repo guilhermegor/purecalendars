@@ -12,7 +12,7 @@ Adopt the BlueprintX `ruff.toml` and reformat the tree. Part of #56.
 - [x] `ruff format` src, tests and bin (tab to space)
 - [x] Baseline the new-rule findings with `ruff --add-noqa` (no logic edits)
 - [x] Update `.editorconfig`, `CONTRIBUTING.md` and `docs/contributing.md`
-- [ ] Re-format `bin/*.py` added by #102 once it merges
+- [x] Re-format `bin/*.py` added by #102 (`ruff format --check .` clean)
 
 ## Not done, on purpose
 
@@ -20,5 +20,3 @@ Adopt the BlueprintX `ruff.toml` and reformat the tree. Part of #56.
   nothing to re-baseline.
 - The baselined `PLR6301` / `PLR0917` findings need signature changes
   (`@staticmethod`, keyword-only arguments); that is a behaviour change.
-- `.vscode/settings.json` still sets tab indentation for Python (outside the
-  #71 surface).
