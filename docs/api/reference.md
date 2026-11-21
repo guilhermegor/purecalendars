@@ -255,13 +255,49 @@ Each layer below lists the methods it contributes. Throughout, `date_` accepts e
 | `get_platform_locale` | `(str_locale=None, str_timezone=None)` | `str` | Resolve a platform-appropriate locale string backing the name methods above. |
 | `utc_log_ts` | `()` | `datetime` | A UTC datetime intended for log timestamps. |
 
+### Subclassing `ABCCalendarOperations`
+
+`ABCCalendarOperations` is public: `from purecalendars import ABCCalendarOperations`. Subclass it
+to build a calendar of your own and inherit every method above.
+
+**Override to supply holidays.** `_source_holidays(self) -> list[tuple[str, date]]` — the
+`(name, date)` pairs of your calendar. Its default returns `[]` and nothing is abstract, so a
+subclass that omits or misspells it raises nothing and has weekends as its only non-working days.
+
+**May override.** `get_holidays_raw(timeout)` — returns an empty `DataFrame` (`name`, `date`
+columns) by default; override it to expose an upstream table.
+
+**Should not override.** `holidays()` — it returns `_source_holidays()` plus the holidays added
+through `add_holidays`, so overriding it drops those additions.
+
+**May rely on.**
+
+- The whole surface (`is_holiday`, `is_working_day`, `add_working_days`, ...) reading the calendar
+  through `_source_holidays`; weekends are non-working on top of it.
+- `add_holidays` working even when your `__init__` does not call `super().__init__()`.
+
+**Must not assume.** That `_source_holidays` is re-read on every call: the date set behind
+`is_holiday` and `is_working_day` is built on first use and refreshed only by `add_holidays`, so
+fix your configuration (for example a year range) before the first query.
+
+```python
+from datetime import date
+
+from purecalendars import ABCCalendarOperations
+
+
+class DatesXX(ABCCalendarOperations):
+    def _source_holidays(self) -> list[tuple[str, date]]:
+        return [("New Year", date(2026, 1, 1))]
+```
+
 ---
 
 ## Conventions
 
 | Convention | Rule |
 |------------|------|
-| Public API | Country providers under `purecalendars.<cc>.<provider>`; one class per module. |
+| Public API | `ABCCalendarOperations` from the package root; country providers under `purecalendars.<cc>.<provider>`, one class per module. |
 | Private code | Everything under `purecalendars._internal` is off-limits — internal, may change. |
 | Type hints | Required on all public methods, including `-> None` returns. |
 | Docstrings | NumPy style; explain *why*, not *what*. |
