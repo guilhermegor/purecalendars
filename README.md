@@ -1,13 +1,21 @@
-# purecalendars <img src="assets/logo_purecalendars_no_description.png" align="right" width="200" style="border-radius: 15px;" alt="purecalendars">
+<!-- readme-archetype: library -->
+# purecalendars
+
+<p align="center"><img src="https://raw.githubusercontent.com/guilhermegor/purecalendars/main/assets/logo_purecalendars_no_description.png" width="200" alt="purecalendars"></p>
 
 [![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)
-[![Linting](https://img.shields.io/badge/linting-ruff_|_codespell-blue)](https://github.com/astral-sh/ruff)
+![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)
+[![PyPI Version](https://img.shields.io/pypi/v/purecalendars)](https://pypi.org/project/purecalendars/)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-blue)](https://guilhermegor.github.io/purecalendars/)
+[![Linting](https://img.shields.io/badge/linting-ruff_%7C_codespell-blue)](https://github.com/astral-sh/ruff)
 [![Type-checked: mypy](https://img.shields.io/badge/type--checked-mypy-blue)](https://mypy-lang.org/)
-![Test Coverage](./coverage.svg)
+![Test Coverage](https://raw.githubusercontent.com/guilhermegor/purecalendars/main/coverage.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Open Issues](https://img.shields.io/github/issues/guilhermegor/purecalendars)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-darkgreen.svg)
+
+<!-- slug: overview -->
+## Overview
 
 Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline.
 
@@ -16,29 +24,26 @@ States (Federal Holidays), then layers a rich set of working-day / date helpers 
 `is_working_day`, `add_working_days`, `working_days_range`, `delta_working_days`, timezone-aware
 conversions, and more. Every calendar is computed locally: no network, no cache, no browser.
 
-> **Renamed from `wwdates` in 3.0.0.** Use `import purecalendars`. Since 3.0.1, `import wwdates` still
-> works but emits a `DeprecationWarning`; that alias is removed in 4.0.0. The live
-> fetchers (`*Web` classes, `DatesUSNasdaq`) moved to the separate
+> The live fetchers (`*Web` classes, `DatesUSNasdaq`) moved to the separate
 > [`opendata-calendars`](https://github.com/guilhermegor/greenfield/issues/103) package, which
 > returns `purecalendars` calendars.
 
-📖 **Full documentation:** <https://guilhermegor.github.io/purecalendars/>
+<!-- slug: features -->
+## Key Features
 
-## ✨ Key Features
-
-### 🗓️ Holiday providers
+### Holiday providers
 
 One class per calendar source; all share the same date-operations surface — they differ only in
 **which** holidays they load.
 
-| Provider                 | Import                              | Holidays                                     |
-| ------------------------ | ----------------------------------- | -------------------------------------------- |
-| `DatesBRAnbima`          | `purecalendars.br.anbima`           | 🇧🇷 ANBIMA national holidays                  |
-| `DatesBRFebraban`        | `purecalendars.br.febraban`         | 🇧🇷 FEBRABAN bank holidays                    |
-| `DatesBRB3`              | `purecalendars.br.b3`               | 🇧🇷 National + B3 exchange non-trading days   |
-| `DatesUSFederalHolidays` | `purecalendars.us.federal_holidays` | 🇺🇸 US federal holidays (statutory + observed) |
+| Provider                 | Import                              | Holidays                                |
+| ------------------------ | ----------------------------------- | --------------------------------------- |
+| `DatesBRAnbima`          | `purecalendars.br.anbima`           | ANBIMA national holidays                |
+| `DatesBRFebraban`        | `purecalendars.br.febraban`         | FEBRABAN bank holidays                  |
+| `DatesBRB3`              | `purecalendars.br.b3`               | National + B3 exchange non-trading days |
+| `DatesUSFederalHolidays` | `purecalendars.us.federal_holidays` | US federal holidays (statutory + observed) |
 
-### ⚙️ Shared calendar operations
+### Shared calendar operations
 
 Every provider inherits the full surface: working-day predicates (`is_working_day`, `is_holiday`,
 `is_weekend`), business-day arithmetic (`add_working_days`, `nearest_working_day`,
@@ -46,14 +51,25 @@ Every provider inherits the full surface: working-day predicates (`is_working_da
 `delta_working_hours`), timezone/timestamp conversions, and locale-aware formatting. See the
 [API Reference](https://guilhermegor.github.io/purecalendars/api/) for the complete list.
 
-## 🚀 Getting Started
+<!-- slug: documentation -->
+## Documentation
 
-### Prerequisites
+The full documentation is published at <https://guilhermegor.github.io/purecalendars/>:
 
-- Python 3.10+
-- Poetry (recommended)
+- [Usage](https://guilhermegor.github.io/purecalendars/usage/) — install, providers, basics
+- [Examples](https://guilhermegor.github.io/purecalendars/examples/) — task-oriented recipes
+- [API Reference](https://guilhermegor.github.io/purecalendars/api/) — every class and method
+- [FAQ](https://guilhermegor.github.io/purecalendars/faq/) — common questions & troubleshooting
+- [Contributing](https://guilhermegor.github.io/purecalendars/contributing/) — dev setup, tests, releasing
+- [Changelog](https://guilhermegor.github.io/purecalendars/changelog/) — release history
 
-### Installation
+<!-- slug: getting-started -->
+## Getting Started
+
+Python 3.11+ is the only prerequisite; Poetry is recommended.
+
+<!-- slug: install -->
+### Install
 
 ```bash
 pip install purecalendars
@@ -67,7 +83,8 @@ poetry add purecalendars
 
 Everything works offline after install — no network, no browser.
 
-### Quick start
+<!-- slug: usage -->
+### Usage
 
 ```python
 from datetime import date
@@ -84,16 +101,29 @@ cls_cal.holidays()                               # [(name, date), ...]
 holiday set differs. More recipes in the
 [Examples](https://guilhermegor.github.io/purecalendars/examples/) guide.
 
-## 📚 Documentation
+<!-- slug: project-structure -->
+## Project Structure
 
-- [Usage](https://guilhermegor.github.io/purecalendars/usage/) — install, providers, basics
-- [Examples](https://guilhermegor.github.io/purecalendars/examples/) — task-oriented recipes
-- [API Reference](https://guilhermegor.github.io/purecalendars/api/) — every class and method
-- [FAQ](https://guilhermegor.github.io/purecalendars/faq/) — common questions & troubleshooting
-- [Contributing](https://guilhermegor.github.io/purecalendars/contributing/) — dev setup, tests, releasing
-- [Changelog](https://guilhermegor.github.io/purecalendars/changelog/) — release history
+```text
+purecalendars/
+├── .github/              workflows, CODEOWNERS, PR template
+├── .specs/               work ledgers and specs
+├── assets/               logo
+├── bin/                  gate scripts and helpers
+├── docs/                 published documentation (mkdocs)
+├── src/purecalendars/
+│   ├── br/               ANBIMA, FEBRABAN and B3 calendars
+│   ├── us/               US federal holidays
+│   └── _internal/        private: vendored helpers
+├── tests/
+│   ├── unit/
+│   └── integration/
+├── pyproject.toml
+└── poe_tasks.toml        task runner entry points
+```
 
-## 🛠️ Development
+<!-- slug: development -->
+## Development
 
 ```bash
 git clone https://github.com/guilhermegor/purecalendars.git
@@ -107,23 +137,47 @@ bash bin/poe_exec.sh install_dist_locally   # build the wheel and smoke-import i
 See [Contributing](https://guilhermegor.github.io/purecalendars/contributing/) for the full branch/PR
 workflow and CI gate.
 
-## 👨‍💻 Authors
+<!-- slug: public-api -->
+## Public API
 
-**Guilherme Rodrigues**  
-[![GitHub](https://img.shields.io/badge/GitHub-guilhermegor-181717?style=flat&logo=github)](https://github.com/guilhermegor)  
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Guilherme_Rodrigues-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/in/guilhermegor/)
+The package root exports only `__version__`; each provider is imported from its own module, and
+everything under `_internal/` is private:
 
-## 🔗 Useful Links
+- `purecalendars.br.anbima.DatesBRAnbima`
+- `purecalendars.br.febraban.DatesBRFebraban`
+- `purecalendars.br.b3.DatesBRB3`
+- `purecalendars.us.federal_holidays.DatesUSFederalHolidays`
+
+<!-- slug: publishing -->
+## Publishing
+
+Releases are cut by dispatching the release workflows under `.github/workflows/` with a version
+input, and go out through PyPI trusted publishing (OIDC); the `vX.Y.Z` tag records the release.
+
+<!-- slug: contributing -->
+## Contributing
+
+Issues and PRs are welcome. Please read [`CONTRIBUTING.md`](https://github.com/guilhermegor/purecalendars/blob/main/CONTRIBUTING.md) first for dev setup,
+tests, the branch/PR workflow, and the CI gate.
+
+<!-- slug: license -->
+## License
+
+This project is licensed under the **MIT** License — see [`LICENSE`](https://github.com/guilhermegor/purecalendars/blob/main/LICENSE) for details.
+
+<!-- slug: authors -->
+## Authors
+
+- Guilherme Rodrigues — [GitHub](https://github.com/guilhermegor) | [LinkedIn](https://www.linkedin.com/in/guilhermegor/)
+
+<!-- slug: useful-links -->
+## Useful Links
 
 - [Documentation](https://guilhermegor.github.io/purecalendars/)
+- [PyPI](https://pypi.org/project/purecalendars/)
 - [GitHub Repository](https://github.com/guilhermegor/purecalendars)
 - [Issue Tracker](https://github.com/guilhermegor/purecalendars/issues)
 
-## 🤝 Contributing
+---
 
-Issues and PRs are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first for dev setup,
-tests, the branch/PR workflow, and the CI gate.
-
-## 📜 License
-
-This project is licensed under the **MIT** License — see [`LICENSE`](LICENSE) for details.
+<sub>Generated from the lib-minimal template via [BlueprintX](https://github.com/guilhermegor/blueprintx).</sub>

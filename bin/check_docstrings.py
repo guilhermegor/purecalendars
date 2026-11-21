@@ -114,7 +114,7 @@ def _canonical_type_tokens(text: str) -> list:
     return sorted(list_tokens)
 
 
-def compare_types(hint: object, doc: str) -> bool:
+def compare_types(hint: object, doc: str) -> bool:  # noqa: PLR0917
     """Check if a type hint matches a docstring type description.
 
     Comparison is NumPy-docstring aware: ``Path | None`` matches
@@ -228,7 +228,7 @@ def normalize_exception_name(name: str) -> str:
     str
         Unqualified exception name.
     """
-    return name.split(".")[-1]
+    return name.split(".")[-1]  # noqa: PLC0207
 
 
 def _is_checkable(node: ast.AST) -> bool:
@@ -251,9 +251,7 @@ def _is_checkable(node: ast.AST) -> bool:
         return False
     if node.name == "__init__":
         return False
-    is_property = any(
-        isinstance(d, ast.Name) and d.id == "property" for d in node.decorator_list
-    )
+    is_property = any(isinstance(d, ast.Name) and d.id == "property" for d in node.decorator_list)
     return node.returns is not None or is_property
 
 
@@ -295,7 +293,7 @@ def _extract_documented_return(doc_lines: list) -> str | None:
     return None
 
 
-def _check_return_type(node: ast.AST, docstring: str, filepath: str) -> tuple:
+def _check_return_type(node: ast.AST, docstring: str, filepath: str) -> tuple:  # noqa: PLR0917
     """Check the documented return type against the annotation.
 
     Parameters
@@ -331,7 +329,7 @@ def _check_return_type(node: ast.AST, docstring: str, filepath: str) -> tuple:
     return 0, 0
 
 
-def _documented_param_type(arg_name: str, param_lines: list) -> str | None:
+def _documented_param_type(arg_name: str, param_lines: list) -> str | None:  # noqa: PLR0917
     """Return the documented type for a parameter, or ``None`` if undocumented.
 
     Recognises the combined NumPy form (``a, b : type``) and joins multi-line
@@ -369,7 +367,7 @@ def _documented_param_type(arg_name: str, param_lines: list) -> str | None:
     return None
 
 
-def _check_parameters(node: ast.AST, docstring: str, filepath: str) -> tuple:
+def _check_parameters(node: ast.AST, docstring: str, filepath: str) -> tuple:  # noqa: PLR0917
     """Check each annotated parameter's documented type against its annotation.
 
     Parameters
@@ -412,7 +410,7 @@ def _check_parameters(node: ast.AST, docstring: str, filepath: str) -> tuple:
     return errors, warnings
 
 
-def _check_raises(node: ast.AST, docstring: str, filepath: str) -> int:
+def _check_raises(node: ast.AST, docstring: str, filepath: str) -> int:  # noqa: PLR0917
     """Compare the documented Raises section against exceptions actually raised.
 
     Convention enforced: a ``Raises`` section documents **only** exceptions the
@@ -495,8 +493,6 @@ def check_file(filepath: str) -> int:
 
 
 if __name__ == "__main__":
-    targets = list(pathlib.Path("src").rglob("*.py")) + list(
-        pathlib.Path("tests").rglob("*.py")
-    )
+    targets = list(pathlib.Path("src").rglob("*.py")) + list(pathlib.Path("tests").rglob("*.py"))
     total_errors = sum(check_file(str(p)) for p in targets)
     sys.exit(1 if total_errors > 0 else 0)

@@ -45,7 +45,7 @@ checkbox).
 
 This port keeps only the shape half, because:
 
-- wwdates has **no `bin/pr_gate.py`**, so the risk-class axis does not exist here. Porting it
+- purecalendars has **no `bin/pr_gate.py`**, so the risk-class axis does not exist here. Porting it
   would have meant inventing a second, drifting copy of "what counts as src/ci".
 - Issue #15 explicitly rejected mandatory existence ("making one mandatory would block trivial fix
   branches for no gain"), which is the same rule the import exists to serve.
@@ -97,7 +97,7 @@ those classes mean. #15 shipped shape-only.
 
 - [x] Ported `bin/pr_gate.py` from `filings-cvm` — **the whole 650-line file, verbatim**, per the
       user's explicit decision. I recommended porting only `_RISK_RULES` + `classify_risk` (~40
-      lines, the only part wwdates uses) and flagged the dead-code cost; the call was to take the
+      lines, the only part purecalendars uses) and flagged the dead-code cost; the call was to take the
       full file for parity. Recorded here so the choice is not mistaken for an oversight.
 - [x] Wired `classify_risk` into `bin/check_backlog_ledger.py`, applied **per path**
       (set-membership) rather than to the whole list.
@@ -115,7 +115,7 @@ those classes mean. #15 shipped shape-only.
 - [x] Classifier smoke-checked against 10 representative paths — all 10 land in the expected class.
 - [x] `poetry run pytest tests/unit/` — see the PR body for the count.
 - [x] **The should-fail case, asserted on the message, not just the exit code**: a diff touching
-      `src/wwdates/us/federal_holidays.py` with no ledger produces the "adds no … work ledger"
+      `src/purecalendars/us/federal_holidays.py` with no ledger produces the "adds no … work ledger"
       error. Per `every-gate-needs-a-should-fail-test`, a gate is only proven by a case that fails.
 - [x] **Per-path regression pinned**: the test asserts
       `classify_risk(["bin/lint_yaml.sh", "tests/unit/test_x.py"]) == "tests"` *and* that

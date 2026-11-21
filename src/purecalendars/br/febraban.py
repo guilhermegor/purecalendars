@@ -18,44 +18,44 @@ from purecalendars.br._offline_holidays import national_holidays
 
 
 class DatesBRFebraban(ABCCalendarOperations):
-	"""FEBRABAN Brazilian bank holiday calendar computed offline.
+    """FEBRABAN Brazilian bank holiday calendar computed offline.
 
-	References
-	----------
-	.. [1] https://feriadosbancarios.febraban.org.br/
-	"""
+    References
+    ----------
+    .. [1] https://feriadosbancarios.febraban.org.br/
+    """
 
-	def __init__(
-		self,
-		int_year_start: int = (date.today() - timedelta(days=22)).year - 1,
-		int_year_end: int = (date.today() - timedelta(days=22)).year,
-		logger: Logger | None = None,
-	) -> None:
-		"""Initialize the offline FEBRABAN holiday calendar.
+    def __init__(
+        self,
+        int_year_start: int = (date.today() - timedelta(days=22)).year - 1,
+        int_year_end: int = (date.today() - timedelta(days=22)).year,
+        logger: Logger | None = None,
+    ) -> None:
+        """Initialize the offline FEBRABAN holiday calendar.
 
-		Parameters
-		----------
-		int_year_start : int
-			Starting year for holidays (default: (date.today() - timedelta(days=22)).year - 1)
-		int_year_end : int
-			Ending year for holidays (default: (date.today() - timedelta(days=22)).year)
-		logger : Optional[Logger]
-			Logger object for logging (default: None).
+        Parameters
+        ----------
+        int_year_start : int
+            Starting year for holidays (default: (date.today() - timedelta(days=22)).year - 1)
+        int_year_end : int
+            Ending year for holidays (default: (date.today() - timedelta(days=22)).year)
+        logger : Optional[Logger]
+            Logger object for logging (default: None).
 
-		Returns
-		-------
-		None
-		"""
-		self.int_year_start = int_year_start
-		self.int_year_end = int_year_end
-		self._logger = logger
+        Returns
+        -------
+        None
+        """
+        self.int_year_start = int_year_start
+        self.int_year_end = int_year_end
+        self._logger = logger
 
-	def _source_holidays(self) -> list[tuple[str, date]]:
-		"""Return the FEBRABAN bank holidays for the configured year range.
+    def _source_holidays(self) -> list[tuple[str, date]]:
+        """Return the FEBRABAN bank holidays for the configured year range.
 
-		Returns
-		-------
-		list[tuple[str, date]]
-			Tuples of ``(name, date)``, sorted by date.
-		"""
-		return national_holidays(self.int_year_start, self.int_year_end)
+        Returns
+        -------
+        list[tuple[str, date]]
+            Tuples of ``(name, date)``, sorted by date.
+        """
+        return national_holidays(self.int_year_start, self.int_year_end)

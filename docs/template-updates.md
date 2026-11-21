@@ -20,7 +20,7 @@ and `templates/lib-minimal`, with the scaffold's import rewrite
 
 **Owner decision (2026-11-19), supersedes the 2026-11-01 omission:** the example modules
 `daily_cache`, `sidecar_metadata`, `xml_reader`, `schema_regimes` (the template's regime
-module), `config/ports/example_port` and `main.py` are adopted. #72 deletes them at 4.0.0, so
+module), `config/ports/example_port` and `main.py` are adopted. #72 closed as already shipped by #99; they are internal, so
 none is exported through the public `__all__`.
 
 ### Deviations kept
@@ -88,3 +88,22 @@ Owner decision (2026-11-01): adopt both the template's `extra.version.provider: 
 | `docs/api/reference.md` keeps the whole API reference as one page | it is the real content; the template's page is a starter |
 | `docs/incidents.md` has no worked example entry | an empty record is truer than a fictional incident |
 | mike selector is inert until a `mike deploy` publishes `versions.json` | `docs.yaml` deploys with Pages, not mike |
+
+## Ruff config pruning (#107)
+
+| Deviation | Reason |
+|---|---|
+| `[lint.pylint] max-positional-args = 12` (template: 1); the `# noqa: PLR0917` baselines are gone | the widest public signature (`delta_working_hours`) takes 12 positionals; keyword-only would break the public API |
+| `S404` no longer ignored globally; ignored under `bin/**` and `tests/**` only | no `src/` file imports `subprocess`, so the library keeps the signal |
+| no-I/O banned-api block carries its explanatory comment again | AGENTS.md cites it |
+
+Pruned because this repo has no such module:
+
+- banned-api `utils.tabular_reader.FileContract` and `config.contracts.FileContract`
+- `known-first-party`: `app`, `capabilities`, `chassis`, `config`, `controller`, `model`,
+  `utils`, `view` (the whole list; ruff detects `purecalendars` from `src/`)
+- per-file ignores `src/chassis/db_wschema/infrastructure/joblib_handler.py` (E101),
+  `src/utils/xml_reader.py` and `src/*/_internal/utils/xml_reader.py` (N813)
+
+Docstring parameter and return descriptions were re-indented from 8 to 4 columns under their
+name line (ruff had expanded tabs to 8); code is unchanged.
