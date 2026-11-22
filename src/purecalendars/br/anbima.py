@@ -10,7 +10,7 @@ For the table fetched live from anbima.com.br, use the ``opendata-calendars`` pa
 from datetime import date
 from logging import Logger
 
-from purecalendars._internal.utils.calendars.abc_calendar_operations import ABCCalendarOperations
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
 from purecalendars.br._offline_holidays import (
     _INT_YEAR_END_DEFAULT,
     _INT_YEAR_START_DEFAULT,
