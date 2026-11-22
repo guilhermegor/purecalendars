@@ -44,7 +44,7 @@ import re
 import sys
 
 from check_comment_language import RE_WORD, SET_PT_WORDS, split_root_option
-from check_docs_gap import load_mkdocs, published_pages, unpublished_specs
+from check_docs_gap import load_mkdocs, published_pages, unpublished_specs, walk_problems
 import yaml
 
 
@@ -209,6 +209,22 @@ def _fence_toggles(str_open: str, *, str_marker: str, str_info: str) -> bool:
     )
 
 
+def _columns(str_row: str) -> int:
+    """Count a table row's columns, ignoring one leading and one trailing pipe.
+
+    Parameters
+    ----------
+    str_row : str
+        A table header or separator line.
+
+    Returns
+    -------
+    int
+        The number of cells.
+    """
+    return len(re.sub(r"^\s*\||\|\s*$", "", str_row).split("|"))
+
+
 def _mask_lines(str_text: str) -> list:
     """Blank fenced code, table rows and link definitions, keeping line numbers.
 
@@ -240,7 +256,9 @@ def _mask_lines(str_text: str) -> list:
         bool_after_definition = bool_definition and not re_definition.group("title")
         if not str_open:
             bool_in_table = (bool_in_table and "|" in str_line) or (
-                "|" in str_line and "|" in str_next and bool(RE_TABLE_SEPARATOR.match(str_next))
+                "|" in str_line
+                and bool(RE_TABLE_SEPARATOR.match(str_next))
+                and _columns(str_line) == _columns(str_next)
             )
         bool_blank = (
             bool_in_table
@@ -461,6 +479,9 @@ def _resolve(path_root: pathlib.Path, *, bool_check_locale: bool = True) -> tupl
         str_error = (
             f"theme.language '{str_declared}' has no function-word set; add one to this gate"
         )
+    if not str_error:
+        path_docs = path_root / str(dict_mkdocs.get("docs_dir") or STR_DEFAULT_DOCS_DIR)
+        str_error = "; ".join(walk_problems(path_docs))
     list_pages = [] if str_error else page_set(path_root, dict_mkdocs=dict_mkdocs)
     if not str_error and not list_pages:
         str_error = f"no page found under {path_root}; this gate would pass vacuously"

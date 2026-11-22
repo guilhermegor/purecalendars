@@ -665,3 +665,21 @@ def test_main_prose_with_a_pipe_is_still_scored(tmp_path: Path) -> None:
         str_text=STR_EN + "\n" + STR_FOREIGN_BLOCK.strip() + " | x\n",
     )
     assert _run(tmp_path) == 1
+
+
+def test_main_symlink_loop_in_docs_fails_the_walk(tmp_path: Path) -> None:
+    """A docs tree that cannot be walked fails the gate instead of passing on the README."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    (tmp_path / "docs" / "loop").symlink_to(tmp_path / "docs", target_is_directory=True)
+    assert _run(tmp_path) == 1
+
+
+def test_main_table_with_mismatched_column_counts_is_scored(tmp_path: Path) -> None:
+    """A header and separator with different column counts are not a table, so the row is prose."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + STR_FOREIGN_BLOCK.strip() + " | x | y\n--- | ---\n",
+    )
+    assert _run(tmp_path) == 1
