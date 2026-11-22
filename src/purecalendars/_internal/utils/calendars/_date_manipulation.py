@@ -44,7 +44,9 @@ class DateManipulation(CalendarCore):
         """
         return self._source_holidays() + self._get_added_holidays()
 
-    def add_holidays(self, list_new_holidays: list[tuple[str, date]]) -> None:
+    def add_holidays(
+        self, list_new_holidays: list[tuple[str, date]]
+    ) -> None:  # complexity-ok: legacy #65
         """Add new holidays to the existing holiday cache.
 
         Parameters
@@ -83,7 +85,9 @@ class DateManipulation(CalendarCore):
         set_new = {tup_holiday[1] for tup_holiday in list_new_holidays}
         self._holidays_cache = set_current | set_new
 
-    def add_working_days(self, date_: TypeDatetimeDate, int_days_to_add: int) -> date:
+    def add_working_days(
+        self, date_: TypeDatetimeDate, int_days_to_add: int
+    ) -> date:  # complexity-ok: legacy #65
         """Add the specified number of working days to the given date.
 
         Parameters
@@ -172,7 +176,7 @@ class DateManipulation(CalendarCore):
         minute: int,
         second: int,
         str_timezone: str | None = "UTC",
-    ) -> datetime:
+    ) -> datetime:  # complexity-ok: legacy #65
         """Build a datetime object from the given year, month, day, hour, minute, and second.
 
         Parameters
@@ -242,7 +246,7 @@ class DateManipulation(CalendarCore):
         else:  # noqa: RET505
             return self.add_working_days(date_ref, -1) if date_ref > date_ else date_ref
 
-    def str_date_to_date(self, str_date: str, format_input: str | None = "DD/MM/YYYY") -> date:  # noqa: PLR6301
+    def str_date_to_date(self, str_date: str, format_input: str | None = "DD/MM/YYYY") -> date:  # noqa: PLR6301  # complexity-ok: legacy #65
         """Convert a string representation of a date to a date object.
 
         Parameters
@@ -314,7 +318,7 @@ class DateManipulation(CalendarCore):
         self,
         timestamp_: str,
         substr_timestamp: str = "T",
-    ) -> datetime:
+    ) -> datetime:  # complexity-ok: legacy #65
         """Convert a string representation of a timestamp to a datetime object.
 
         Parameters
@@ -361,7 +365,7 @@ class DateManipulation(CalendarCore):
         date_ = self.date_only(date_)
         return 10000 * date_.year + 100 * date_.month + date_.day
 
-    def excel_float_to_date(self, numeric_excel_date: int | float) -> date:  # noqa: PLR6301
+    def excel_float_to_date(self, numeric_excel_date: int | float) -> date:  # noqa: PLR6301  # complexity-ok: legacy #65
         """Convert an Excel float to a date object.
 
         Parameters

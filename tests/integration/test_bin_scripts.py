@@ -24,11 +24,6 @@ import subprocess
 import pytest
 
 
-# --------------------------
-# Module Utilities
-# --------------------------
-
-
 def _bin_script(str_name: str) -> Path:
     """Return the absolute path to a script under the repository's ``bin/``.
 
@@ -94,11 +89,6 @@ def _run(
     )
 
 
-# --------------------------
-# bin/poetry_exec.sh
-# --------------------------
-
-
 def test_poetry_exec_no_args_exits_with_usage_error() -> None:
     """No arguments yields exit code 2 and a usage message routed to stderr."""
     cls_result = _run("poetry_exec.sh")
@@ -108,7 +98,7 @@ def test_poetry_exec_no_args_exits_with_usage_error() -> None:
     assert cls_result.stdout == ""
 
 
-def test_poetry_exec_version_keeps_stdout_clean() -> None:
+def test_poetry_exec_version_keeps_stdout_clean() -> None:  # complexity-ok: legacy #65
     """``version -s`` returns only the version on stdout; chatter goes to stderr."""
     cls_result = _run("poetry_exec.sh", "version", "-s")
     if cls_result.returncode != 0:
@@ -122,11 +112,6 @@ def test_poetry_exec_version_keeps_stdout_clean() -> None:
 
     # The resolution status the wrapper emits lands on stderr, not stdout.
     assert "Detected OS" in cls_result.stderr
-
-
-# --------------------------
-# bin/precommit.sh
-# --------------------------
 
 
 def test_precommit_skips_gracefully_off_git_tree(tmp_path: Path) -> None:
@@ -148,7 +133,9 @@ def test_precommit_skips_gracefully_off_git_tree(tmp_path: Path) -> None:
     assert "skipping pre-commit hooks" in str_output
 
 
-def test_precommit_registers_safe_directory_for_shared_worktree(tmp_path: Path) -> None:
+def test_precommit_registers_safe_directory_for_shared_worktree(
+    tmp_path: Path,
+) -> None:  # complexity-ok: legacy #65
     """A dubious-ownership work tree self-heals: the script registers a git safe.directory.
 
     Simulates a shared / network checkout owned by another user via
@@ -193,11 +180,6 @@ def test_precommit_registers_safe_directory_for_shared_worktree(tmp_path: Path) 
     assert str(path_repo) in str_cfg or "%(prefix)" in str_cfg
     # The self-heal never fabricates a repo and never emits the "no git repo" skip.
     assert "No git repository here" not in str_output
-
-
-# --------------------------
-# bin/check_specs_structure.sh + bin/check_docs_boundary.sh
-# --------------------------
 
 
 def _write(path_file: Path, str_text: str = "x\n") -> None:  # noqa: PLR0917
@@ -264,11 +246,6 @@ def test_docs_boundary_rejects_a_backlog_directory(tmp_path: Path) -> None:
     _write(tmp_path / "docs" / "backlog" / "x_20260101_000000.md")
 
     assert _run("check_docs_boundary.sh", "--root", str(tmp_path)).returncode == 1
-
-
-# --------------------------
-# bin/check_pr_policy.sh + bin/close_linked_issues.sh + bin/dependabot_auto_merge.sh
-# --------------------------
 
 
 def _call(  # noqa: PLR0917
@@ -486,11 +463,6 @@ def test_dependabot_auto_merge_classifies_the_update(str_json: str, str_expected
     assert obj_result.stdout.strip() == str_expected
 
 
-# --------------------------
-# bin/check_clean_index.sh + bin/check_docs_sections.py + bin/check_docs_code_refs.py
-# --------------------------
-
-
 def _run_py_gate(str_gate: str, *args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     """Run a ``bin/*.py`` gate with its cwd set to a prepared tree.
 
@@ -519,7 +491,9 @@ def _run_py_gate(str_gate: str, *args: str, cwd: Path) -> subprocess.CompletedPr
     )
 
 
-def _init_repo(path_repo: Path) -> str:
+def _init_repo(
+    path_repo: Path,
+) -> str:  # complexity-ok: legacy #65
     """Create a git work tree with one commit and return the ``git`` binary path.
 
     Parameters

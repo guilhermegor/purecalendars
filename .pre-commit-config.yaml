@@ -108,6 +108,76 @@ repos:
           - python
         pass_filenames: false
 
+      - id: function-length
+        name: function length (60 lines, docstring excluded)
+        entry: bash bin/poetry_exec.sh run python bin/check_function_length.py
+        language: system
+        files: \.(py|sh)$
+        pass_filenames: false
+
+      - id: fixture-scope
+        name: fixture scope (non-function scope needs a written reason)
+        entry: bash bin/poetry_exec.sh run python bin/check_fixture_scope.py
+        language: system
+        files: ^tests/.*\.py$
+        pass_filenames: false
+
+      - id: gate-integrity
+        name: gate integrity (a PR must not weaken a check without saying why)
+        entry: bash bin/poetry_exec.sh run python bin/check_gate_integrity.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: assertion-weakening
+        name: assertion weakening (a PR must not loosen a test without saying why)
+        entry: bash bin/poetry_exec.sh run python bin/check_assertion_weakening.py
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: check-complexity
+        name: cyclomatic complexity (tests 1, src 2, bin 8)
+        entry: bash bin/check_complexity.sh
+        language: system
+        files: \.py$
+        pass_filenames: false
+
+      - id: one-assert
+        name: one assertion site per unit test (zero asserts fails anywhere)
+        entry: bash bin/poetry_exec.sh run python bin/check_one_assert.py
+        language: system
+        files: \.py$
+        pass_filenames: false
+
+      - id: check-all-exports
+        name: __all__ names every public member
+        entry: bash bin/poetry_exec.sh run python bin/check_all_exports.py
+        language: system
+        types:
+          - python
+        pass_filenames: false
+
+      - id: check-comment-language
+        name: documentation-language boundary (code is English)
+        entry: bash bin/poetry_exec.sh run python bin/check_comment_language.py
+        language: system
+        files: \.(py|ya?ml|sql|sh|toml|cfg|ini)$|\.env\.example$
+        exclude: ^docs/
+
+      - id: check-comment-budget
+        name: comment budget (long runs + decorative banners)
+        entry: bash bin/poetry_exec.sh run python bin/check_comment_budget.py --require-baseline
+        language: system
+        pass_filenames: false
+
+      - id: coverage-floor
+        name: coverage floor (omit list must not swallow capability logic)
+        entry: bash bin/poetry_exec.sh run python bin/check_coverage_floor.py
+        language: system
+        files: ^(\.coveragerc|src/capabilities/.*\.py)$
+        pass_filenames: false
+
       # Work-ledger gate: a branch whose diff touches a src/ci path must add a flat
       # `.specs/backlog/<kebab>_YYYYMMDD_HHMMSS.md` ledger with a checkbox (issue #26).
       #

@@ -10,11 +10,11 @@ For the calendar built from the live ANBIMA fetch, use the ``opendata-calendars`
 from datetime import date, timedelta
 from logging import Logger
 
-from purecalendars._internal.utils.calendars.abc_calendar_operations import ABCCalendarOperations
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
 from purecalendars.br._offline_holidays import (
-    INT_YEAR_END_DEFAULT,
-    INT_YEAR_START_DEFAULT,
-    national_holidays,
+    _INT_YEAR_END_DEFAULT,
+    _INT_YEAR_START_DEFAULT,
+    _national_holidays,
 )
 
 
@@ -32,8 +32,8 @@ class DatesBRB3(ABCCalendarOperations):
     def __init__(
         self,
         bool_add_christmas_eve: bool = True,
-        int_year_start: int = INT_YEAR_START_DEFAULT,
-        int_year_end: int = INT_YEAR_END_DEFAULT,
+        int_year_start: int = _INT_YEAR_START_DEFAULT,
+        int_year_end: int = _INT_YEAR_END_DEFAULT,
         logger: Logger | None = None,
     ) -> None:
         """Initialize the offline B3 calendar.
@@ -73,11 +73,13 @@ class DatesBRB3(ABCCalendarOperations):
         list[tuple[str, date]]
             Tuples of ``(name, date)``, sorted by date.
         """
-        list_national = national_holidays(self.int_year_start, self.int_year_end)
+        list_national = _national_holidays(self.int_year_start, self.int_year_end)
         list_all = list_national + self.holidays_to_add({date_ for _, date_ in list_national})
         return sorted(list_all, key=lambda tup: tup[1])
 
-    def holidays_to_add(self, set_dates_national: set[date]) -> list[tuple[str, date]]:
+    def holidays_to_add(
+        self, set_dates_national: set[date]
+    ) -> list[tuple[str, date]]:  # complexity-ok: legacy #65
         """Return the B3-specific non-trading days for the configured year range.
 
         Parameters
