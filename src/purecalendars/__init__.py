@@ -8,6 +8,8 @@ Live calendars fetched from their publishers live in the separate ``opendata-cal
 
 from importlib.metadata import PackageNotFoundError, version
 
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
+
 
 try:
     __version__ = version("purecalendars")
@@ -15,4 +17,4 @@ except PackageNotFoundError:  # pragma: no cover - source tree without an instal
     __version__ = "0.0.0"
 
 
-__all__ = ["__version__"]
+__all__ = ["ABCCalendarOperations", "__version__"]
