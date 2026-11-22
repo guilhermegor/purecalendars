@@ -635,3 +635,33 @@ def test_main_escaped_only_run_names_the_escape_in_its_failure(
     _write(tmp_path / "docs" / "index.md", str_text=f"docs-lang:ok {STR_PT}")
     int_rc = _run(tmp_path)
     assert (int_rc, "docs-lang:ok" in capsys.readouterr().out) == (1, True)
+
+
+def test_main_unmatched_backtick_runs_do_not_hide_prose(tmp_path: Path) -> None:
+    """A double-backtick run with no equal-length partner is prose, not a code span."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\nLead `` " + STR_FOREIGN_BLOCK.strip() + " ` tail\n",
+    )
+    assert _run(tmp_path) == 1
+
+
+def test_main_table_without_outer_pipes_is_masked(tmp_path: Path) -> None:
+    """Rows of a header-and-separator table are blanked whether or not they start with a pipe."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\nA | B\n--- | ---\n" + STR_FOREIGN_BLOCK.strip() + " | x\n",
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_main_prose_with_a_pipe_is_still_scored(tmp_path: Path) -> None:
+    """A pipe in ordinary prose, with no separator line below, does not mask the paragraph."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + STR_FOREIGN_BLOCK.strip() + " | x\n",
+    )
+    assert _run(tmp_path) == 1

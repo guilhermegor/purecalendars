@@ -103,7 +103,7 @@ STR_DEFAULT_LOCALE = "en"
 
 STR_DEFAULT_DOCS_DIR = "docs"
 
-RE_CODE_SPAN = re.compile(r"(`+).+?\1")
+RE_CODE_SPAN = re.compile(r"(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)")
 
 RE_MULTILINE_BLANK = re.compile(
     r"\A---\n.*?\n(?:---|\.\.\.)[ \t]*$|<!--.*?-->", re.DOTALL | re.MULTILINE
@@ -119,6 +119,8 @@ TUPLE_BLANKINGS = (
 )
 
 RE_TABLE_ROW = re.compile(r"^[ \t]*\|")
+
+RE_TABLE_SEPARATOR = re.compile(r"^[ \t]*\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$")
 
 RE_LINK_DEFINITION = re.compile(
     r"""^[ \t]*\[(?!\^)(?:\\.|[^\[\]\\\n])+\]:[ \t]*\S+"""
@@ -223,7 +225,10 @@ def _mask_lines(str_text: str) -> list:
     list_out: list = []
     str_open = ""
     bool_after_definition = False
-    for str_line in [*str_text.splitlines(), ""]:
+    list_lines = [*str_text.splitlines(), ""]
+    bool_in_table = False
+    for int_idx, str_line in enumerate(list_lines):
+        str_next = list_lines[int_idx + 1] if int_idx + 1 < len(list_lines) else ""
         re_marker = RE_FENCE.match(str_line)
         str_marker, str_info = re_marker.groups() if re_marker else ("", "")
         bool_toggle = _fence_toggles(str_open, str_marker=str_marker, str_info=str_info)
@@ -233,8 +238,13 @@ def _mask_lines(str_text: str) -> list:
         bool_definition = bool(re_definition)
         bool_title = bool_after_definition and bool(RE_DEFINITION_TITLE.match(str_line))
         bool_after_definition = bool_definition and not re_definition.group("title")
+        if not str_open:
+            bool_in_table = (bool_in_table and "|" in str_line) or (
+                "|" in str_line and "|" in str_next and bool(RE_TABLE_SEPARATOR.match(str_next))
+            )
         bool_blank = (
-            bool_toggle
+            bool_in_table
+            or bool_toggle
             or bool(str_open)
             or bool_definition
             or bool_title
