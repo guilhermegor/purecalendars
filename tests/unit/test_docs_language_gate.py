@@ -690,6 +690,7 @@ def test_main_table_with_mismatched_column_counts_is_scored(tmp_path: Path) -> N
     [
         ("A \\| B | C\n--- | ---\n" + STR_FOREIGN_BLOCK.strip() + " | x\n", 0),
         ("A | `b|c`\n--- | ---\n" + STR_FOREIGN_BLOCK.strip() + " | x\n", 0),
+        ("# Head\nA | B\n--- | ---\n" + STR_FOREIGN_BLOCK.strip() + " | x\n", 0),
         ("Intro\n" + STR_FOREIGN_BLOCK.strip() + " | x\n--- | ---\n", 1),
     ],
 )

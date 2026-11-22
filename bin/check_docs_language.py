@@ -96,6 +96,8 @@ INT_EXCERPT = 80
 
 TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessors["table"]
 
+RE_ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
+
 STR_ESCAPE = "docs-lang:ok"
 
 STR_UNTRANSLATED = "docs-lang:untranslated"
@@ -223,11 +225,12 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
     Returns
     -------
     bool
-        True when the line opens a block (the start of the page or after a blank line) that
-        ``markdown.extensions.tables`` accepts, which counts escaped and code-span pipes as the
-        renderer does.
+        True when the line opens a block (the start of the page, or after a blank line or an
+        ATX heading line) that ``markdown.extensions.tables`` accepts, which counts escaped and
+        code-span pipes as the renderer does.
     """
-    if int_idx and list_lines[int_idx - 1].strip():
+    str_before = list_lines[int_idx - 1] if int_idx else ""
+    if str_before.strip() and not RE_ATX_HEADING.match(str_before):
         return False
     list_block = []
     for str_line in list_lines[int_idx:]:
