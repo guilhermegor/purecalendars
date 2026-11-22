@@ -89,6 +89,27 @@ Owner decision (2026-11-01): adopt both the template's `extra.version.provider: 
 | `docs/incidents.md` has no worked example entry | an empty record is truer than a fictional incident |
 | mike selector is inert until a `mike deploy` publishes `versions.json` | `docs.yaml` deploys with Pages, not mike |
 
+## Guards that do not apply (#68, part of #56)
+
+Owner decision (2026-11-21): drop the guards for code this library does not have, in
+purecalendars only. The BlueprintX template keeps shipping them. `bin/lint_deps.sh` (deptry) is
+adopted as a pre-commit hook and a CI step. `bin/check_clean_index.sh` stays pre-push only: a
+fresh CI checkout never has staged work, so a CI step could not fail.
+
+| Not shipped | Reason |
+|---|---|
+| `check_sql_guards.py`, `check_orm_model_guards.py` | no SQL and no ORM models |
+| `check_migration_graph.py`, `check_migration_slugs.py` | no database migrations |
+| `check_rmw_race.py` | no database read-modify-write |
+| `check_env_docs_sync.py` | the library ships no `.env` |
+| `lint_docker.sh` | no Dockerfile |
+| `export_deps.sh`, `bin/lib/wheelhouse_select.py` and its test | no wheelhouse or dependency export |
+| `check_quality_rules.py` | validates `quality-rules.yaml`, which exists only at the BlueprintX root; here it could only self-skip |
+
+`bin/lib/ca_bundle.py`, `pip_requirements.py` and `verify_venv_imports.py` stay, although the
+decision listed them with the wheelhouse files: `bootstrap.sh` builds the corporate CA bundle
+with the first, and `pip_fallback.sh` calls the other two when Poetry is unavailable.
+
 ## Ruff config pruning (#107)
 
 | Deviation | Reason |

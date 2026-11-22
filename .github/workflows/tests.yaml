@@ -193,6 +193,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: bash bin/check_description_sync.sh
 
+      - name: Run Direct-Dependency Gate
+        if: runner.os == 'Linux'
+        run: bash bin/lint_deps.sh
+
       - name: Run Secret Scan (gitleaks)
         if: runner.os == 'Linux'
         env:
