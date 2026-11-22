@@ -7,7 +7,8 @@ Branch: `ci/68-drop-inapplicable-guards`.
 - [x] `bin/lint_deps.sh` vendored byte-identical from `blueprintx/templates/python-common`;
       `lint-deps` pre-commit hook and "Run Direct-Dependency Gate" `tests.yaml` step. deptry
       passes on `src/` with the existing `[tool.deptry.per_rule_ignores]`.
-- [x] "Run Clean-Index Gate" `tests.yaml` step for `bin/check_clean_index.sh`.
+- [x] No CI step for `bin/check_clean_index.sh`: a fresh checkout has an empty index, so it
+      stays pre-push only.
 - [x] Drops recorded in `docs/template-updates.md`; none of the dropped guards was vendored here.
 - [x] `check_quality_rules.py` checked: it validates a BlueprintX-root file and only self-skips
       in a scaffolded project, so it is recorded as a drop.

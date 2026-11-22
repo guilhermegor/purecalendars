@@ -197,10 +197,6 @@ jobs:
         if: runner.os == 'Linux'
         run: bash bin/lint_deps.sh
 
-      - name: Run Clean-Index Gate
-        if: runner.os == 'Linux'
-        run: bash bin/check_clean_index.sh
-
       - name: Run Secret Scan (gitleaks)
         if: runner.os == 'Linux'
         env:

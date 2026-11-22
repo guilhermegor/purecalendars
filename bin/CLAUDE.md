@@ -181,8 +181,8 @@ source siblings at runtime paths shellcheck cannot resolve. Any other
 
 ## Docs and hygiene guards
 
-Each is a pre-commit hook (`check_clean_index.sh` at the pre-push stage) and a CI step in
-`tests.yaml`.
+Each is a pre-commit hook and a CI step in `tests.yaml`, except `check_clean_index.sh`, which
+runs only at the pre-push stage.
 
 - `check_docs_sections.py`: the docs nav holds the canonical pages (`python3 bin/check_docs_sections.py`).
 - `check_docs_gap.py`: every `docs/` page is in the `mkdocs.yml` nav (`python3 bin/check_docs_gap.py --root .`, needs `pathspec` and `pyyaml`).
