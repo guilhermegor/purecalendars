@@ -267,3 +267,19 @@ jobs:
         with:
           name: coverage-badge-${{ matrix.os }}-${{ matrix.python-version }}
           path: coverage.svg
+
+      - name: Run Runtime Type-Checking Enforcement
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_typing.py
+
+      - name: Run Dynamic Version Stub Check
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_dynamic_version_stub.py
+
+      - name: Run Numeric Dtype Policy Check
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_dtypes.py
+
+      - name: Run Layer Import Policy Check
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_layer_imports.py

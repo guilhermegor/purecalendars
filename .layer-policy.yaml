@@ -1,0 +1,19 @@
+src_prefix_depth: 1
+
+layers:
+  __root__:
+    allow: {}
+
+  _internal:
+    allow:
+      pandas: "business-day frames are the calendar core's data model (_calendar_core, _abc_calendar)"
+      businesstimedelta: "business-hours arithmetic behind _dates_range_delta"
+      dateutil: "relativedelta month/year arithmetic behind _date_manipulation"
+
+  br:
+    allow:
+      holidays: "the offline rule source (holidays.B3) these providers wrap; _offline_holidays.py is the single seam"
+
+  us:
+    allow:
+      holidays: "the offline rule source (holidays.US) the provider wraps"

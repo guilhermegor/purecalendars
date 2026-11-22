@@ -16,7 +16,7 @@ base de6845b471bb833aadaf950cf3f1303c63a4c2ff
 3 docs/stylesheets/brand.css
 13 mkdocs.yml
 3 mypy.ini
-22 pyproject.toml
+19 pyproject.toml
 3 ruff.toml
 7 src/purecalendars/_internal/utils/calendars/_abc_calendar.py
 7 src/purecalendars/_internal/utils/calendars/_date_manipulation.py
