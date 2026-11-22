@@ -45,6 +45,7 @@ import sys
 
 from check_comment_language import RE_WORD, SET_PT_WORDS, split_root_option
 from check_docs_gap import load_mkdocs, published_pages, unpublished_specs, walk_problems
+import markdown
 import yaml
 
 
@@ -93,6 +94,8 @@ INT_MIN_HITS = 2
 
 INT_EXCERPT = 80
 
+TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessors["table"]
+
 STR_ESCAPE = "docs-lang:ok"
 
 STR_UNTRANSLATED = "docs-lang:untranslated"
@@ -119,8 +122,6 @@ TUPLE_BLANKINGS = (
 )
 
 RE_TABLE_ROW = re.compile(r"^[ \t]*\|")
-
-RE_TABLE_SEPARATOR = re.compile(r"^[ \t]*\|?[ \t]*:?-+:?[ \t]*(?:\|[ \t]*:?-+:?[ \t]*)*\|?[ \t]*$")
 
 RE_LINK_DEFINITION = re.compile(
     r"""^[ \t]*\[(?!\^)(?:\\.|[^\[\]\\\n])+\]:[ \t]*\S+"""
@@ -209,20 +210,31 @@ def _fence_toggles(str_open: str, *, str_marker: str, str_info: str) -> bool:
     )
 
 
-def _columns(str_row: str) -> int:
-    """Count a table row's columns, ignoring one leading and one trailing pipe.
+def _starts_table(list_lines: list, int_idx: int) -> bool:
+    """Say whether the block that begins at a line is a table, by Python-Markdown's own test.
 
     Parameters
     ----------
-    str_row : str
-        A table header or separator line.
+    list_lines : list of str
+        The page's lines.
+    int_idx : int
+        Index of the candidate header line.
 
     Returns
     -------
-    int
-        The number of cells.
+    bool
+        True when the line opens a block (the start of the page or after a blank line) that
+        ``markdown.extensions.tables`` accepts, which counts escaped and code-span pipes as the
+        renderer does.
     """
-    return len(re.sub(r"^\s*\||\|\s*$", "", str_row).split("|"))
+    if int_idx and list_lines[int_idx - 1].strip():
+        return False
+    list_block = []
+    for str_line in list_lines[int_idx:]:
+        if not str_line.strip():
+            break
+        list_block.append(str_line)
+    return TABLE_PROCESSOR.test(None, "\n".join(list_block))
 
 
 def _mask_lines(str_text: str) -> list:
@@ -244,7 +256,6 @@ def _mask_lines(str_text: str) -> list:
     list_lines = [*str_text.splitlines(), ""]
     bool_in_table = False
     for int_idx, str_line in enumerate(list_lines):
-        str_next = list_lines[int_idx + 1] if int_idx + 1 < len(list_lines) else ""
         re_marker = RE_FENCE.match(str_line)
         str_marker, str_info = re_marker.groups() if re_marker else ("", "")
         bool_toggle = _fence_toggles(str_open, str_marker=str_marker, str_info=str_info)
@@ -255,10 +266,8 @@ def _mask_lines(str_text: str) -> list:
         bool_title = bool_after_definition and bool(RE_DEFINITION_TITLE.match(str_line))
         bool_after_definition = bool_definition and not re_definition.group("title")
         if not str_open:
-            bool_in_table = (bool_in_table and "|" in str_line) or (
-                "|" in str_line
-                and bool(RE_TABLE_SEPARATOR.match(str_next))
-                and _columns(str_line) == _columns(str_next)
+            bool_in_table = bool(str_line.strip()) and (
+                bool_in_table or _starts_table(list_lines, int_idx)
             )
         bool_blank = (
             bool_in_table

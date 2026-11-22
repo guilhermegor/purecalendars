@@ -683,3 +683,20 @@ def test_main_table_with_mismatched_column_counts_is_scored(tmp_path: Path) -> N
         str_text=STR_EN + "\n" + STR_FOREIGN_BLOCK.strip() + " | x | y\n--- | ---\n",
     )
     assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize(
+    ("str_table", "int_code"),
+    [
+        ("A \\| B | C\n--- | ---\n" + STR_FOREIGN_BLOCK.strip() + " | x\n", 0),
+        ("A | `b|c`\n--- | ---\n" + STR_FOREIGN_BLOCK.strip() + " | x\n", 0),
+        ("Intro\n" + STR_FOREIGN_BLOCK.strip() + " | x\n--- | ---\n", 1),
+    ],
+)
+def test_main_tables_follow_python_markdown_rules(
+    tmp_path: Path, *, str_table: str, int_code: int
+) -> None:
+    """Escaped and code-span pipes do not split cells, and a table must open its block."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN + "\n" + str_table)
+    assert _run(tmp_path) == int_code
