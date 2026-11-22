@@ -45,7 +45,9 @@ ledger = _load("check_backlog_ledger")
 
 
 @pytest.fixture(autouse=True)
-def _neutral_env(monkeypatch: pytest.MonkeyPatch) -> None:
+def _neutral_env(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:  # complexity-ok: legacy #65
     """Remove the CI variables that change the gate's author, and the host's git state.
 
     A pre-commit hook runs with ``GIT_INDEX_FILE`` (and friends) pointing at the *outer*

@@ -24,11 +24,6 @@ import sys
 import pytest
 
 
-# --------------------------
-# Module Utilities
-# --------------------------
-
-
 def _env_without_git_vars() -> dict[str, str]:
     """Return the ambient environment minus every ``GIT_*`` variable.
 
@@ -77,7 +72,7 @@ def _git(cls_repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 def _seed_repo(  # noqa: PLR0917
     cls_repo: Path, str_changed_path: str, *, bool_with_default_branch: bool = True
-) -> None:
+) -> None:  # complexity-ok: legacy #65
     """Create a repo with a base commit, then a feature branch that commits one change.
 
     The gate diffs against ``merge-base(<default branch>, HEAD)`` and treats "HEAD already is the
@@ -113,7 +108,7 @@ def _seed_repo(  # noqa: PLR0917
 
 def _run_gate(  # noqa: PLR0917
     cls_repo: Path, str_author: str | None, str_io_encoding: str | None = None
-) -> subprocess.CompletedProcess[str]:
+) -> subprocess.CompletedProcess[str]:  # complexity-ok: legacy #65
     """Invoke the gate the way pre-commit and CI do: no arguments, env-driven.
 
     Parameters
@@ -160,11 +155,6 @@ def _run_gate(  # noqa: PLR0917
         check=False,
         env=dict_env,
     )
-
-
-# --------------------------
-# Tests
-# --------------------------
 
 
 @pytest.mark.parametrize(
