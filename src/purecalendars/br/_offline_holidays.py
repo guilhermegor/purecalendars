@@ -24,14 +24,14 @@ from purecalendars._internal.utils.typing import type_checker
 
 # ANBIMA publishes its national holiday table over exactly this span; matching it keeps the
 # offline providers a drop-in replacement for the web ones rather than a narrower calendar.
-INT_YEAR_START_DEFAULT = 2001
-INT_YEAR_END_DEFAULT = 2099
+_INT_YEAR_START_DEFAULT = 2001
+_INT_YEAR_END_DEFAULT = 2099
 
 
 @type_checker
-def national_holidays(
-    int_year_start: int = INT_YEAR_START_DEFAULT,
-    int_year_end: int = INT_YEAR_END_DEFAULT,
+def _national_holidays(
+    int_year_start: int = _INT_YEAR_START_DEFAULT,
+    int_year_end: int = _INT_YEAR_END_DEFAULT,
 ) -> list[tuple[str, date]]:
     """Return the Brazilian banking holidays for a year range, computed offline.
 
@@ -48,7 +48,7 @@ def national_holidays(
         Tuples of ``(name, date)``, sorted by date. Names are diacritic-stripped to match
         the normalisation the web providers apply.
     """
-    validate_year_range(int_year_start, int_year_end)
+    _validate_year_range(int_year_start, int_year_end)
     cls_str_handler = StrHandler()
     dict_holidays = holidays.B3(years=range(int_year_start, int_year_end + 1))
     return [
@@ -61,7 +61,9 @@ def national_holidays(
 
 
 # type-checker-ok: its isinstance guard raises ValueError, not TypeError, for a bad year
-def validate_year_range(int_year_start: int, int_year_end: int) -> None:
+def _validate_year_range(
+    int_year_start: int, int_year_end: int
+) -> None:  # complexity-ok: legacy #65
     """Validate a year-range pair.
 
     Parameters

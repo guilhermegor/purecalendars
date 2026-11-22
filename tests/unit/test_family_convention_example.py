@@ -11,7 +11,7 @@ import inspect
 import pytest
 
 from purecalendars import br, us
-from purecalendars._internal.utils.calendars.abc_calendar_operations import ABCCalendarOperations
+from purecalendars.abc_calendar_operations import ABCCalendarOperations
 
 
 _FAMILY = tuple(

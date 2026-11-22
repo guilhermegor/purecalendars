@@ -219,6 +219,22 @@ Each is a pre-commit hook and a CI step in `tests.yaml` (#67).
 - `check_typing.py`: every function and class in `src/`, private ones included (dunders excepted), carries the runtime type checker (`python3 bin/check_typing.py`).
 - `check_dtypes.py`: no float dtype declaration in `src/`; decimals stay exact (`python3 bin/check_dtypes.py`).
 
+## Quality and Comment-Discipline Gates
+
+Each runs in pre-commit and in CI (`tests.yaml`), except `check_dead_code.py`, which runs in neither; run one by hand with the command shown. An existing finding is exempted with a reasoned marker (`# complexity-ok: <reason>`, `# one-assert-ok: <reason>`), never by loosening the gate.
+
+- `check_function_length.py`: functions stay within 60 lines, docstring excluded (`poetry run python bin/check_function_length.py`).
+- `check_fixture_scope.py`: a non-function fixture scope carries a written reason (`poetry run python bin/check_fixture_scope.py`).
+- `check_gate_integrity.py`: a PR must not weaken a check without saying why (`poetry run python bin/check_gate_integrity.py`).
+- `check_assertion_weakening.py`: a PR must not loosen a test assertion without saying why (`poetry run python bin/check_assertion_weakening.py`).
+- `check_complexity.sh`: cyclomatic complexity caps, tests 1, src 2, bin 8 (`bash bin/check_complexity.sh`).
+- `check_one_assert.py`: one assertion site per unit test (`poetry run python bin/check_one_assert.py`).
+- `check_all_exports.py`: `__all__` names every public member of its package (`poetry run python bin/check_all_exports.py`).
+- `check_comment_language.py`: code comments are English (`poetry run python bin/check_comment_language.py`).
+- `check_comment_budget.py`: long comment runs and decorative banners are refused; `comment_budget_baseline.txt` is a ratchet that only goes down (`poetry run python bin/check_comment_budget.py --require-baseline`, `--write-baseline` after a sweep).
+- `check_coverage_floor.py`: the `.coveragerc` omit list must not swallow capability logic; no-op here, there is no `src/capabilities/` (`poetry run python bin/check_coverage_floor.py`).
+- `check_dead_code.py`: vulture dead-code scan, skipped when vulture is absent; not wired as a hook (`poetry run python bin/check_dead_code.py`).
+
 ## Best Practices
 
 - **Keep branches focused** - one feature/bugfix per branch
