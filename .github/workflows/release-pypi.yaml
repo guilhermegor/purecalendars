@@ -26,6 +26,7 @@ jobs:
     outputs:
       new_version: ${{ steps.release.outputs.new_version }}
       suffix: ${{ steps.release.outputs.suffix }}
+      is_stable: ${{ steps.release.outputs.is_stable }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Check Ref Type
@@ -50,6 +51,11 @@ jobs:
 
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "suffix=$SUFFIX" >> "$GITHUB_OUTPUT"
+          if [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is_stable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_stable=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Debug Outputs
@@ -229,3 +235,71 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
+
+  deploy_docs:
+    name: Deploy Versioned Docs (mike)
+    needs: [pypi, github_release, details]
+    if: needs.details.outputs.is_stable == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pages: write
+    env:
+      NEW_VERSION: ${{ needs.details.outputs.new_version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.details.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Set Up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
+        with:
+          virtualenvs-in-project: true
+          virtualenvs-create: true
+
+      - name: Install Docs Dependencies
+        run: poetry install --with docs
+
+      - name: Regenerate CHANGELOG.md
+        run: poetry run cz changelog
+
+      - name: Configure Git Identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy Docs with mike
+        run: |
+          MINOR_VERSION="$(echo "$NEW_VERSION" | cut -d. -f1-2)"
+          poetry run mike deploy --update-aliases --push "$MINOR_VERSION" latest
+          poetry run mike set-default --push latest
+
+      - name: Report GitHub Pages Status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          str_source="$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.build_type + ":" + .source.branch + ":" + .source.path' 2>/dev/null || true)"
+          if [ "$str_source" = "legacy:gh-pages:/" ]; then
+            if gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds" >/dev/null 2>&1; then
+              echo 'Requested a Pages build: pushes made with `GITHUB_TOKEN` do not trigger one.' >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo 'Could not request a Pages build (pushes made with `GITHUB_TOKEN` do not trigger one). Re-run it from Settings > Pages or push a commit to `gh-pages` as a user.' >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            {
+              echo '### Action required: enable GitHub Pages'
+              echo 'The `gh-pages` branch now exists, but Pages is not set to deploy from the `gh-pages` branch at `/` (build type `legacy`). `GITHUB_TOKEN` cannot change it (the endpoint needs repository admin rights).'
+              echo 'Now run `poe enable_pages` once as a repository admin, or set Settings > Pages > Deploy from a branch > `gh-pages`.'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
