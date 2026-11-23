@@ -107,6 +107,8 @@ TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessor
 
 RE_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
 
+RE_FENCE_CLOSE = re.compile(r"^[ \t]*(?:`{3,}|~{3,})[ \t]*$")
+
 RE_ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
 
 RE_CONTAINER_OPENER = re.compile(r"^ *(?:!!!|\?\?\?\+?|===)[ \t]+\S")
@@ -156,7 +158,7 @@ TUPLE_BLOCK_STARTS = (
     RE_CONTAINER_OPENER,
     RE_LINK_DEFINITION,
     RE_THEMATIC_BREAK,
-    RE_FENCE,
+    RE_FENCE_CLOSE,
     RE_COMMENT_LINE,
 )
 
@@ -323,6 +325,7 @@ def _is_setext_underline(list_lines: list, int_idx: int) -> bool:
     return (
         int_idx >= 1
         and bool(list_lines[int_idx - 1].strip())
+        and (int_idx == 1 or not list_lines[int_idx - 2].strip())
         and bool(RE_SETEXT_UNDERLINE.match(list_lines[int_idx]))
     )
 
@@ -343,7 +346,7 @@ def _splits_block_at(list_lines: list, int_idx: int) -> bool:
         True for a blank line, a ``TUPLE_BLOCK_STARTS`` line, a setext underline, a front
         matter close or a definition title.
     """
-    str_line = list_lines[int_idx]
+    str_line = list_lines[int_idx].expandtabs(4)
     return (
         not str_line.strip()
         or any(re_start.match(str_line) for re_start in TUPLE_BLOCK_STARTS)

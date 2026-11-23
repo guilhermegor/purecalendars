@@ -879,7 +879,9 @@ def test_main_table_after_fence_comment_or_titled_definition_is_masked(
     assert _run(tmp_path) == 0
 
 
-@pytest.mark.parametrize("str_before", ["...", "--", "=", "- * _", "- * -"])
+@pytest.mark.parametrize(
+    "str_before", ["...", "--", "=", "- * _", "- * -", "```sample```", "Intro\nText\n-"]
+)
 def test_main_table_after_a_lone_rule_that_is_no_boundary_is_scored(
     tmp_path: Path, *, str_before: str
 ) -> None:
@@ -892,6 +894,16 @@ def test_main_table_after_a_lone_rule_that_is_no_boundary_is_scored(
     assert _run(tmp_path) == 1
 
 
+def test_main_table_after_a_tab_separated_thematic_break_is_masked(tmp_path: Path) -> None:
+    """Python-Markdown expands tabs first, so ``--<tab>--<tab>--`` is a thematic break."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n--\t--\t--\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
 def test_main_table_after_front_matter_closed_by_dots_is_masked(tmp_path: Path) -> None:
     """The ``...`` that closes leading front matter is a boundary; a stray one is not."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
@@ -902,6 +914,9 @@ def test_main_table_after_front_matter_closed_by_dots_is_masked(tmp_path: Path) 
     assert _run(tmp_path) == 0
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="creating a symlink needs a privilege Windows may not grant"
+)
 def test_main_unreadable_page_is_not_reported_as_bad_utf8(
     tmp_path: Path, *, capsys: pytest.CaptureFixture
 ) -> None:
