@@ -925,7 +925,6 @@ def test_main_table_after_front_matter_closed_by_dots_is_masked(tmp_path: Path) 
     [
         "# H\nText\n===",
         "***\nText\n===",
-        "[ref]: https://a.b/c\nText\n===",
         "Text\n===\nMore\n===",
     ],
 )
