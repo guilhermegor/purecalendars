@@ -2,6 +2,7 @@
 
 import importlib.util
 from pathlib import Path
+import re
 import sys
 from types import ModuleType
 
@@ -97,6 +98,76 @@ def test_tilde_to_range(str_raw: str, str_expected: str) -> None:
 def test_normalize_version_spec(str_spec: str, str_expected: str) -> None:
     """Each Poetry constraint form maps to its pip equivalent; ``~=`` is not a tilde."""
     assert pipreq.normalize_version_spec(str_spec) == str_expected
+
+
+@pytest.mark.parametrize(
+    ("str_spec", "str_expected"),
+    [
+        (">=1,^2", ">=1,>=2,<3.0.0"),
+        ("^1.2,<1.5", ">=1.2,<2.0.0,<1.5"),
+        ("~1.2,!=1.2.5", ">=1.2,<1.3.0,!=1.2.5"),
+        ("1.2 , <2", "==1.2,<2"),
+        ("^1.2,*", ">=1.2,<2.0.0"),
+    ],
+)
+def test_normalize_version_spec_comma_segments(str_spec: str, str_expected: str) -> None:
+    """Each comma segment is normalised on its own, then re-joined with commas."""
+    assert pipreq.normalize_version_spec(str_spec) == str_expected
+
+
+@pytest.mark.parametrize(
+    ("str_spec", "str_expected"),
+    [
+        ("^1.2 || ^2.0", ">=1.2,<3.0.0"),
+        ("^2.0 || ^1.2", ">=1.2,<3.0.0"),
+        ("^1 || ^1.5", ">=1,<2.0.0"),
+        ("<1 || >=1", ""),
+        ("<=1 || >1", ""),
+        ("^1.2 || *", ""),
+        ("~1.2 || ~1.3", ">=1.2,<1.4.0"),
+        (">=1,<2 || >=2,<3", ">=1,<3"),
+        ("1.2 || 1.2.0", ">=1.2,<=1.2"),
+    ],
+)
+def test_normalize_version_spec_merges_touching_unions(str_spec: str, str_expected: str) -> None:
+    """Overlapping or abutting alternatives merge into the exact range Poetry accepts."""
+    assert pipreq.normalize_version_spec(str_spec) == str_expected
+
+
+@pytest.mark.parametrize(
+    "str_spec",
+    ["^1.2 || ^3.0", "<1 || >1", "==1.0 || ==2.0", ">=1,<2 || >2"],
+)
+def test_normalize_version_spec_rejects_disjoint_union(str_spec: str) -> None:
+    """A union with a gap has no single pip range, so the error names the spec."""
+    with pytest.raises(ValueError, match=f"{re.escape(str_spec)}.*disjoint"):
+        pipreq.normalize_version_spec(str_spec)
+
+
+def test_normalize_version_spec_rejects_non_range_union_segment() -> None:
+    """A ``~=`` or ``!=`` segment cannot be intersected, so the union is refused."""
+    with pytest.raises(ValueError, match="not a range"):
+        pipreq.normalize_version_spec("~=1.2 || ^3")
+
+
+def test_normalize_version_spec_rejects_empty_union_alternative() -> None:
+    """An alternative that matches nothing is refused rather than silently dropped."""
+    with pytest.raises(ValueError, match="empty"):
+        pipreq.normalize_version_spec(">=2,<1 || ^1")
+
+
+def test_build_requirement_disjoint_union_exits_naming_dependency() -> None:
+    """The CLI path turns the ValueError into an exit that names the dependency."""
+    with pytest.raises(SystemExit, match="Unsupported version constraint for lib"):
+        pipreq.build_requirement("lib", union_spec="^1.2 || ^3.0")
+
+
+def test_build_requirement_table_version_union_is_merged() -> None:
+    """A table-form dependency gets the same union merge as a string one."""
+    assert (
+        pipreq.build_requirement("lib", union_spec={"version": "^1.2 || ^2.0"})
+        == "lib>=1.2,<3.0.0"
+    )
 
 
 def test_build_requirement_skips_python_pseudo_dependency() -> None:
