@@ -155,6 +155,13 @@ def test_normalize_version_spec_rejects_non_range_union_segment() -> None:
         pipreq.normalize_version_spec("~=1.2 || ^3")
 
 
+@pytest.mark.parametrize("str_spec", ["1.2.* || ^3", "==1.2.* || ^1", "^1 || >=1.2.*"])
+def test_normalize_version_spec_rejects_wildcard_in_union(str_spec: str) -> None:
+    """A ``.*`` wildcard is not an exact bound, so a union containing one is refused."""
+    with pytest.raises(ValueError, match="not a range"):
+        pipreq.normalize_version_spec(str_spec)
+
+
 def test_normalize_version_spec_rejects_empty_union_alternative() -> None:
     """An alternative that matches nothing is refused rather than silently dropped."""
     with pytest.raises(ValueError, match="empty"):

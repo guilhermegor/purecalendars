@@ -200,7 +200,7 @@ def _bound_order(tup_bound: _Bound) -> tuple[tuple[float, ...], int]:
 def _segment_bounds(str_segment: str, str_spec: str) -> list[tuple[str, _Bound]]:
     """Turn one normalised pip segment into ``(side, bound)`` pairs (``==`` yields both)."""
     str_op = next((op for op in ("==", ">=", "<=", ">", "<") if str_segment.startswith(op)), "")
-    if not str_op:
+    if not str_op or "*" in str_segment:
         raise ValueError(
             f"Cannot merge '||' union {str_spec!r}: segment {str_segment!r} is not a range"
         )
