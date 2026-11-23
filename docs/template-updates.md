@@ -87,7 +87,9 @@ Owner decision (2026-11-01): adopt both the template's `extra.version.provider: 
 | nav omits `Releasing 1.0.0` | the repo ships no `releasing-1-0-0.md` |
 | `docs/api/reference.md` keeps the whole API reference as one page | it is the real content; the template's page is a starter |
 | `docs/incidents.md` has no worked example entry | an empty record is truer than a fictional incident |
-| mike selector is inert until a `mike deploy` publishes `versions.json` | `docs.yaml` deploys with Pages, not mike |
+
+The mike selector was inert while `docs.yaml` deployed with Pages. #64 adopted the template's
+`deploy_docs` job, so each stable release now publishes `versions.json` to `gh-pages`.
 
 ## Guards that do not apply (#68, part of #56)
 

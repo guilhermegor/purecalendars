@@ -1,4 +1,5 @@
 site_name: purecalendars
+strict: true
 site_description: Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline.
 repo_url: https://github.com/guilhermegor/purecalendars
 nav:

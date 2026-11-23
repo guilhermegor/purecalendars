@@ -1,7 +1,7 @@
 scope 2
-base de6845b471bb833aadaf950cf3f1303c63a4c2ff
+base 4e0cd31d551c793784a55d22199a27c03641ee32
 24 .github/dependabot.yml
-16 .github/workflows/docs.yaml
+3 .github/workflows/docs.yaml
 44 .github/workflows/release-pypi.yaml
 32 .github/workflows/release-test-pypi.yaml
 44 .github/workflows/tests.yaml
