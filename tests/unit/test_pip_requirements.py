@@ -127,6 +127,11 @@ def test_normalize_version_spec_comma_segments(str_spec: str, str_expected: str)
         ("~1.2 || ~1.3", ">=1.2,<1.4.0"),
         (">=1,<2 || >=2,<3", ">=1,<3"),
         ("1.2 || 1.2.0", ">=1.2,<=1.2"),
+        (">0 || ^1", ">0"),
+        ("==0 || >0", ">=0"),
+        ("==0 || >=0,<2", ">=0,<2"),
+        ("0.0 || >0", ">=0.0"),
+        ("^1.2 | ^2.0", ">=1.2,<3.0.0"),
     ],
 )
 def test_normalize_version_spec_merges_touching_unions(str_spec: str, str_expected: str) -> None:
@@ -136,7 +141,7 @@ def test_normalize_version_spec_merges_touching_unions(str_spec: str, str_expect
 
 @pytest.mark.parametrize(
     "str_spec",
-    ["^1.2 || ^3.0", "<1 || >1", "==1.0 || ==2.0", ">=1,<2 || >2"],
+    ["^1.2 || ^3.0", "<1 || >1", "==1.0 || ==2.0", ">=1,<2 || >2", "==0 || ^1", "<0 || >0"],
 )
 def test_normalize_version_spec_rejects_disjoint_union(str_spec: str) -> None:
     """A union with a gap has no single pip range, so the error names the spec."""
@@ -154,6 +159,13 @@ def test_normalize_version_spec_rejects_empty_union_alternative() -> None:
     """An alternative that matches nothing is refused rather than silently dropped."""
     with pytest.raises(ValueError, match="empty"):
         pipreq.normalize_version_spec(">=2,<1 || ^1")
+
+
+@pytest.mark.parametrize("str_spec", ["^1.2 ||", "^1.2 || ", "|| ^1.2", "^1.2 | "])
+def test_normalize_version_spec_rejects_blank_union_alternative(str_spec: str) -> None:
+    """A blank alternative is refused rather than read as "any version"."""
+    with pytest.raises(ValueError, match="blank alternative"):
+        pipreq.normalize_version_spec(str_spec)
 
 
 def test_build_requirement_disjoint_union_exits_naming_dependency() -> None:

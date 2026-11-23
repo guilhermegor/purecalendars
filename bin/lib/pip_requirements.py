@@ -29,6 +29,7 @@ from __future__ import annotations
 import math
 import os
 from pathlib import Path
+import re
 import sys
 
 
@@ -181,7 +182,7 @@ _SIDE_AND_FLAG = {">=": ("lower", 0), ">": ("lower", 1), "<": ("upper", 0), "<="
 def _version_key(str_version: str) -> tuple[int, ...]:
     """Version as a tuple with trailing zeros dropped, so ``1.2`` equals ``1.2.0``."""
     list_parts = version_parts(str_version)
-    while list_parts and not list_parts[-1]:
+    while len(list_parts) > 1 and not list_parts[-1]:
         list_parts.pop()
     return tuple(list_parts)
 
@@ -227,6 +228,8 @@ def _touches(tup_lower: _Bound, tup_upper: _Bound) -> bool:
 
 def _alternative_interval(str_alt: str, str_spec: str) -> tuple[_Bound, _Bound]:
     """Intersect one alternative's comma segments into a ``(lower, upper)`` interval."""
+    if not str_alt.strip():
+        raise ValueError(f"Cannot merge '||' union {str_spec!r}: blank alternative")
     tup_lower, tup_upper = _BOUND_ANY_LOWER, _BOUND_ANY_UPPER
     for str_segment in normalize_segments(str_alt):
         for str_side, tup_bound in _segment_bounds(str_segment, str_spec):
@@ -262,7 +265,7 @@ def merge_union(str_spec: str) -> str:
         If an alternative is empty or not a range, or the alternatives are disjoint.
     """
     list_intervals = sorted(
-        (_alternative_interval(str_alt, str_spec) for str_alt in str_spec.split("||")),
+        (_alternative_interval(str_alt, str_spec) for str_alt in re.split(r"\|\|?", str_spec)),
         key=lambda tup_interval: _bound_order(tup_interval[0]),
     )
     tup_lower, tup_upper = list_intervals[0]
@@ -297,7 +300,7 @@ def normalize_version_spec(str_spec: str) -> str:
         If a ``||`` union cannot be expressed as one pip range.
     """
     str_spec = str(str_spec).strip()
-    if "||" in str_spec:
+    if "|" in str_spec:
         return merge_union(str_spec)
     return ",".join(normalize_segments(str_spec))
 
