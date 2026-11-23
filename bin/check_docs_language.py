@@ -38,6 +38,7 @@ A locale outside ``DICT_LOCALE_WORDS`` fails closed: the gate cannot say what it
 checking against.
 """
 
+from itertools import takewhile
 import os
 import pathlib
 import re
@@ -227,17 +228,20 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
     bool
         True when the line opens a block (the start of the page, or after a blank line or an
         ATX heading line) that ``markdown.extensions.tables`` accepts, which counts escaped and
-        code-span pipes as the renderer does.
+        code-span pipes as the renderer does. The processor decides on the first two rows
+        unless the header is a single column, so those two are tested first and the rest of
+        the block is read only for a real table start: a run of heading lines stays linear.
     """
     str_before = list_lines[int_idx - 1] if int_idx else ""
     if str_before.strip() and not RE_ATX_HEADING.match(str_before):
         return False
-    list_block = []
-    for str_line in list_lines[int_idx:]:
-        if not str_line.strip():
-            break
-        list_block.append(str_line)
-    return TABLE_PROCESSOR.test(None, "\n".join(list_block))
+    return all(
+        TABLE_PROCESSOR.test(
+            None,
+            "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_idx, int_stop)))),
+        )
+        for int_stop in (min(int_idx + 2, len(list_lines)), len(list_lines))
+    )
 
 
 def _mask_lines(str_text: str) -> list:

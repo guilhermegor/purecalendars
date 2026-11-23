@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 import pytest
+from pytest_mock import MockerFixture
 
 
 PATH_BIN = Path(__file__).resolve().parents[2] / "bin"
@@ -722,3 +723,17 @@ def test_main_non_utf8_mkdocs_fails_with_a_message(
     _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
     int_rc = _run(tmp_path)
     assert (int_rc, "cannot be read as UTF-8 text" in capsys.readouterr().out) == (1, True)
+
+
+def test_main_run_of_headings_never_hands_the_table_test_more_than_two_rows(
+    tmp_path: Path, *, mocker: MockerFixture
+) -> None:
+    """Each heading asks the table test about its own block; two rows keep the page linear."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + "".join(f"# Heading {int_n}\n" for int_n in range(200)),
+    )
+    spy_test = mocker.spy(cls_gate.TABLE_PROCESSOR, "test")
+    _run(tmp_path)
+    assert max(len(tuple_call.args[1].splitlines()) for tuple_call in spy_test.call_args_list) == 2
