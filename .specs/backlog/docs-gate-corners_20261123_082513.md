@@ -26,7 +26,10 @@ and scored as prose (a false failure, never a false pass). Follow-up to #131.
 - Setext underlines are flagged in one forward pass (`_split_flags`): the recursive form raised
   `RecursionError` on about 330 stacked headers, and the walk-back loop took 26 s on 5000 `===`
   lines. An ATX heading, comment, container opener, indented line or short `=`/`-` run is no
-  setext text line; a list, quote or rule line is (Python-Markdown tries setext first).
+  setext text line, nor is any line starting with `#` (no space needed, any count), a block-level
+  HTML tag, or the line under a fence delimiter; a list, quote or rule line is (Python-Markdown
+  tries setext first). An unclosed `<div>` still swallows a later table on main and here: that
+  family predates #132 and is not handled.
 - The closer lookup now starts at line 2, as `RE_MULTILINE_BLANK` and MkDocs read it; the old
   predicate also refused a page whose line 1 was itself a closer.
 

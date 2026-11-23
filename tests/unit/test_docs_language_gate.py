@@ -3,7 +3,6 @@
 import importlib.util
 from pathlib import Path
 import sys
-import time
 
 import pytest
 from pytest_mock import MockerFixture
@@ -984,26 +983,41 @@ def test_mask_lines_unclosed_front_matter_is_scanned_once(mocker: MockerFixture)
         cls_gate, "RE_FRONT_MATTER_CLOSE", wraps=cls_gate.RE_FRONT_MATTER_CLOSE
     )
     cls_gate._mask_lines("---\n" + "x\n" * int_lines)
-    assert cls_spy.match.call_count <= int_lines + 2
+    assert 1 <= cls_spy.match.call_count <= int_lines + 2
 
 
 @pytest.mark.parametrize("str_head", ["===", "-"])
-def test_mask_lines_long_run_of_underline_lines_stays_linear(str_head: str) -> None:
-    """A run of ``=`` or ``-`` lines is scanned once (about 0.03 s), not walked back (26 s)."""
-    str_page = STR_EN + "\nText\n" + (str_head + "\n") * 5000 + STR_TABLE_FOREIGN
-    float_start = time.perf_counter()
+def test_mask_lines_long_run_of_underline_lines_is_scanned_once(
+    mocker: MockerFixture, *, str_head: str
+) -> None:
+    """Each line is classified once: the walk-back this replaced did it once per line below."""
+    int_lines = 5000
+    str_page = "Text\n" + (str_head + "\n") * int_lines + STR_TABLE_FOREIGN
+    cls_spy = mocker.spy(cls_gate, "_is_boundary")
     cls_gate._mask_lines(str_page)
-    assert time.perf_counter() - float_start < 5
+    assert int_lines <= cls_spy.call_count <= len(str_page.splitlines()) + 2
 
 
 @pytest.mark.parametrize(
     "str_before",
-    ["# H\n===", "- item\nText\n===", "> quote\nText\n===", "1. item\nText\n===", "    code\n==="],
+    [
+        "# H\n===",
+        "#tag\n===",
+        "#######\n===",
+        "- item\nText\n===",
+        "> quote\nText\n===",
+        "1. item\nText\n===",
+        "    code\n===",
+        "<div>\n===",
+        "  <DETAILS open>\n===",
+        "```\ncode\n```\nText\n===",
+        "~~~\ncode\n~~~\nText\n===",
+    ],
 )
 def test_main_table_after_a_line_no_setext_header_forms_under_is_scored(
     tmp_path: Path, *, str_before: str
 ) -> None:
-    """Under a hash header, a list item, a quote or code the underline is no header: prose."""
+    """Where an earlier processor claims the text line, or a list or quote swallows it: prose."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(
         tmp_path / "docs" / "index.md",

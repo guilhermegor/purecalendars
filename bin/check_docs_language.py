@@ -163,10 +163,15 @@ TUPLE_BLOCK_STARTS = (
     RE_COMMENT_LINE,
 )
 
+RE_BLOCK_HTML = re.compile(
+    rf" {{0,3}}</?(?:{'|'.join(sorted(markdown.util.BLOCK_LEVEL_ELEMENTS))})\b", re.IGNORECASE
+)
+
 TUPLE_NOT_SETEXT_TEXT = (
-    RE_ATX_HEADING,
+    re.compile("#"),
     RE_CONTAINER_OPENER,
     RE_COMMENT_LINE,
+    RE_BLOCK_HTML,
     re.compile(r"(?:=+|-{1,2})[ ]*$"),
     re.compile(" {4}"),
 )
@@ -374,10 +379,14 @@ def _is_setext_text(str_line: str) -> bool:
     """Say whether a line can be the text a setext underline sits under.
 
     Python-Markdown tries its setext processor before every list, quote, thematic-break and
-    definition processor, so ``- item`` or ``***`` over ``===`` is a header; only the processors
-    that run before it (code, hash headings, admonitions, comments) claim the line first. A run of
-    ``=`` or ``-`` is left out too: which of two stacked underlines pairs with the text depends on
-    where the block starts, so the gate does not count on either.
+    definition processor, so ``- item`` or ``***`` over ``===`` is a header. What claims the
+    line first is the HTML preprocessor (a block-level tag or a comment), the code block and
+    hash header processors (any line that starts with ``#``, with no space needed and no cap
+    on the count, unlike CommonMark), and admonitions. The ``tables`` processor outranks setext
+    too, but it cannot claim a line that is followed by ``===`` or ``---``: those carry no
+    column separator, so it is left out. A run of ``=`` or ``-`` is refused as well: which of
+    two stacked underlines pairs with the text depends on where the block starts, so the gate
+    does not count on either.
 
     Parameters
     ----------
@@ -427,7 +436,9 @@ def _split_flags(list_lines: list, *, list_fenced: list) -> list:
             and RE_SETEXT_UNDERLINE.match(str_line)
             and _is_setext_text(list_lines[int_idx - 1])
         ):
-            list_setext[int_idx] = int_idx == 1 or list_hard[int_idx - 2]
+            list_setext[int_idx] = int_idx == 1 or (
+                list_hard[int_idx - 2] and not list_fenced[int_idx - 2]
+            )
         list_hard[int_idx] = list_setext[int_idx] or _is_boundary(
             list_lines, int_idx, int_front_matter_close=int_close
         )
