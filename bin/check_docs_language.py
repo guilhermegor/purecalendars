@@ -45,6 +45,7 @@ A locale outside ``DICT_LOCALE_WORDS`` fails closed: the gate cannot say what it
 checking against.
 """
 
+from functools import lru_cache
 from itertools import takewhile
 import os
 import pathlib
@@ -104,6 +105,10 @@ INT_EXCERPT = 80
 
 TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessors["table"]
 
+RE_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
+
+RE_FENCE_CLOSE = re.compile(r"^[ \t]*(?:`{3,}|~{3,})[ \t]*$")
+
 RE_ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
 
 RE_CONTAINER_OPENER = re.compile(r"^ *(?:!!!|\?\?\?\+?|===)[ \t]+\S")
@@ -138,20 +143,28 @@ RE_LINK_DEFINITION = re.compile(
     r"""(?P<title>[ \t]+(?:"[^"]*"|'[^']*'|\([^)]*\)))?[ \t]*$"""
 )
 
-RE_BOUNDARY_RULE = re.compile(r"^ {0,3}(?:=+|-{2,}|(?:[-*_][ \t]*){3,}|\.\.\.)[ \t]*$")
+RE_THEMATIC_BREAK = re.compile(
+    r"^ {0,3}(?:(?:-[ ]{0,2}){3,}|(?:_[ ]{0,2}){3,}|(?:\*[ ]{0,2}){3,})[ ]*$"
+)
+
+RE_SETEXT_UNDERLINE = re.compile(r"^(?:=+|-+)[ ]*$")
+
+RE_FRONT_MATTER_CLOSE = re.compile(r"^(?:---|\.\.\.)[ \t]*$")
+
+RE_COMMENT_LINE = re.compile(r"^[ \t]*<!--.*-->[ \t]*$", re.DOTALL)
 
 TUPLE_BLOCK_STARTS = (
     RE_ATX_HEADING,
     RE_CONTAINER_OPENER,
     RE_LINK_DEFINITION,
-    RE_BOUNDARY_RULE,
+    RE_THEMATIC_BREAK,
+    RE_FENCE_CLOSE,
+    RE_COMMENT_LINE,
 )
 
 RE_DEFINITION_TITLE = re.compile(r"""^[ \t]*(?:"[^"]*"|'[^']*'|\([^)]*\))[ \t]*$""")
 
 RE_UNTRANSLATED = re.compile(rf"^<!--\s*{re.escape(STR_UNTRANSLATED)}\s*-->\s*$", re.MULTILINE)
-
-RE_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
 
 
 def declared_locale(dict_mkdocs: dict) -> str:
@@ -249,6 +262,100 @@ def _block_text(list_lines: list, int_start: int, int_stop: int) -> str:
     return "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_start, int_stop))))
 
 
+def _closes_front_matter(list_lines: list, int_idx: int) -> bool:
+    """Say whether a line closes the page's leading ``---`` front matter (``---`` or ``...``).
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines.
+    int_idx : int
+        Index of the candidate closing line.
+
+    Returns
+    -------
+    bool
+        True when the page opens with ``---`` and this is the first closer after at least one
+        line, as ``RE_MULTILINE_BLANK`` reads it.
+    """
+    if int_idx <= 1 or list_lines[0] != "---":
+        return False
+    return not any(
+        RE_FRONT_MATTER_CLOSE.match(str_line) for str_line in list_lines[1:int_idx]
+    ) and bool(RE_FRONT_MATTER_CLOSE.match(list_lines[int_idx]))
+
+
+def _closes_titled_definition(list_lines: list, int_idx: int) -> bool:
+    """Say whether a line is the title a link definition carries on the line after it.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines.
+    int_idx : int
+        Index of the candidate title line.
+
+    Returns
+    -------
+    bool
+        True when the line is a quoted title right under a definition that has no title yet.
+    """
+    if int_idx < 1 or not RE_DEFINITION_TITLE.match(list_lines[int_idx]):
+        return False
+    re_definition = RE_LINK_DEFINITION.match(list_lines[int_idx - 1])
+    return bool(re_definition) and not re_definition.group("title")
+
+
+def _is_setext_underline(list_lines: list, int_idx: int) -> bool:
+    """Say whether a line is a setext underline: at column 0, under a non-blank text line.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines.
+    int_idx : int
+        Index of the candidate underline.
+
+    Returns
+    -------
+    bool
+        True for ``=`` or ``-`` runs of any length under text, which a lone one after a blank
+        line is not.
+    """
+    return (
+        int_idx >= 1
+        and bool(list_lines[int_idx - 1].strip())
+        and (int_idx == 1 or not list_lines[int_idx - 2].strip())
+        and bool(RE_SETEXT_UNDERLINE.match(list_lines[int_idx]))
+    )
+
+
+def _splits_block_at(list_lines: list, int_idx: int) -> bool:
+    """Say whether Python-Markdown ends a block at a line, so a table may start on the next.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines.
+    int_idx : int
+        Index of the line before the candidate table header.
+
+    Returns
+    -------
+    bool
+        True for a blank line, a ``TUPLE_BLOCK_STARTS`` line, a setext underline, a front
+        matter close or a definition title.
+    """
+    str_line = list_lines[int_idx].expandtabs(4)
+    return (
+        not str_line.strip()
+        or any(re_start.match(str_line) for re_start in TUPLE_BLOCK_STARTS)
+        or _is_setext_underline(list_lines, int_idx)
+        or _closes_front_matter(list_lines, int_idx)
+        or _closes_titled_definition(list_lines, int_idx)
+    )
+
+
 def _starts_table(list_lines: list, int_idx: int) -> bool:
     """Say whether the block that begins at a line is a table, by Python-Markdown's own test.
 
@@ -270,10 +377,7 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
         unless the header is a single column, so those two are tested first and the rest of
         the block is read only for a real table start: a run of heading lines stays linear.
     """
-    str_before = list_lines[int_idx - 1] if int_idx else ""
-    if str_before.strip() and not any(
-        re_start.match(str_before) for re_start in TUPLE_BLOCK_STARTS
-    ):
+    if int_idx and not _splits_block_at(list_lines, int_idx - 1):
         return False
     int_end = len(list_lines)
     if not TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, min(int_idx + 2, int_end))):
@@ -389,7 +493,7 @@ def prose_paragraphs(str_text: str) -> list:
     list_out: list = []
     list_block: list = []
     int_start = 0
-    for int_line, str_line in enumerate(_blank_multiline(_mask_lines(str_text)), 1):
+    for int_line, str_line in enumerate(_blanked_lines(str_text), 1):
         if str_line.strip():
             int_start = int_start or int_line
             list_block.append(str_line)
@@ -447,6 +551,23 @@ def paragraph_locale(str_paragraph: str, *, str_declared: str) -> str:
     return str_declared
 
 
+@lru_cache(maxsize=4)
+def _blanked_lines(str_text: str) -> tuple:
+    """Mask a page once, so the marker check and the prose split share one front matter parse.
+
+    Parameters
+    ----------
+    str_text : str
+        The page's text.
+
+    Returns
+    -------
+    tuple of str
+        The masked lines, with blocks, front matter and comments blanked.
+    """
+    return tuple(_blank_multiline(_mask_lines(str_text)))
+
+
 def is_untranslated(str_text: str) -> bool:
     """Tell whether a page carries the untranslated marker as its own comment line.
 
@@ -461,7 +582,7 @@ def is_untranslated(str_text: str) -> bool:
         True only for the exact HTML-comment line outside fenced code, not for prose or code
         that mentions it.
     """
-    return bool(RE_UNTRANSLATED.search("\n".join(_blank_multiline(_mask_lines(str_text)))))
+    return bool(RE_UNTRANSLATED.search("\n".join(_blanked_lines(str_text))))
 
 
 def _relative(path_page: pathlib.Path, *, path_root: pathlib.Path) -> str:
@@ -509,7 +630,10 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
         str_text = path_page.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as cls_err:
         str_rel = _relative(path_page, path_root=path_root)
-        return [f"❌ {str_rel}: cannot be read as UTF-8 text: {cls_err}"], False, 0
+        str_what = (
+            "is not UTF-8 text" if isinstance(cls_err, UnicodeDecodeError) else "cannot be read"
+        )
+        return [f"❌ {str_rel}: {str_what}: {cls_err}"], False, 0
     if is_untranslated(str_text):
         if str_declared == STR_DEFAULT_LOCALE:
             str_rel = _relative(path_page, path_root=path_root)

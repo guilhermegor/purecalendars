@@ -715,7 +715,7 @@ def test_main_non_utf8_page_fails_with_a_message(
     _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
     (tmp_path / "docs" / "bad.md").write_bytes(b"\xff\xfe not text\n")
     int_rc = _run(tmp_path)
-    assert (int_rc, "bad.md: cannot be read as UTF-8 text" in capsys.readouterr().out) == (1, True)
+    assert (int_rc, "bad.md: is not UTF-8 text" in capsys.readouterr().out) == (1, True)
 
 
 def test_main_non_utf8_mkdocs_fails_with_a_message(
@@ -857,3 +857,82 @@ def test_main_impossible_date_in_leading_block_does_not_raise(
     str_page = f"---\ndate: {str_date}\n---\n\n{STR_EN}"
     _write(tmp_path / "docs" / "index.md", str_text=str_page)
     assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize(
+    "str_before",
+    [
+        "```\ncode\n```",
+        "<!-- note -->",
+        '[ref]: https://a.b/c\n  "A title"',
+    ],
+)
+def test_main_table_after_fence_comment_or_titled_definition_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """Python-Markdown renders a table right after a closing fence, a comment or a title line."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize(
+    "str_before", ["...", "--", "=", "- * _", "- * -", "```sample```", "Intro\nText\n-"]
+)
+def test_main_table_after_a_lone_rule_that_is_no_boundary_is_scored(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A lone ``...``, ``--`` or ``=`` after a blank line splits nothing, so the table is prose."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 1
+
+
+def test_main_table_after_a_tab_separated_thematic_break_is_masked(tmp_path: Path) -> None:
+    """Python-Markdown expands tabs first, so ``--<tab>--<tab>--`` is a thematic break."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n--\t--\t--\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_main_table_after_front_matter_closed_by_dots_is_masked(tmp_path: Path) -> None:
+    """The ``...`` that closes leading front matter is a boundary; a stray one is not."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text="---\ntitle: x\n...\n" + STR_TABLE_FOREIGN + "\n" + STR_EN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="creating a symlink needs a privilege Windows may not grant"
+)
+def test_main_unreadable_page_is_not_reported_as_bad_utf8(
+    tmp_path: Path, *, capsys: pytest.CaptureFixture
+) -> None:
+    """A page that cannot be opened says "cannot be read", not "cannot be read as UTF-8"."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    (tmp_path / "docs" / "gone.md").symlink_to(tmp_path / "docs" / "missing-target.md")
+    cls_gate.main(["--root", str(tmp_path)])
+    str_out = capsys.readouterr().out
+    assert ("gone.md: cannot be read: " in str_out, "as UTF-8" in str_out) == (True, False)
+
+
+def test_page_problems_parses_front_matter_once(tmp_path: Path, mocker: MockerFixture) -> None:
+    """Front matter is parsed once per page, not once for the marker and once for the prose."""
+    path_page = _write(tmp_path / "index.md", str_text="---\ntitle: x\n---\n\n" + STR_EN)
+    cls_gate._blanked_lines.cache_clear()
+    cls_spy = mocker.spy(cls_gate.yaml, "safe_load")
+    cls_gate.page_problems(path_page, path_root=tmp_path, str_declared="en")
+    assert cls_spy.call_count == 1
