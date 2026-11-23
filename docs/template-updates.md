@@ -93,8 +93,10 @@ Owner decision (2026-11-01): adopt both the template's `extra.version.provider: 
 
 Owner decision (2026-11-21): drop the guards for code this library does not have, in
 purecalendars only. The BlueprintX template keeps shipping them. `bin/lint_deps.sh` (deptry) is
-adopted as a pre-commit hook and a CI step. `bin/check_clean_index.sh` stays pre-push only: a
-fresh CI checkout never has staged work, so a CI step could not fail.
+adopted as a pre-commit hook and a CI step. `bin/check_clean_index.sh` runs pre-push and as one CI step (ubuntu, Python 3.11 cell only;
+owner decision 2026-11-22). A fresh checkout never has staged work, so the step carries a
+negative control: an unstaged file must pass, then the same file staged must be refused with the
+guard's own message.
 
 | Not shipped | Reason |
 |---|---|

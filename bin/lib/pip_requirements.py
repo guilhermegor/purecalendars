@@ -77,7 +77,8 @@ def caret_to_range(str_raw: str) -> str:
 
     ``^`` allows changes that do not modify the left-most non-zero component, so the upper
     bound depends on where that component sits: ``^1.2.3`` → ``<2.0.0``, ``^0.2.3`` →
-    ``<0.3.0``, ``^0.0.3`` → ``<0.0.4``.
+    ``<0.3.0``, ``^0.0.3`` → ``<0.0.4``. When every written component is zero the last one
+    written is bumped: ``^0.0`` → ``<0.1.0``, ``^0`` → ``<1.0.0``.
 
     Parameters
     ----------
@@ -91,17 +92,12 @@ def caret_to_range(str_raw: str) -> str:
     """
     str_base = str_raw[1:].strip()
     list_parts = version_parts(str_base)
-    while len(list_parts) < _INT_SEMVER_PARTS:
-        list_parts.append(0)
-    int_major, int_minor, int_patch = list_parts[:3]
-
-    if int_major > 0:
-        str_upper = f"{int_major + 1}.0.0"
-    elif int_minor > 0:
-        str_upper = f"0.{int_minor + 1}.0"
-    else:
-        str_upper = f"0.0.{int_patch + 1}"
-    return f">={str_base},<{str_upper}"
+    int_pivot = next((int_idx for int_idx, int_part in enumerate(list_parts) if int_part), None)
+    if int_pivot is None:
+        int_pivot = len(list_parts) - 1
+    list_upper = [*list_parts[:int_pivot], list_parts[int_pivot] + 1]
+    list_upper.extend([0] * (_INT_SEMVER_PARTS - len(list_upper)))
+    return f">={str_base},<{'.'.join(str(int_part) for int_part in list_upper)}"
 
 
 def tilde_to_range(str_raw: str) -> str:
@@ -152,7 +148,9 @@ def normalize_version_spec(str_spec: str) -> str:
         return caret_to_range(str_spec)
     if str_spec.startswith("~") and not str_spec.startswith("~="):
         return tilde_to_range(str_spec)
-    if str_spec.startswith(TUPLE_PIP_NATIVE_PREFIXES) or "," in str_spec:
+    if str_spec.startswith(TUPLE_PIP_NATIVE_PREFIXES) or (
+        "," in str_spec and not str_spec[0].isdigit()
+    ):
         return str_spec
     return f"=={str_spec}"
 
