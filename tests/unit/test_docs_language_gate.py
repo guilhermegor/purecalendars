@@ -3,6 +3,7 @@
 import importlib.util
 from pathlib import Path
 import sys
+import time
 
 import pytest
 from pytest_mock import MockerFixture
@@ -976,16 +977,52 @@ def test_main_front_matter_opened_with_trailing_whitespace_is_stripped(
     assert _run(tmp_path) == 0
 
 
-def test_main_unclosed_front_matter_is_scanned_once(tmp_path: Path, mocker: MockerFixture) -> None:
+def test_mask_lines_unclosed_front_matter_is_scanned_once(mocker: MockerFixture) -> None:
     """The closer is looked for once per page, not again from every line below the opener."""
     int_lines = 400
-    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
-    _write(tmp_path / "docs" / "index.md", str_text="---\n" + "x\n" * int_lines + STR_EN)
     cls_spy = mocker.patch.object(
         cls_gate, "RE_FRONT_MATTER_CLOSE", wraps=cls_gate.RE_FRONT_MATTER_CLOSE
     )
-    _run(tmp_path)
-    assert cls_spy.match.call_count <= 2 * int_lines
+    cls_gate._mask_lines("---\n" + "x\n" * int_lines)
+    assert cls_spy.match.call_count <= int_lines + 2
+
+
+@pytest.mark.parametrize("str_head", ["===", "-"])
+def test_mask_lines_long_run_of_underline_lines_stays_linear(str_head: str) -> None:
+    """A run of ``=`` or ``-`` lines is scanned once (about 0.03 s), not walked back (26 s)."""
+    str_page = STR_EN + "\nText\n" + (str_head + "\n") * 5000 + STR_TABLE_FOREIGN
+    float_start = time.perf_counter()
+    cls_gate._mask_lines(str_page)
+    assert time.perf_counter() - float_start < 5
+
+
+@pytest.mark.parametrize(
+    "str_before",
+    ["# H\n===", "- item\nText\n===", "> quote\nText\n===", "1. item\nText\n===", "    code\n==="],
+)
+def test_main_table_after_a_line_no_setext_header_forms_under_is_scored(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """Under a hash header, a list item, a quote or code the underline is no header: prose."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize("str_before", ["- item\n===", "> quote\n===", "***\n==="])
+def test_main_table_after_a_list_quote_or_rule_line_used_as_header_text_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A setext header outranks list, quote and rule parsing, so its text may look like one."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
 
 
 @pytest.mark.skipif(

@@ -23,8 +23,10 @@ and scored as prose (a false failure, never a false pass). Follow-up to #131.
   a fence line that was not a real closer. `_mask_lines` treats every fence-looking line (any
   indent) as a fence and masks what sits inside, and a closing line carries no pipe, so it
   cannot open a table.
-- A header run is walked in a loop: the recursive form raised `RecursionError` on about 330
-  stacked setext headers.
+- Setext underlines are flagged in one forward pass (`_split_flags`): the recursive form raised
+  `RecursionError` on about 330 stacked headers, and the walk-back loop took 26 s on 5000 `===`
+  lines. An ATX heading, comment, container opener, indented line or short `=`/`-` run is no
+  setext text line; a list, quote or rule line is (Python-Markdown tries setext first).
 - The closer lookup now starts at line 2, as `RE_MULTILINE_BLANK` and MkDocs read it; the old
   predicate also refused a page whose line 1 was itself a closer.
 

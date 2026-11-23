@@ -167,7 +167,7 @@ TUPLE_NOT_SETEXT_TEXT = (
     RE_ATX_HEADING,
     RE_CONTAINER_OPENER,
     RE_COMMENT_LINE,
-    RE_SETEXT_UNDERLINE,
+    re.compile(r"(?:=+|-{1,2})[ ]*$"),
     re.compile(" {4}"),
 )
 
