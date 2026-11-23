@@ -19,7 +19,12 @@ How it decides:
 2. **Prose only.** Fenced code (fences at any indent, since MkDocs admonitions and tabs nest
    them), YAML front matter, multi-line HTML comments, inline code, links, bare URLs, HTML
    tags (also across lines), link definitions and table rows are blanked before counting, so
-   quoting a command or naming a Portuguese product proves nothing.
+   quoting a command or naming a Portuguese product proves nothing. A fence line is matched at
+   any indent because telling an indented code block from an admonition or tab needs the
+   container parse this gate does not have; the cost is that a literal fence line inside an
+   indented code block toggles the state, so such a page marks the line ``docs-lang:ok``. An
+   admonition or tab opener inside an indented code block is read the same lenient way: a table
+   under it is masked.
 3. **One verdict per paragraph.** Each paragraph is scored against every locale's function-word
    set; the paragraph reads as the locale with the most hits, and only when that count reaches
    ``INT_MIN_HITS`` and beats the declared locale's own. The Portuguese set is imported from
@@ -29,7 +34,9 @@ How it decides:
    and is counted in the final line, failing runs included, so skipped pages are never silent.
    A scaffold whose locale is not ``en`` appends it to every shipped page, which the English
    templates would otherwise fail on the first lint; deleting it is the act of declaring the
-   page translated.
+   page translated. A project whose locale is ``en`` has no such templates, so the marker there
+   is a finding rather than a way to turn the gate off for a page (``docs-lang:ok`` still
+   skips one paragraph).
 5. **Never vacuous.** A run whose unskipped pages hold no paragraph with a word fails; a run
    where every page is marked untranslated only warns, since that is a fresh non-English scaffold.
    ``--list-pages`` prints the page set so a caller never has to redefine it.
@@ -38,6 +45,7 @@ A locale outside ``DICT_LOCALE_WORDS`` fails closed: the gate cannot say what it
 checking against.
 """
 
+from itertools import takewhile
 import os
 import pathlib
 import re
@@ -98,6 +106,8 @@ TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessor
 
 RE_ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
 
+RE_CONTAINER_OPENER = re.compile(r"^ *(?:!!!|\?\?\?\+?|===)[ \t]+\S")
+
 STR_ESCAPE = "docs-lang:ok"
 
 STR_UNTRANSLATED = "docs-lang:untranslated"
@@ -123,11 +133,18 @@ TUPLE_BLANKINGS = (
     re.compile(r"https?://\S+"),
 )
 
-RE_TABLE_ROW = re.compile(r"^[ \t]*\|")
-
 RE_LINK_DEFINITION = re.compile(
     r"""^[ \t]*\[(?!\^)(?:\\.|[^\[\]\\\n])+\]:[ \t]*\S+"""
     r"""(?P<title>[ \t]+(?:"[^"]*"|'[^']*'|\([^)]*\)))?[ \t]*$"""
+)
+
+RE_BOUNDARY_RULE = re.compile(r"^ {0,3}(?:=+|-{2,}|(?:[-*_][ \t]*){3,}|\.\.\.)[ \t]*$")
+
+TUPLE_BLOCK_STARTS = (
+    RE_ATX_HEADING,
+    RE_CONTAINER_OPENER,
+    RE_LINK_DEFINITION,
+    RE_BOUNDARY_RULE,
 )
 
 RE_DEFINITION_TITLE = re.compile(r"""^[ \t]*(?:"[^"]*"|'[^']*'|\([^)]*\))[ \t]*$""")
@@ -212,6 +229,26 @@ def _fence_toggles(str_open: str, *, str_marker: str, str_info: str) -> bool:
     )
 
 
+def _block_text(list_lines: list, int_start: int, int_stop: int) -> str:
+    """Join the lines of a block from a start index, stopping at a blank line or the stop index.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines.
+    int_start : int
+        Index of the block's first line.
+    int_stop : int
+        Index to stop before, so a caller can read only the leading rows.
+
+    Returns
+    -------
+    str
+        The lines joined by newlines.
+    """
+    return "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_start, int_stop))))
+
+
 def _starts_table(list_lines: list, int_idx: int) -> bool:
     """Say whether the block that begins at a line is a table, by Python-Markdown's own test.
 
@@ -225,19 +262,23 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
     Returns
     -------
     bool
-        True when the line opens a block (the start of the page, or after a blank line or an
-        ATX heading line) that ``markdown.extensions.tables`` accepts, which counts escaped and
-        code-span pipes as the renderer does.
+        True when the line opens a block that ``markdown.extensions.tables`` accepts: the start
+        of the page, or after a blank line or a line Python-Markdown splits the block at (an ATX
+        heading, a setext underline or thematic break, which also covers the close of front
+        matter, a link definition, or an admonition, details or tab opener). It counts escaped and
+        code-span pipes as the renderer does. The processor decides on the first two rows
+        unless the header is a single column, so those two are tested first and the rest of
+        the block is read only for a real table start: a run of heading lines stays linear.
     """
     str_before = list_lines[int_idx - 1] if int_idx else ""
-    if str_before.strip() and not RE_ATX_HEADING.match(str_before):
+    if str_before.strip() and not any(
+        re_start.match(str_before) for re_start in TUPLE_BLOCK_STARTS
+    ):
         return False
-    list_block = []
-    for str_line in list_lines[int_idx:]:
-        if not str_line.strip():
-            break
-        list_block.append(str_line)
-    return TABLE_PROCESSOR.test(None, "\n".join(list_block))
+    int_end = len(list_lines)
+    if not TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, min(int_idx + 2, int_end))):
+        return False
+    return TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, int_end))
 
 
 def _mask_lines(str_text: str) -> list:
@@ -273,15 +314,43 @@ def _mask_lines(str_text: str) -> list:
                 bool_in_table or _starts_table(list_lines, int_idx)
             )
         bool_blank = (
-            bool_in_table
-            or bool_toggle
-            or bool(str_open)
-            or bool_definition
-            or bool_title
-            or bool(RE_TABLE_ROW.match(str_line))
+            bool_in_table or bool_toggle or bool(str_open) or bool_definition or bool_title
         )
         list_out.append("" if bool_blank else str_line)
     return list_out
+
+
+def _blank_span(re_hit: re.Match) -> str:
+    """Reduce a multi-line span to empty lines, unless it is a leading ``---`` block that is prose.
+
+    MkDocs strips a leading ``---`` block only when it parses as a YAML mapping and renders it
+    otherwise, so a page that opens with a thematic break and then prose keeps that prose
+    scored. A parse failure (a ``YAMLError``, a ``ValueError`` from an impossible
+    date or timezone offset, a ``RecursionError`` from deep nesting) means "not a mapping", as in
+    ``mkdocs.utils.meta.get_data``, which treats every exception that way.
+
+    Parameters
+    ----------
+    re_hit : re.Match
+        A match of ``RE_MULTILINE_BLANK``: front matter or an HTML comment.
+
+    Returns
+    -------
+    str
+        The span with every character but the newlines removed, or the span itself when it is
+        a single-line comment or a ``---`` block that is not a YAML mapping.
+    """
+    str_span = re_hit.group()
+    if "\n" not in str_span:
+        return str_span
+    if str_span.startswith("---"):
+        try:
+            bool_mapping = isinstance(yaml.safe_load("\n".join(str_span.split("\n")[1:-1])), dict)
+        except (yaml.YAMLError, ValueError, RecursionError):
+            bool_mapping = False
+        if not bool_mapping:
+            return str_span
+    return re.sub(r"[^\n]", "", str_span)
 
 
 def _blank_multiline(list_lines: list) -> list:
@@ -299,12 +368,7 @@ def _blank_multiline(list_lines: list) -> list:
     list of str
         The same number of lines, with each blanked span reduced to empty lines.
     """
-    str_blanked = RE_MULTILINE_BLANK.sub(
-        lambda re_hit: (
-            re.sub(r"[^\n]", "", re_hit.group()) if "\n" in re_hit.group() else re_hit.group()
-        ),
-        RE_CODE_SPAN.sub(" ", "\n".join(list_lines)),
-    )
+    str_blanked = RE_MULTILINE_BLANK.sub(_blank_span, RE_CODE_SPAN.sub(" ", "\n".join(list_lines)))
     return str_blanked.split("\n")
 
 
@@ -400,6 +464,25 @@ def is_untranslated(str_text: str) -> bool:
     return bool(RE_UNTRANSLATED.search("\n".join(_blank_multiline(_mask_lines(str_text)))))
 
 
+def _relative(path_page: pathlib.Path, *, path_root: pathlib.Path) -> str:
+    """Return a page's path relative to the project root, with forward slashes.
+
+    Parameters
+    ----------
+    path_page : pathlib.Path
+        The page.
+    path_root : pathlib.Path
+        The project root.
+
+    Returns
+    -------
+    str
+        The relative path, computed only when a message needs it: ``os.path.relpath`` raises on
+        Windows for two drives, which a page with no finding must not hit.
+    """
+    return pathlib.Path(os.path.relpath(path_page, path_root)).as_posix()
+
+
 def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_declared: str) -> tuple:
     """Return one message per paragraph of a page written in the wrong locale.
 
@@ -415,13 +498,26 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
     Returns
     -------
     tuple of (list of str, bool, int)
-        ``path:line`` messages naming the locale the paragraph reads as and an excerpt, whether
-        the page was skipped as untranslated, then how many paragraphs were scored, a
-        paragraph counting only when it holds a word, so punctuation residue is not prose.
+        ``path:line`` messages naming the locale the paragraph reads as and an excerpt (one
+        message for a page that is not UTF-8 text, which is never silently skipped, and one for
+        the untranslated marker under ``en``), whether the page was skipped as untranslated,
+        then how many paragraphs were scored, a paragraph counting only when it holds a word,
+        so punctuation residue is not prose.
     """
     list_out: list = []
-    str_text = path_page.read_text(encoding="utf-8")
+    try:
+        str_text = path_page.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as cls_err:
+        str_rel = _relative(path_page, path_root=path_root)
+        return [f"❌ {str_rel}: cannot be read as UTF-8 text: {cls_err}"], False, 0
     if is_untranslated(str_text):
+        if str_declared == STR_DEFAULT_LOCALE:
+            str_rel = _relative(path_page, path_root=path_root)
+            return (
+                [f"❌ {str_rel}: {STR_UNTRANSLATED} is refused when the declared locale is en"],
+                False,
+                0,
+            )
         return list_out, True, 0
     list_paras = prose_paragraphs(str_text)
     for int_line, str_para in list_paras:
@@ -430,7 +526,7 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
             str_flat = " ".join(str_para.split())
             str_tail = "…" if len(str_flat) > INT_EXCERPT else ""
             str_excerpt = f"{str_flat[:INT_EXCERPT]}{str_tail}"
-            str_rel = pathlib.Path(os.path.relpath(path_page, path_root)).as_posix()
+            str_rel = _relative(path_page, path_root=path_root)
             list_out.append(
                 f"❌ {str_rel}:{int_line}: paragraph reads as "
                 f"{str_read} but theme.language is {str_declared} -- {str_excerpt}"
@@ -461,6 +557,8 @@ def _load_config(path_root: pathlib.Path) -> tuple:
         dict_mkdocs = load_mkdocs(path_mkdocs)
     except yaml.YAMLError as cls_err:
         return {}, f"{path_mkdocs} is not valid YAML: {cls_err}"
+    except (OSError, UnicodeDecodeError) as cls_err:
+        return {}, f"{path_mkdocs} cannot be read as UTF-8 text: {cls_err}"
     if not isinstance(dict_mkdocs, dict):
         return {}, f"{path_mkdocs} must be a YAML mapping"
     path_docs = path_root / str(dict_mkdocs.get("docs_dir") or STR_DEFAULT_DOCS_DIR)

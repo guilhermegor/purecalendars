@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 
 import pytest
+from pytest_mock import MockerFixture
 
 
 PATH_BIN = Path(__file__).resolve().parents[2] / "bin"
@@ -603,9 +604,9 @@ def test_main_zero_scored_failure_reports_the_skipped_pages(
     tmp_path: Path, *, capsys: pytest.CaptureFixture
 ) -> None:
     """The vacuous-pass failure carries the skipped-page note, like the violation branch."""
-    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_PT)
     _write(tmp_path / "docs" / "index.md", str_text="| a | b |\n|---|---|\n")
-    _write(tmp_path / "docs" / "other.md", str_text="<!-- docs-lang:untranslated -->\n" + STR_PT)
+    _write(tmp_path / "docs" / "other.md", str_text="<!-- docs-lang:untranslated -->\n" + STR_EN)
     _run(tmp_path)
     assert "1 skipped as docs-lang:untranslated" in capsys.readouterr().out
 
@@ -667,6 +668,9 @@ def test_main_prose_with_a_pipe_is_still_scored(tmp_path: Path) -> None:
     assert _run(tmp_path) == 1
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="creating a symlink needs a privilege Windows may not grant"
+)
 def test_main_symlink_loop_in_docs_fails_the_walk(tmp_path: Path) -> None:
     """A docs tree that cannot be walked fails the gate instead of passing on the README."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
@@ -701,3 +705,155 @@ def test_main_tables_follow_python_markdown_rules(
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(tmp_path / "docs" / "index.md", str_text=STR_EN + "\n" + str_table)
     assert _run(tmp_path) == int_code
+
+
+def test_main_non_utf8_page_fails_with_a_message(
+    tmp_path: Path, *, capsys: pytest.CaptureFixture
+) -> None:
+    """A page that is not UTF-8 text is reported by name instead of raising."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    (tmp_path / "docs" / "bad.md").write_bytes(b"\xff\xfe not text\n")
+    int_rc = _run(tmp_path)
+    assert (int_rc, "bad.md: cannot be read as UTF-8 text" in capsys.readouterr().out) == (1, True)
+
+
+def test_main_non_utf8_mkdocs_fails_with_a_message(
+    tmp_path: Path, *, capsys: pytest.CaptureFixture
+) -> None:
+    """A ``mkdocs.yml`` that is not UTF-8 text ends in the gate's own message, not a traceback."""
+    (tmp_path / "mkdocs.yml").write_bytes(b"site_name: \xff\xfe\n")
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    int_rc = _run(tmp_path)
+    assert (int_rc, "cannot be read as UTF-8 text" in capsys.readouterr().out) == (1, True)
+
+
+def test_main_run_of_headings_never_hands_the_table_test_more_than_two_rows(
+    tmp_path: Path, *, mocker: MockerFixture
+) -> None:
+    """Each heading asks the table test about its own block; two rows keep the page linear."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + "".join(f"# Heading {int_n}\n" for int_n in range(200)),
+    )
+    cls_spy = mocker.spy(cls_gate.TABLE_PROCESSOR, "test")
+    _run(tmp_path)
+    int_widest = max(
+        (len(tuple_call.args[1].splitlines()) for tuple_call in cls_spy.call_args_list), default=0
+    )
+    assert int_widest == 2
+
+
+@pytest.mark.parametrize(
+    "str_text",
+    [
+        "\n| " + STR_FOREIGN_BLOCK.strip() + " |\n",
+        "\nIntro\n| " + STR_FOREIGN_BLOCK.strip() + "\n",
+    ],
+)
+def test_main_pipe_led_line_outside_a_table_is_scored(tmp_path: Path, *, str_text: str) -> None:
+    """A line that merely starts with a pipe is prose when no table opens its block."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN + str_text)
+    assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize(
+    "str_text",
+    [
+        "---\n" + STR_FOREIGN_BLOCK + "---\n\n" + STR_EN,
+        "---\n- " + STR_FOREIGN_BLOCK + "---\n\n" + STR_EN,
+        "---\nkey: [" + STR_FOREIGN_BLOCK + "---\n\n" + STR_EN,
+    ],
+)
+def test_main_leading_thematic_breaks_around_prose_are_scored(
+    tmp_path: Path, *, str_text: str
+) -> None:
+    """A leading ``---`` block that is not a YAML mapping is rendered, so it is scored."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=str_text)
+    assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize("str_mkdocs", [STR_MKDOCS_EN, STR_MKDOCS_UNSET])
+def test_main_untranslated_marker_is_refused_when_the_locale_is_en(
+    tmp_path: Path, *, str_mkdocs: str, capsys: pytest.CaptureFixture
+) -> None:
+    """Under ``en`` the marker is a finding naming the page, not a way to skip it."""
+    _write(tmp_path / "mkdocs.yml", str_text=str_mkdocs)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    _write(tmp_path / "docs" / "usage.md", str_text=STR_PT + "\n<!-- docs-lang:untranslated -->\n")
+    int_rc = _run(tmp_path)
+    assert (int_rc, "usage.md: docs-lang:untranslated is refused" in capsys.readouterr().out) == (
+        1,
+        True,
+    )
+
+
+@pytest.mark.parametrize(
+    "str_opener",
+    ["!!! note", '!!! note "Title"', "??? tip", "???+ tip", '=== "Tab"', "    !!! note"],
+)
+def test_main_table_directly_under_a_container_opener_is_masked(
+    tmp_path: Path, *, str_opener: str
+) -> None:
+    """MkDocs renders a table right under an admonition or tab line, so its rows are not prose."""
+    str_row = f"    | A | B |\n    |---|---|\n    | {STR_FOREIGN_BLOCK.strip()} | x |\n"
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN + "\n" + str_opener + "\n" + str_row)
+    assert _run(tmp_path) == 0
+
+
+def test_main_deeply_nested_front_matter_does_not_raise(tmp_path: Path) -> None:
+    """A leading block too deep for YAML is not a mapping, so it is prose and the run finishes."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text="---\n" + "[" * 5000 + "\n---\n\n" + STR_EN)
+    assert _run(tmp_path) == 0
+
+
+STR_TABLE_FOREIGN = f"| A | B |\n|---|---|\n| {STR_FOREIGN_BLOCK.strip()} | x |\n"
+
+
+@pytest.mark.parametrize(
+    "str_before",
+    [
+        "[ref]: https://a.b/c",
+        "Title\n=====",
+        "Title\n-----",
+        "Intro line.\n\n---",
+        "Intro line.\n\n***",
+        "Intro line.\n\n- - -",
+    ],
+)
+def test_main_table_after_a_line_the_renderer_splits_at_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A table right under a definition, setext underline or thematic break is still a table."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_main_table_right_after_front_matter_is_masked(tmp_path: Path) -> None:
+    """MkDocs strips the front matter, so a table that follows it directly opens the page body."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text="---\ntitle: x\n---\n" + STR_TABLE_FOREIGN + "\n" + STR_EN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_date", ["2026-13-01", "2026-02-30"])
+def test_main_impossible_date_in_leading_block_does_not_raise(
+    tmp_path: Path, *, str_date: str
+) -> None:
+    """A leading block PyYAML cannot build is not a mapping, as MkDocs reads it."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    str_page = f"---\ndate: {str_date}\n---\n\n{STR_EN}"
+    _write(tmp_path / "docs" / "index.md", str_text=str_page)
+    assert _run(tmp_path) == 0
