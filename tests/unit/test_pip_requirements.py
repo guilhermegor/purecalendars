@@ -20,6 +20,8 @@ def _load() -> ModuleType:
             The imported module.
     """
     cls_spec = importlib.util.spec_from_file_location("pip_requirements", _PATH_MODULE)
+    assert cls_spec is not None
+    assert cls_spec.loader is not None
     cls_module = importlib.util.module_from_spec(cls_spec)
     sys.modules["pip_requirements"] = cls_module
     cls_spec.loader.exec_module(cls_module)
