@@ -604,9 +604,9 @@ def test_main_zero_scored_failure_reports_the_skipped_pages(
     tmp_path: Path, *, capsys: pytest.CaptureFixture
 ) -> None:
     """The vacuous-pass failure carries the skipped-page note, like the violation branch."""
-    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_PT)
     _write(tmp_path / "docs" / "index.md", str_text="| a | b |\n|---|---|\n")
-    _write(tmp_path / "docs" / "other.md", str_text="<!-- docs-lang:untranslated -->\n" + STR_PT)
+    _write(tmp_path / "docs" / "other.md", str_text="<!-- docs-lang:untranslated -->\n" + STR_EN)
     _run(tmp_path)
     assert "1 skipped as docs-lang:untranslated" in capsys.readouterr().out
 
@@ -768,3 +768,18 @@ def test_main_leading_thematic_breaks_around_prose_are_scored(
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(tmp_path / "docs" / "index.md", str_text=str_text)
     assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize("str_mkdocs", [STR_MKDOCS_EN, STR_MKDOCS_UNSET])
+def test_main_untranslated_marker_is_refused_when_the_locale_is_en(
+    tmp_path: Path, *, str_mkdocs: str, capsys: pytest.CaptureFixture
+) -> None:
+    """Under ``en`` the marker is a finding naming the page, not a way to skip it."""
+    _write(tmp_path / "mkdocs.yml", str_text=str_mkdocs)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    _write(tmp_path / "docs" / "usage.md", str_text=STR_PT + "\n<!-- docs-lang:untranslated -->\n")
+    int_rc = _run(tmp_path)
+    assert (int_rc, "usage.md: docs-lang:untranslated is refused" in capsys.readouterr().out) == (
+        1,
+        True,
+    )

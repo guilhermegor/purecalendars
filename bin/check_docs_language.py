@@ -29,7 +29,9 @@ How it decides:
    and is counted in the final line, failing runs included, so skipped pages are never silent.
    A scaffold whose locale is not ``en`` appends it to every shipped page, which the English
    templates would otherwise fail on the first lint; deleting it is the act of declaring the
-   page translated.
+   page translated. A project whose locale is ``en`` has no such templates, so the marker there
+   is a finding rather than a way to turn the gate off for a page (``docs-lang:ok`` still
+   skips one paragraph).
 5. **Never vacuous.** A run whose unskipped pages hold no paragraph with a word fails; a run
    where every page is marked untranslated only warns, since that is a fresh non-English scaffold.
    ``--list-pages`` prints the page set so a caller never has to redefine it.
@@ -439,7 +441,8 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
     -------
     tuple of (list of str, bool, int)
         ``path:line`` messages naming the locale the paragraph reads as and an excerpt (one
-        message for a page that is not UTF-8 text, which is never silently skipped), whether
+        message for a page that is not UTF-8 text, which is never silently skipped, and one for
+        the untranslated marker under ``en``), whether
         the page was skipped as untranslated, then how many paragraphs were scored, a
         paragraph counting only when it holds a word, so punctuation residue is not prose.
     """
@@ -450,6 +453,12 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
     except (OSError, UnicodeDecodeError) as cls_err:
         return [f"❌ {str_rel}: cannot be read as UTF-8 text: {cls_err}"], False, 0
     if is_untranslated(str_text):
+        if str_declared == STR_DEFAULT_LOCALE:
+            return (
+                [f"❌ {str_rel}: {STR_UNTRANSLATED} is refused when theme.language is en"],
+                False,
+                0,
+            )
         return list_out, True, 0
     list_paras = prose_paragraphs(str_text)
     for int_line, str_para in list_paras:

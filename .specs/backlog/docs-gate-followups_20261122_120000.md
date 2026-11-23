@@ -16,7 +16,7 @@ Close the follow-ups the #115 fallback review raised against `bin/check_docs_lan
 - [x] 6. A page that opens with a thematic break is not hidden as front matter
 - [ ] 7. A fence line inside an indented code block: decision recorded
 - [x] 8. A line that starts with `|` outside a table is scored
-- [ ] 9. `docs-lang:untranslated` refused when the declared locale is `en`
+- [x] 9. `docs-lang:untranslated` refused when the declared locale is `en`
 
 ## Notes
 
