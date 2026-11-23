@@ -281,6 +281,37 @@ def _mask_lines(str_text: str) -> list:
     return list_out
 
 
+def _blank_span(re_hit: re.Match) -> str:
+    """Reduce a multi-line span to empty lines, unless it is a leading ``---`` block that is prose.
+
+    MkDocs strips a leading ``---`` block only when it parses as a YAML mapping and renders it
+    otherwise, so a page that opens with a thematic break and then prose keeps that prose
+    scored.
+
+    Parameters
+    ----------
+    re_hit : re.Match
+        A match of ``RE_MULTILINE_BLANK``: front matter or an HTML comment.
+
+    Returns
+    -------
+    str
+        The span with every character but the newlines removed, or the span itself when it is
+        a single-line comment or a ``---`` block that is not a YAML mapping.
+    """
+    str_span = re_hit.group()
+    if "\n" not in str_span:
+        return str_span
+    if str_span.startswith("---"):
+        try:
+            bool_mapping = isinstance(yaml.safe_load("\n".join(str_span.split("\n")[1:-1])), dict)
+        except yaml.YAMLError:
+            bool_mapping = False
+        if not bool_mapping:
+            return str_span
+    return re.sub(r"[^\n]", "", str_span)
+
+
 def _blank_multiline(list_lines: list) -> list:
     """Blank YAML front matter and HTML comments that span lines, keeping line numbers.
 
@@ -296,12 +327,7 @@ def _blank_multiline(list_lines: list) -> list:
     list of str
         The same number of lines, with each blanked span reduced to empty lines.
     """
-    str_blanked = RE_MULTILINE_BLANK.sub(
-        lambda re_hit: (
-            re.sub(r"[^\n]", "", re_hit.group()) if "\n" in re_hit.group() else re_hit.group()
-        ),
-        RE_CODE_SPAN.sub(" ", "\n".join(list_lines)),
-    )
+    str_blanked = RE_MULTILINE_BLANK.sub(_blank_span, RE_CODE_SPAN.sub(" ", "\n".join(list_lines)))
     return str_blanked.split("\n")
 
 

@@ -751,3 +751,20 @@ def test_main_pipe_led_line_outside_a_table_is_scored(tmp_path: Path, *, str_tex
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(tmp_path / "docs" / "index.md", str_text=STR_EN + str_text)
     assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize(
+    "str_text",
+    [
+        "---\n" + STR_FOREIGN_BLOCK + "---\n\n" + STR_EN,
+        "---\n- " + STR_FOREIGN_BLOCK + "---\n\n" + STR_EN,
+        "---\nkey: [" + STR_FOREIGN_BLOCK + "---\n\n" + STR_EN,
+    ],
+)
+def test_main_leading_thematic_breaks_around_prose_are_scored(
+    tmp_path: Path, *, str_text: str
+) -> None:
+    """A leading ``---`` block that is not a YAML mapping is rendered, so it is scored."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=str_text)
+    assert _run(tmp_path) == 1
