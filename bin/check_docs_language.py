@@ -165,7 +165,7 @@ RE_BLOCK_HTML = re.compile(
     re.IGNORECASE,
 )
 
-RE_HTML_DECLARATION = re.compile(r" {0,3}<(?:\?|!(?:doctype\b|\[))", re.IGNORECASE)
+RE_HTML_DECLARATION = re.compile(r" {0,3}<(?:\?|!(?:doctype|\[))", re.IGNORECASE)
 
 TUPLE_NOT_SETEXT_TEXT = (
     RE_HASH_HEADER,
@@ -476,7 +476,6 @@ def _flag_block_splits(list_lines: list, *, list_raw: list, list_fenced: list) -
         if (
             int_idx
             and not any(list_fenced[int_idx - 1 : int_idx + 1])
-            and not list_setext[int_idx - 1]
             and RE_SETEXT_UNDERLINE.match(str_line)
             and _is_setext_text(list_lines[int_idx - 1])
         ):

@@ -869,16 +869,14 @@ def test_main_impossible_date_in_leading_block_does_not_raise(
 @pytest.mark.parametrize(
     "str_before",
     [
-        "```\ncode\n```\n",
-        "~~~\ncode\n~~~\n",
         "<!-- note -->",
         '[ref]: https://a.b/c\n  "A title"',
     ],
 )
-def test_main_table_after_fence_comment_or_titled_definition_is_masked(
+def test_main_table_after_comment_or_titled_definition_is_masked(
     tmp_path: Path, *, str_before: str
 ) -> None:
-    """A table renders after a fence closer and a blank line, a comment or a title line."""
+    """A table renders right after a comment line or a definition's title line."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(
         tmp_path / "docs" / "index.md",
@@ -1016,6 +1014,8 @@ def test_mask_lines_long_run_of_underline_lines_is_scanned_once(
         "<?x?>\n===",
         "  <?x?>\n===",
         "<!DOCTYPE html>\n===",
+        "<!DOCTYPEhtml>\n===",
+        "<!doctypex>\n===",
         "<![CDATA[x]]>\n===",
         "  <DETAILS open>\n===",
         "```\ncode\n```\nText\n===",
@@ -1043,6 +1043,19 @@ def test_main_table_after_a_list_quote_or_rule_line_used_as_header_text_is_maske
     _write(
         tmp_path / "docs" / "index.md",
         str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_fence", ["```\ncode\n```", "~~~\ncode\n~~~"])
+def test_main_table_after_a_fence_and_a_blank_line_is_masked(
+    tmp_path: Path, *, str_fence: str
+) -> None:
+    """A blank line after a fence closer ends the block, so a table under it renders."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_fence + "\n\n" + STR_TABLE_FOREIGN,
     )
     assert _run(tmp_path) == 0
 

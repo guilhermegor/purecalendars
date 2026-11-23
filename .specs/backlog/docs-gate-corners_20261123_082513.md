@@ -20,25 +20,31 @@ and scored as prose (a false failure, never a false pass). Follow-up to #131.
 ## Notes
 
 - Item 6 first read as no change needed; the fifth review showed otherwise. Superfences stashes a
-  fence without padding it, so a table right under a closer renders no table, and the closer is
-  no block start. The first fuzz (60000 pages) only looked at non-closer fence lines and so missed
-  it. It made 91869
-  `_starts_table` calls, 27852 right after a fence-looking line, and none decided "table" through
-  a fence line that was not a real closer. `_mask_lines` treats every fence-looking line (any
-  indent) as a fence and masks what sits inside, and a closing line carries no pipe, so it
-  cannot open a table.
-- A hash header is `^#{1,6}` as Python-Markdown reads it (column 0, no space, no cap), not the
-  CommonMark shape; a `...` closer counts as a boundary only when the block is a YAML mapping.
-- The front-matter mapping verdict reads the raw lines (MkDocs parses those; a tab is a YAML error), and
-  a processing instruction, `DOCTYPE` or `CDATA` line is no setext text.
-- Setext underlines are flagged in one forward pass (`_flag_block_splits`): the recursive form raised
-  `RecursionError` on about 330 stacked headers, and the walk-back loop took 26 s on 5000 `===`
-  lines. An ATX heading, comment, container opener, indented line or short `=`/`-` run is no
-  setext text line, nor is any line starting with `#` (no space needed, any count), a block-level
-  HTML tag, or the line under a fence delimiter; a list, quote or rule line is (Python-Markdown
-  tries setext first). An unclosed `<div>` still swallows a later table on main and here: that
-  family predates #132 and is not handled.
-- The closer lookup now starts at line 2, as `RE_MULTILINE_BLANK` and MkDocs read it; the old
+  fence without padding it, so a table right under a closer renders no table and the closer is no
+  block start; a blank line after it still ends the block. The first fuzz (60000 fence-heavy
+  pages) counted 91869 `_starts_table` calls, 27852 right after a fence-looking line, and no
+  "table" decided through a non-closer fence line. It never looked at real closers, which is how
+  it missed this.
+- Line kinds Python-Markdown claims before its setext processor, and so are no setext text: a hash
+  header (`^#{1,6}`, no space, no cap), a container opener, a comment, a block-level HTML tag, a
+  processing instruction, `DOCTYPE` (prefix only) or `CDATA`, an indented line, and any `=` or `-`
+  run (stacked underlines pair differently once a code block or list sits above). A list, quote or
+  rule line is valid text, since setext is tried first. The line under a fence closer needs no
+  special case: a closer starts no block.
+- A `...` front-matter closer counts as a boundary only when the block is a YAML mapping, judged on
+  the raw lines (MkDocs parses those; a tab is a YAML error) through one cached parse shared with
+  the blanking pass.
+- Setext underlines are flagged in one forward pass (`_flag_block_splits`). The recursive form
+  raised `RecursionError` on about 330 stacked headers; the walk-back loop took 26 s on 5000 `===`
+  lines and 251003 `_is_boundary` calls on a 1004-line page, against 1004 now.
+- Fuzz, separate runs, all against Python-Markdown with the repo's extensions and 40000 pages per
+  seed: an early run (alphabet of 21 line kinds) gave main 216 false passes versus 0 on the branch
+  once the first review's list/quote and walk-back findings were fixed; the last three runs
+  (seeds 7, 11 and 23, 38 line kinds incl. fence-then-table, `<div-x>`, `<?x?>`, DOCTYPE) gave main
+  about 7450 false passes and the branch about 2500 to 2580, with 0 new-only false passes in pages
+  without `<div>`. The rest are the unclosed-`<div>` family, which predates #132 and is not
+  modelled.
+- The closer lookup starts at line 2, as `RE_MULTILINE_BLANK` and MkDocs read it; the old
   predicate also refused a page whose line 1 was itself a closer.
 
 Completed — kept as a record.
