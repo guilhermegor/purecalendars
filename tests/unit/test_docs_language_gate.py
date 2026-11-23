@@ -668,6 +668,9 @@ def test_main_prose_with_a_pipe_is_still_scored(tmp_path: Path) -> None:
     assert _run(tmp_path) == 1
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="creating a symlink needs a privilege Windows may not grant"
+)
 def test_main_symlink_loop_in_docs_fails_the_walk(tmp_path: Path) -> None:
     """A docs tree that cannot be walked fails the gate instead of passing on the README."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
