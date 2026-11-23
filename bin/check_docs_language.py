@@ -19,7 +19,10 @@ How it decides:
 2. **Prose only.** Fenced code (fences at any indent, since MkDocs admonitions and tabs nest
    them), YAML front matter, multi-line HTML comments, inline code, links, bare URLs, HTML
    tags (also across lines), link definitions and table rows are blanked before counting, so
-   quoting a command or naming a Portuguese product proves nothing.
+   quoting a command or naming a Portuguese product proves nothing. A fence line is matched at
+   any indent because telling an indented code block from an admonition or tab needs the
+   container parse this gate does not have; the cost is that a literal fence line inside an
+   indented code block toggles the state, so such a page marks the line ``docs-lang:ok``.
 3. **One verdict per paragraph.** Each paragraph is scored against every locale's function-word
    set; the paragraph reads as the locale with the most hits, and only when that count reaches
    ``INT_MIN_HITS`` and beats the declared locale's own. The Portuguese set is imported from
