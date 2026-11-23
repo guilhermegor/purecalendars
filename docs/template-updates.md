@@ -91,6 +91,29 @@ Owner decision (2026-11-01): adopt both the template's `extra.version.provider: 
 The mike selector was inert while `docs.yaml` deployed with Pages. #64 adopted the template's
 `deploy_docs` job, so each stable release now publishes `versions.json` to `gh-pages`.
 
+## Guards that do not apply (#68, part of #56)
+
+Owner decision (2026-11-21): drop the guards for code this library does not have, in
+purecalendars only. The BlueprintX template keeps shipping them. `bin/lint_deps.sh` (deptry) is
+adopted as a pre-commit hook and a CI step. `bin/check_clean_index.sh` runs pre-push and as one CI step (ubuntu, Python 3.11 cell only;
+owner decision 2026-11-22). A fresh checkout never has staged work, so the step carries a
+negative control: an unstaged file must pass, then the same file staged must be refused with the
+guard's own message.
+
+| Not shipped | Reason |
+|---|---|
+| `check_sql_guards.py`, `check_orm_model_guards.py` | no SQL and no ORM models |
+| `check_migration_graph.py`, `check_migration_slugs.py` | no database migrations |
+| `check_rmw_race.py` | no database read-modify-write |
+| `check_env_docs_sync.py` | the library ships no `.env` |
+| `lint_docker.sh` | no Dockerfile |
+| `export_deps.sh`, `bin/lib/wheelhouse_select.py` and its test | no wheelhouse or dependency export |
+| `check_quality_rules.py` | validates `quality-rules.yaml`, which exists only at the BlueprintX root; here it could only self-skip |
+
+`bin/lib/ca_bundle.py`, `pip_requirements.py` and `verify_venv_imports.py` stay, although the
+decision listed them with the wheelhouse files: `bootstrap.sh` builds the corporate CA bundle
+with the first, and `pip_fallback.sh` calls the other two when Poetry is unavailable.
+
 ## Ruff config pruning (#107)
 
 | Deviation | Reason |
@@ -109,3 +132,16 @@ Pruned because this repo has no such module:
 
 Docstring parameter and return descriptions were re-indented from 8 to 4 columns under their
 name line (ruff had expanded tabs to 8); code is unchanged.
+
+## Structure and typing gates (#67, part of #56)
+
+Adopted as the template ships them: `.layer-policy.yaml` (adapted to the `_internal`, `br` and
+`us` layers; no baseline needed, every current import is allowed with a reason),
+`check_layer_imports.py`, `check_dynamic_version_stub.py`, `check_typing.py`, `check_dtypes.py`,
+`.vscode/extensions.json`, and `[tool.commitizen]` moved to `.cz.toml`.
+
+| Dropped | Reason |
+|---|---|
+| `check_provenance.py` | it pairs `read_table(` with `stamp_provenance`; #97 removed both, and this package does no I/O |
+| `check_contract_drift.py` and the `contract-drift.yml` workflow | no `FileContract` and no `http_downloader` since #97; the repo's own `calendar-drift.yaml` keeps watching the live sources |
+| `pin_contract_oracle.py` | pins a contract to a source header, and there are no contracts |

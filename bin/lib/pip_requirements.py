@@ -26,8 +26,10 @@ stdout; an unsupported declaration exits non-zero with a message naming the depe
 
 from __future__ import annotations
 
+import math
 import os
 from pathlib import Path
+import re
 import sys
 
 
@@ -77,7 +79,8 @@ def caret_to_range(str_raw: str) -> str:
 
     ``^`` allows changes that do not modify the left-most non-zero component, so the upper
     bound depends on where that component sits: ``^1.2.3`` → ``<2.0.0``, ``^0.2.3`` →
-    ``<0.3.0``, ``^0.0.3`` → ``<0.0.4``.
+    ``<0.3.0``, ``^0.0.3`` → ``<0.0.4``. When every written component is zero the last one
+    written is bumped: ``^0.0`` → ``<0.1.0``, ``^0`` → ``<1.0.0``.
 
     Parameters
     ----------
@@ -91,17 +94,12 @@ def caret_to_range(str_raw: str) -> str:
     """
     str_base = str_raw[1:].strip()
     list_parts = version_parts(str_base)
-    while len(list_parts) < _INT_SEMVER_PARTS:
-        list_parts.append(0)
-    int_major, int_minor, int_patch = list_parts[:3]
-
-    if int_major > 0:
-        str_upper = f"{int_major + 1}.0.0"
-    elif int_minor > 0:
-        str_upper = f"0.{int_minor + 1}.0"
-    else:
-        str_upper = f"0.0.{int_patch + 1}"
-    return f">={str_base},<{str_upper}"
+    int_pivot = next((int_idx for int_idx, int_part in enumerate(list_parts) if int_part), None)
+    if int_pivot is None:
+        int_pivot = len(list_parts) - 1
+    list_upper = [*list_parts[:int_pivot], list_parts[int_pivot] + 1]
+    list_upper.extend([0] * (_INT_SEMVER_PARTS - len(list_upper)))
+    return f">={str_base},<{'.'.join(str(int_part) for int_part in list_upper)}"
 
 
 def tilde_to_range(str_raw: str) -> str:
@@ -132,29 +130,205 @@ def tilde_to_range(str_raw: str) -> str:
     return f">={str_base},<{str_upper}"
 
 
-def normalize_version_spec(str_spec: str) -> str:
-    """Convert one Poetry version constraint into pip syntax.
+def normalize_segment(str_segment: str) -> str:
+    """Convert one comma-free Poetry constraint (caret, tilde, pip-native or bare).
 
     Parameters
     ----------
-    str_spec : str
-        A Poetry constraint (``"^1.2"``, ``"~1.2"``, ``">=1,<2"``, ``"1.2.3"``, ``"*"``).
+    str_segment : str
+        A single constraint with no comma and no ``||``.
 
     Returns
     -------
     str
         The pip-syntax equivalent, or an empty string for "any version".
     """
-    str_spec = str(str_spec).strip()
-    if str_spec in {"", "*"}:
+    str_segment = str_segment.strip()
+    if str_segment in {"", "*"}:
         return ""
-    if str_spec.startswith("^"):
-        return caret_to_range(str_spec)
-    if str_spec.startswith("~") and not str_spec.startswith("~="):
-        return tilde_to_range(str_spec)
-    if str_spec.startswith(TUPLE_PIP_NATIVE_PREFIXES) or "," in str_spec:
-        return str_spec
-    return f"=={str_spec}"
+    if str_segment.startswith("^"):
+        return caret_to_range(str_segment)
+    if str_segment.startswith("~") and not str_segment.startswith("~="):
+        return tilde_to_range(str_segment)
+    if str_segment.startswith(TUPLE_PIP_NATIVE_PREFIXES):
+        return str_segment
+    return f"=={str_segment}"
+
+
+def normalize_segments(str_spec: str) -> list[str]:
+    """Normalise each comma segment on its own, dropping "any version" segments.
+
+    Parameters
+    ----------
+    str_spec : str
+        A constraint that may contain commas but no ``||``.
+
+    Returns
+    -------
+    list of str
+        The non-empty pip segments, in order.
+    """
+    list_normalised = (normalize_segment(str_seg) for str_seg in str_spec.split(","))
+    return [str_part for str_seg in list_normalised for str_part in str_seg.split(",") if str_part]
+
+
+_Bound = tuple[tuple[float, ...], int, str]
+
+_BOUND_ANY_LOWER: _Bound = ((-1,), 0, "")
+_BOUND_ANY_UPPER: _Bound = ((math.inf,), 1, "")
+_SIDE_AND_FLAG = {">=": ("lower", 0), ">": ("lower", 1), "<": ("upper", 0), "<=": ("upper", 1)}
+
+
+def _version_key(str_version: str) -> tuple[int, ...]:
+    """Version as a tuple with trailing zeros dropped, so ``1.2`` equals ``1.2.0``."""
+    list_parts = version_parts(str_version)
+    while len(list_parts) > 1 and not list_parts[-1]:
+        list_parts.pop()
+    return tuple(list_parts)
+
+
+def _bound_order(tup_bound: _Bound) -> tuple[tuple[float, ...], int]:
+    """Sort key of a bound ``(version key, flag, pip text)``.
+
+    For a lower bound flag 0 is inclusive (``>=``) and 1 exclusive (``>``); for an upper
+    bound flag 0 is exclusive (``<``) and 1 inclusive (``<=``). Either way a larger key is
+    the tighter lower bound or the looser upper bound.
+    """
+    return tup_bound[0], tup_bound[1]
+
+
+def _segment_bounds(str_segment: str, str_spec: str) -> list[tuple[str, _Bound]]:
+    """Turn one normalised pip segment into ``(side, bound)`` pairs (``==`` yields both)."""
+    str_op = next((op for op in ("==", ">=", "<=", ">", "<") if str_segment.startswith(op)), "")
+    str_text = str_segment[len(str_op) :]
+    if not str_op or not re.fullmatch(r"\d+(\.\d+)*", str_text):
+        raise ValueError(
+            f"Cannot merge '||' union {str_spec!r}: segment {str_segment!r} is not a range"
+        )
+    tup_key = _version_key(str_text)
+    list_ops = [">=", "<="] if str_op == "==" else [str_op]
+    return [
+        (_SIDE_AND_FLAG[op][0], (tup_key, _SIDE_AND_FLAG[op][1], f"{op}{str_text}"))
+        for op in list_ops
+    ]
+
+
+def _is_empty(tup_lower: _Bound, tup_upper: _Bound) -> bool:
+    if tup_lower[0] != tup_upper[0]:
+        return tup_lower[0] > tup_upper[0]
+    return not (tup_lower[1] == 0 and tup_upper[1] == 1)
+
+
+def _touches(tup_lower: _Bound, tup_upper: _Bound) -> bool:
+    """Whether a range starting at ``tup_lower`` overlaps or abuts one ending at ``tup_upper``."""
+    if tup_lower[0] != tup_upper[0]:
+        return tup_lower[0] < tup_upper[0]
+    return tup_lower[1] == 0 or tup_upper[1] == 1
+
+
+def _alternative_interval(str_alt: str, str_spec: str) -> tuple[_Bound, _Bound]:
+    """Intersect one alternative's comma segments into a ``(lower, upper)`` interval."""
+    if not str_alt.replace(",", "").strip():
+        raise ValueError(f"Cannot merge '||' union {str_spec!r}: blank alternative")
+    tup_lower, tup_upper = _BOUND_ANY_LOWER, _BOUND_ANY_UPPER
+    for str_segment in normalize_segments(str_alt):
+        for str_side, tup_bound in _segment_bounds(str_segment, str_spec):
+            if str_side == "lower":
+                tup_lower = max(tup_lower, tup_bound, key=_bound_order)
+            else:
+                tup_upper = min(tup_upper, tup_bound, key=_bound_order)
+    if _is_empty(tup_lower, tup_upper):
+        raise ValueError(f"Cannot merge '||' union {str_spec!r}: alternative {str_alt!r} is empty")
+    return tup_lower, tup_upper
+
+
+def merge_union(str_spec: str) -> str:
+    """Merge ``||`` alternatives into the one exact pip range they cover.
+
+    pip has no OR. Alternatives that overlap or touch collapse to exactly the set Poetry
+    accepts; a gap (``^1.2 || ^3.0``) has no single-range form, so it is refused instead of
+    widened into a range that admits versions Poetry would exclude.
+
+    Parameters
+    ----------
+    str_spec : str
+        A Poetry constraint containing ``||``.
+
+    Returns
+    -------
+    str
+        The merged range, e.g. ``">=1.2,<3.0.0"``; empty when the union is unbounded.
+
+    Raises
+    ------
+    ValueError
+        If an alternative is empty or not a range, or the alternatives are disjoint.
+    """
+    list_intervals = sorted(
+        (_alternative_interval(str_alt, str_spec) for str_alt in re.split(r"\|\|?", str_spec)),
+        key=lambda tup_interval: _bound_order(tup_interval[0]),
+    )
+    tup_lower, tup_upper = list_intervals[0]
+    for tup_next_lower, tup_next_upper in list_intervals[1:]:
+        if not _touches(tup_next_lower, tup_upper):
+            raise ValueError(
+                f"Cannot express '||' union {str_spec!r} in pip: alternatives are disjoint"
+            )
+        tup_upper = max(tup_upper, tup_next_upper, key=_bound_order)
+    return ",".join(str_text for str_text in (tup_lower[2], tup_upper[2]) if str_text)
+
+
+def normalize_version_spec(str_spec: str) -> str:
+    """Convert one Poetry version constraint into pip syntax.
+
+    Comma specs are split and each segment is normalised on its own, then re-joined.
+    ``||`` unions go through :func:`merge_union`.
+
+    Parameters
+    ----------
+    str_spec : str
+        A Poetry constraint (``"^1.2"``, ``">=1,^2"``, ``"^1.2 || ^2.0"``, ``"*"``).
+
+    Returns
+    -------
+    str
+        The pip-syntax equivalent, or an empty string for "any version".
+
+    Raises
+    ------
+    ValueError
+        If a ``||`` union cannot be expressed as one pip range.
+    """
+    str_spec = str(str_spec).strip()
+    if "|" in str_spec:
+        return merge_union(str_spec)
+    return ",".join(normalize_segments(str_spec))
+
+
+def pip_version_spec(str_name: str, *, str_spec: str) -> str:
+    """Normalise a dependency's constraint, exiting with its name when pip cannot express it.
+
+    Parameters
+    ----------
+    str_name : str
+        The dependency name, for the error message.
+    str_spec : str
+        Its Poetry constraint.
+
+    Returns
+    -------
+    str
+        The pip-syntax constraint.
+
+    Raises
+    ------
+    SystemExit
+        If :func:`normalize_version_spec` raises ``ValueError`` (a disjoint ``||`` union).
+    """
+    try:
+        return normalize_version_spec(str_spec)
+    except ValueError as err:
+        raise SystemExit(f"Unsupported version constraint for {str_name}: {err}") from err
 
 
 def build_requirement(str_name: str, *, union_spec: str | dict) -> str | None:
@@ -183,7 +357,7 @@ def build_requirement(str_name: str, *, union_spec: str | dict) -> str | None:
         return None
 
     if isinstance(union_spec, str):
-        return f"{str_name}{normalize_version_spec(union_spec)}"
+        return f"{str_name}{pip_version_spec(str_name, str_spec=union_spec)}"
 
     if isinstance(union_spec, dict):
         if union_spec.get("optional"):
@@ -196,7 +370,7 @@ def build_requirement(str_name: str, *, union_spec: str | dict) -> str | None:
 
         list_extras = union_spec.get("extras") or []
         str_extras = f"[{','.join(list_extras)}]" if list_extras else ""
-        str_version = normalize_version_spec(union_spec.get("version", ""))
+        str_version = pip_version_spec(str_name, str_spec=union_spec.get("version", ""))
         str_markers = union_spec.get("markers", "")
 
         str_requirement = f"{str_name}{str_extras}{str_version}"
