@@ -932,6 +932,7 @@ def test_main_unreadable_page_is_not_reported_as_bad_utf8(
 def test_page_problems_parses_front_matter_once(tmp_path: Path, mocker: MockerFixture) -> None:
     """Front matter is parsed once per page, not once for the marker and once for the prose."""
     path_page = _write(tmp_path / "index.md", str_text="---\ntitle: x\n---\n\n" + STR_EN)
+    cls_gate._blanked_lines.cache_clear()
     cls_spy = mocker.spy(cls_gate.yaml, "safe_load")
     cls_gate.page_problems(path_page, path_root=tmp_path, str_declared="en")
     assert cls_spy.call_count == 1

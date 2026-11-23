@@ -18,3 +18,7 @@ honest read-error wording, one front-matter parse per page. Follows #123 and PR 
 ## Not done, on purpose
 
 - Footnote definitions and bare `<div>`: not reproducible with plain Python-Markdown (#130).
+
+## Completed — kept as a record
+
+All boxes ticked on PR #131; the ledger stays as the record of the work.
