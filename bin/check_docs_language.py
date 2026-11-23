@@ -151,7 +151,7 @@ RE_SETEXT_UNDERLINE = re.compile(r"^(?:=+|-+)[ ]*$")
 
 RE_FRONT_MATTER_CLOSE = re.compile(r"^(?:---|\.\.\.)[ \t]*$")
 
-RE_COMMENT_LINE = re.compile(r"^[ \t]*<!--.*-->[ \t]*$")
+RE_COMMENT_LINE = re.compile(r"^[ \t]*<!--.*-->[ \t]*$", re.DOTALL)
 
 TUPLE_BLOCK_STARTS = (
     RE_ATX_HEADING,
