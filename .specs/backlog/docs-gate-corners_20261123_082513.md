@@ -22,7 +22,7 @@ and scored as prose (a false failure, never a false pass). Follow-up to #131.
 - Item 6 first read as no change needed; the fifth review showed otherwise. Superfences stashes a
   fence without padding it, so a table right under a closer renders no table, and the closer is
   no block start. The first fuzz (60000 pages) only looked at non-closer fence lines and so missed
-  it: it fence-heavy pages made 91869
+  it. It made 91869
   `_starts_table` calls, 27852 right after a fence-looking line, and none decided "table" through
   a fence line that was not a real closer. `_mask_lines` treats every fence-looking line (any
   indent) as a fence and masks what sits inside, and a closing line carries no pipe, so it
