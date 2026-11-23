@@ -22,7 +22,9 @@ How it decides:
    quoting a command or naming a Portuguese product proves nothing. A fence line is matched at
    any indent because telling an indented code block from an admonition or tab needs the
    container parse this gate does not have; the cost is that a literal fence line inside an
-   indented code block toggles the state, so such a page marks the line ``docs-lang:ok``.
+   indented code block toggles the state, so such a page marks the line ``docs-lang:ok``. An
+   admonition or tab opener inside an indented code block is read the same lenient way: a table
+   under it is masked.
 3. **One verdict per paragraph.** Each paragraph is scored against every locale's function-word
    set; the paragraph reads as the locale with the most hits, and only when that count reaches
    ``INT_MIN_HITS`` and beats the declared locale's own. The Portuguese set is imported from
@@ -134,6 +136,15 @@ TUPLE_BLANKINGS = (
 RE_LINK_DEFINITION = re.compile(
     r"""^[ \t]*\[(?!\^)(?:\\.|[^\[\]\\\n])+\]:[ \t]*\S+"""
     r"""(?P<title>[ \t]+(?:"[^"]*"|'[^']*'|\([^)]*\)))?[ \t]*$"""
+)
+
+RE_BOUNDARY_RULE = re.compile(r"^ {0,3}(?:=+|-{2,}|(?:[-*_][ \t]*){3,}|\.\.\.)[ \t]*$")
+
+TUPLE_BLOCK_STARTS = (
+    RE_ATX_HEADING,
+    RE_CONTAINER_OPENER,
+    RE_LINK_DEFINITION,
+    RE_BOUNDARY_RULE,
 )
 
 RE_DEFINITION_TITLE = re.compile(r"""^[ \t]*(?:"[^"]*"|'[^']*'|\([^)]*\))[ \t]*$""")
@@ -251,18 +262,17 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
     Returns
     -------
     bool
-        True when the line opens a block (the start of the page, or after a blank line, an ATX
-        heading line or an admonition, details or tab opener, whose indented content is parsed
-        as a fresh block) that ``markdown.extensions.tables`` accepts, which counts escaped and
+        True when the line opens a block that ``markdown.extensions.tables`` accepts: the start
+        of the page, or after a blank line or a line Python-Markdown splits the block at (an ATX
+        heading, a setext underline or thematic break, which also covers the close of front
+        matter, a link definition, or an admonition, details or tab opener). It counts escaped and
         code-span pipes as the renderer does. The processor decides on the first two rows
         unless the header is a single column, so those two are tested first and the rest of
         the block is read only for a real table start: a run of heading lines stays linear.
     """
     str_before = list_lines[int_idx - 1] if int_idx else ""
-    if (
-        str_before.strip()
-        and not RE_ATX_HEADING.match(str_before)
-        and not RE_CONTAINER_OPENER.match(str_before)
+    if str_before.strip() and not any(
+        re_start.match(str_before) for re_start in TUPLE_BLOCK_STARTS
     ):
         return False
     int_end = len(list_lines)
@@ -315,7 +325,9 @@ def _blank_span(re_hit: re.Match) -> str:
 
     MkDocs strips a leading ``---`` block only when it parses as a YAML mapping and renders it
     otherwise, so a page that opens with a thematic break and then prose keeps that prose
-    scored.
+    scored. A parse failure (a ``YAMLError``, a ``ValueError`` from an impossible
+    date or timezone offset, a ``RecursionError`` from deep nesting) means "not a mapping", as in
+    ``mkdocs.utils.meta.get_data``, which treats every exception that way.
 
     Parameters
     ----------
@@ -334,7 +346,7 @@ def _blank_span(re_hit: re.Match) -> str:
     if str_span.startswith("---"):
         try:
             bool_mapping = isinstance(yaml.safe_load("\n".join(str_span.split("\n")[1:-1])), dict)
-        except (yaml.YAMLError, RecursionError):
+        except (yaml.YAMLError, ValueError, RecursionError):
             bool_mapping = False
         if not bool_mapping:
             return str_span
@@ -502,7 +514,7 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
         if str_declared == STR_DEFAULT_LOCALE:
             str_rel = _relative(path_page, path_root=path_root)
             return (
-                [f"❌ {str_rel}: {STR_UNTRANSLATED} is refused when theme.language is en"],
+                [f"❌ {str_rel}: {STR_UNTRANSLATED} is refused when the declared locale is en"],
                 False,
                 0,
             )

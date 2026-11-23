@@ -737,9 +737,12 @@ def test_main_run_of_headings_never_hands_the_table_test_more_than_two_rows(
         tmp_path / "docs" / "index.md",
         str_text=STR_EN + "\n" + "".join(f"# Heading {int_n}\n" for int_n in range(200)),
     )
-    spy_test = mocker.spy(cls_gate.TABLE_PROCESSOR, "test")
+    cls_spy = mocker.spy(cls_gate.TABLE_PROCESSOR, "test")
     _run(tmp_path)
-    assert max(len(tuple_call.args[1].splitlines()) for tuple_call in spy_test.call_args_list) == 2
+    int_widest = max(
+        (len(tuple_call.args[1].splitlines()) for tuple_call in cls_spy.call_args_list), default=0
+    )
+    assert int_widest == 2
 
 
 @pytest.mark.parametrize(
@@ -806,4 +809,51 @@ def test_main_deeply_nested_front_matter_does_not_raise(tmp_path: Path) -> None:
     """A leading block too deep for YAML is not a mapping, so it is prose and the run finishes."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(tmp_path / "docs" / "index.md", str_text="---\n" + "[" * 5000 + "\n---\n\n" + STR_EN)
+    assert _run(tmp_path) == 0
+
+
+STR_TABLE_FOREIGN = f"| A | B |\n|---|---|\n| {STR_FOREIGN_BLOCK.strip()} | x |\n"
+
+
+@pytest.mark.parametrize(
+    "str_before",
+    [
+        "[ref]: https://a.b/c",
+        "Title\n=====",
+        "Title\n-----",
+        "Intro line.\n\n---",
+        "Intro line.\n\n***",
+        "Intro line.\n\n- - -",
+    ],
+)
+def test_main_table_after_a_line_the_renderer_splits_at_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A table right under a definition, setext underline or thematic break is still a table."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_main_table_right_after_front_matter_is_masked(tmp_path: Path) -> None:
+    """MkDocs strips the front matter, so a table that follows it directly opens the page body."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text="---\ntitle: x\n---\n" + STR_TABLE_FOREIGN + "\n" + STR_EN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_date", ["2026-13-01", "2026-02-30"])
+def test_main_impossible_date_in_leading_block_does_not_raise(
+    tmp_path: Path, *, str_date: str
+) -> None:
+    """A leading block PyYAML cannot build is not a mapping, as MkDocs reads it."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    str_page = f"---\ndate: {str_date}\n---\n\n{STR_EN}"
+    _write(tmp_path / "docs" / "index.md", str_text=str_page)
     assert _run(tmp_path) == 0
