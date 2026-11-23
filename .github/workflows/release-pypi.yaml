@@ -26,6 +26,7 @@ jobs:
     outputs:
       new_version: ${{ steps.release.outputs.new_version }}
       suffix: ${{ steps.release.outputs.suffix }}
+      is_stable: ${{ steps.release.outputs.is_stable }}
       tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Check Ref Type
@@ -50,6 +51,11 @@ jobs:
 
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "suffix=$SUFFIX" >> "$GITHUB_OUTPUT"
+          if [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is_stable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_stable=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Debug Outputs
@@ -230,14 +236,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-  # Versioned docs: deployed from the release tag (after `github_release` creates it, so
-  # `cz changelog` sees it), never from a push to main. Stable versions only (no suffix, no
-  # `-`), so a prerelease never moves `latest`. mike pushes to `gh-pages`; Pages serves
-  # that branch once its source is set to it (`poe enable_pages`, admin, once).
   deploy_docs:
     name: Deploy Versioned Docs (mike)
     needs: [pypi, github_release, details]
-    if: needs.details.outputs.suffix == '' && !contains(needs.details.outputs.new_version, '-')
+    if: needs.details.outputs.is_stable == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:
