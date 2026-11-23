@@ -94,6 +94,19 @@ jobs:
           poetry install --no-interaction --no-root
           poetry env activate
 
+      - name: Run Clean-Index Guard (with negative control)
+        if: runner.os == 'Linux' && matrix.python-version == '3.11'
+        run: |
+          bash bin/check_clean_index.sh
+          echo "control" > .clean-index-control
+          git add .clean-index-control
+          if bash bin/check_clean_index.sh >/dev/null 2>&1; then
+            git reset -q && rm -f .clean-index-control
+            echo "::error::check_clean_index.sh passed with a staged file — the guard is broken." >&2
+            exit 1
+          fi
+          git reset -q && rm -f .clean-index-control
+
       - name: Run Spell Check (codespell)
         if: runner.os == 'Linux'
         run: |
