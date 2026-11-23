@@ -786,3 +786,24 @@ def test_main_untranslated_marker_is_refused_when_the_locale_is_en(
         1,
         True,
     )
+
+
+@pytest.mark.parametrize(
+    "str_opener",
+    ["!!! note", '!!! note "Title"', "??? tip", "???+ tip", '=== "Tab"', "    !!! note"],
+)
+def test_main_table_directly_under_a_container_opener_is_masked(
+    tmp_path: Path, *, str_opener: str
+) -> None:
+    """MkDocs renders a table right under an admonition or tab line, so its rows are not prose."""
+    str_row = f"    | A | B |\n    |---|---|\n    | {STR_FOREIGN_BLOCK.strip()} | x |\n"
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN + "\n" + str_opener + "\n" + str_row)
+    assert _run(tmp_path) == 0
+
+
+def test_main_deeply_nested_front_matter_does_not_raise(tmp_path: Path) -> None:
+    """A leading block too deep for YAML is not a mapping, so it is prose and the run finishes."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text="---\n" + "[" * 5000 + "\n---\n\n" + STR_EN)
+    assert _run(tmp_path) == 0

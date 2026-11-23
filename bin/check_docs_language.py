@@ -104,6 +104,8 @@ TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessor
 
 RE_ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
 
+RE_CONTAINER_OPENER = re.compile(r"^ *(?:!!!|\?\?\?\+?|===)[ \t]+\S")
+
 STR_ESCAPE = "docs-lang:ok"
 
 STR_UNTRANSLATED = "docs-lang:untranslated"
@@ -216,6 +218,26 @@ def _fence_toggles(str_open: str, *, str_marker: str, str_info: str) -> bool:
     )
 
 
+def _block_text(list_lines: list, int_start: int, int_stop: int) -> str:
+    """Join the lines of a block from a start index, stopping at a blank line or the stop index.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines.
+    int_start : int
+        Index of the block's first line.
+    int_stop : int
+        Index to stop before, so a caller can read only the leading rows.
+
+    Returns
+    -------
+    str
+        The lines joined by newlines.
+    """
+    return "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_start, int_stop))))
+
+
 def _starts_table(list_lines: list, int_idx: int) -> bool:
     """Say whether the block that begins at a line is a table, by Python-Markdown's own test.
 
@@ -229,22 +251,24 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
     Returns
     -------
     bool
-        True when the line opens a block (the start of the page, or after a blank line or an
-        ATX heading line) that ``markdown.extensions.tables`` accepts, which counts escaped and
+        True when the line opens a block (the start of the page, or after a blank line, an ATX
+        heading line or an admonition, details or tab opener, whose indented content is parsed
+        as a fresh block) that ``markdown.extensions.tables`` accepts, which counts escaped and
         code-span pipes as the renderer does. The processor decides on the first two rows
         unless the header is a single column, so those two are tested first and the rest of
         the block is read only for a real table start: a run of heading lines stays linear.
     """
     str_before = list_lines[int_idx - 1] if int_idx else ""
-    if str_before.strip() and not RE_ATX_HEADING.match(str_before):
+    if (
+        str_before.strip()
+        and not RE_ATX_HEADING.match(str_before)
+        and not RE_CONTAINER_OPENER.match(str_before)
+    ):
         return False
-    return all(
-        TABLE_PROCESSOR.test(
-            None,
-            "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_idx, int_stop)))),
-        )
-        for int_stop in (min(int_idx + 2, len(list_lines)), len(list_lines))
-    )
+    int_end = len(list_lines)
+    if not TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, min(int_idx + 2, int_end))):
+        return False
+    return TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, int_end))
 
 
 def _mask_lines(str_text: str) -> list:
@@ -310,7 +334,7 @@ def _blank_span(re_hit: re.Match) -> str:
     if str_span.startswith("---"):
         try:
             bool_mapping = isinstance(yaml.safe_load("\n".join(str_span.split("\n")[1:-1])), dict)
-        except yaml.YAMLError:
+        except (yaml.YAMLError, RecursionError):
             bool_mapping = False
         if not bool_mapping:
             return str_span
@@ -428,6 +452,25 @@ def is_untranslated(str_text: str) -> bool:
     return bool(RE_UNTRANSLATED.search("\n".join(_blank_multiline(_mask_lines(str_text)))))
 
 
+def _relative(path_page: pathlib.Path, *, path_root: pathlib.Path) -> str:
+    """Return a page's path relative to the project root, with forward slashes.
+
+    Parameters
+    ----------
+    path_page : pathlib.Path
+        The page.
+    path_root : pathlib.Path
+        The project root.
+
+    Returns
+    -------
+    str
+        The relative path, computed only when a message needs it: ``os.path.relpath`` raises on
+        Windows for two drives, which a page with no finding must not hit.
+    """
+    return pathlib.Path(os.path.relpath(path_page, path_root)).as_posix()
+
+
 def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_declared: str) -> tuple:
     """Return one message per paragraph of a page written in the wrong locale.
 
@@ -445,18 +488,19 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
     tuple of (list of str, bool, int)
         ``path:line`` messages naming the locale the paragraph reads as and an excerpt (one
         message for a page that is not UTF-8 text, which is never silently skipped, and one for
-        the untranslated marker under ``en``), whether
-        the page was skipped as untranslated, then how many paragraphs were scored, a
-        paragraph counting only when it holds a word, so punctuation residue is not prose.
+        the untranslated marker under ``en``), whether the page was skipped as untranslated,
+        then how many paragraphs were scored, a paragraph counting only when it holds a word,
+        so punctuation residue is not prose.
     """
     list_out: list = []
-    str_rel = pathlib.Path(os.path.relpath(path_page, path_root)).as_posix()
     try:
         str_text = path_page.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as cls_err:
+        str_rel = _relative(path_page, path_root=path_root)
         return [f"❌ {str_rel}: cannot be read as UTF-8 text: {cls_err}"], False, 0
     if is_untranslated(str_text):
         if str_declared == STR_DEFAULT_LOCALE:
+            str_rel = _relative(path_page, path_root=path_root)
             return (
                 [f"❌ {str_rel}: {STR_UNTRANSLATED} is refused when theme.language is en"],
                 False,
@@ -470,6 +514,7 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
             str_flat = " ".join(str_para.split())
             str_tail = "…" if len(str_flat) > INT_EXCERPT else ""
             str_excerpt = f"{str_flat[:INT_EXCERPT]}{str_tail}"
+            str_rel = _relative(path_page, path_root=path_root)
             list_out.append(
                 f"❌ {str_rel}:{int_line}: paragraph reads as "
                 f"{str_read} but theme.language is {str_declared} -- {str_excerpt}"
