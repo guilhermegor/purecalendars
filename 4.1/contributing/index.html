@@ -1,0 +1,1468 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Holiday calendars and business-day arithmetic for Brazilian and US markets, computed offline.">
+      
+      
+      
+      
+        <link rel="prev" href="../faq/">
+      
+      
+        <link rel="next" href="../changelog/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Contributing - purecalendars</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/brand.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#contributing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="purecalendars" class="md-header__button md-logo" aria-label="purecalendars" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            purecalendars
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Contributing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m3.55 19.09 1.41 1.41 1.8-1.79-1.42-1.42M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6c0-3.32-2.69-6-6-6m8 7h3v-2h-3m-2.76 7.71 1.8 1.79 1.41-1.41-1.79-1.8M20.45 5l-1.41-1.4-1.8 1.79 1.42 1.42M13 1h-2v3h2M6.76 5.39 4.96 3.6 3.55 5l1.79 1.81zM1 13h3v-2H1m12 9h-2v3h2"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/guilhermegor/purecalendars" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../usage/" class="md-tabs__link">
+          
+  
+  
+  Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../faq/" class="md-tabs__link">
+          
+  
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="purecalendars" class="md-nav__button md-logo" aria-label="purecalendars" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    purecalendars
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/guilhermegor/purecalendars" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-for-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up for development
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pre-commit-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-commit hooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-network-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The network guard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-warning-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The warning policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linting-and-formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linting and formatting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-provenance-and-drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template provenance and drift
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-and-verifying-the-wheel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building and verifying the wheel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-a-branch-and-pull-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opening a branch and pull request
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Opening a branch and pull request">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-ci-gate-must-be-green-before-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CI gate — must be green before review
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publishing-to-pypi-maintainers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publishing to PyPI (maintainers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changelog-maintainers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changelog (maintainers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../incidents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incidents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../template-updates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Template updates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setting-up-for-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up for development
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pre-commit-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pre-commit hooks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-network-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The network guard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-warning-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The warning policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linting-and-formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Linting and formatting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#template-provenance-and-drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template provenance and drift
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-and-verifying-the-wheel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building and verifying the wheel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-a-branch-and-pull-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opening a branch and pull request
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Opening a branch and pull request">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-ci-gate-must-be-green-before-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The CI gate — must be green before review
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publishing-to-pypi-maintainers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Publishing to PyPI (maintainers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changelog-maintainers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changelog (maintainers)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="contributing"><strong>Contributing</strong><a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h1>
+<p>Everything you need to develop, test, and release <code>purecalendars</code>.</p>
+<blockquote>
+<p><strong>See also:</strong> <a href="../usage/">Usage</a> · <a href="../api/">API Reference</a> · the repository's
+<a href="https://github.com/guilhermegor/purecalendars/blob/main/CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a> holds
+the authoritative branch/PR policy.</p>
+</blockquote>
+<hr />
+<h2 id="setting-up-for-development">Setting up for development<a class="headerlink" href="#setting-up-for-development" title="Permanent link">&para;</a></h2>
+<p>Clone the repo and bootstrap the environment. Every project command is a
+<a href="https://poethepoet.natn.io/">poe</a> task, run through <code>bash bin/poe_exec.sh &lt;task&gt;</code>: the wrapper
+resolves <code>poe</code> from <code>.venv</code> first, so it works on the first run even when <code>bin/venv.sh</code> has just
+installed Poetry somewhere that is not on <code>PATH</code> yet.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/guilhermegor/purecalendars.git
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>purecalendars
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>bash<span class="w"> </span>bin/venv.sh<span class="w">                </span><span class="c1"># create the Poetry venv and install deps (poe included)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>init<span class="w">       </span><span class="c1"># seed .env, install pre-commit hooks</span>
+</span></code></pre></div>
+<p><code>init</code> composes three steps you can also run individually: <code>ensure_env</code> (seed <code>.env</code> from
+<code>.env.example</code>), <code>venv</code> (create the Poetry virtualenv and install <strong>all</strong> dependencies,
+including the dev tools), and <code>precommit</code> (install the git hooks). Poetry is auto-installed if
+missing.</p>
+<p>Run <code>bash bin/poe_exec.sh --help</code> to list every task.</p>
+<hr />
+<h2 id="pre-commit-hooks">Pre-commit hooks<a class="headerlink" href="#pre-commit-hooks" title="Permanent link">&para;</a></h2>
+<p><code>bash bin/poe_exec.sh init</code> installs the pre-commit hooks, which run automatically on every <code>git commit</code> and
+<strong>must pass before a commit is created</strong>. They mirror the CI gate (see below), so a clean
+local commit is a clean CI run. Run them on demand:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>poetry<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files<span class="w">     </span><span class="c1"># run every hook against the whole tree</span>
+</span></code></pre></div>
+<p>If a formatting hook (e.g. <code>ruff format</code>) rewrites a file, the commit is aborted so you can
+review and re-stage the change — that is expected, just <code>git add</code> and commit again.</p>
+<p>The shell linters (<code>shellcheck</code>, <code>shfmt</code>) install automatically with the dev dependencies —
+no extra step. <code>bash bin/poe_exec.sh install_shell_linters</code> exists only as an <strong>optional</strong> fallback for hosts
+where the pip-vendored binaries can't execute; you normally never need it.</p>
+<hr />
+<h2 id="running-tests">Running tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>unit_tests<span class="w">         </span><span class="c1"># unit tests only</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>integration_tests<span class="w">  </span><span class="c1"># integration tests only</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>test_cov<span class="w">           </span><span class="c1"># unit tests + coverage report + badge</span>
+</span></code></pre></div>
+<p><code>purecalendars</code> does no I/O, so unit tests never touch a real network, DB, or filesystem.</p>
+<h3 id="the-network-guard">The network guard<a class="headerlink" href="#the-network-guard" title="Permanent link">&para;</a></h3>
+<p>This is <strong>enforced, not merely expected</strong>. <code>tests/conftest.py</code> installs an autouse fixture that
+swaps the socket connection primitives (<code>socket.socket.connect</code> / <code>connect_ex</code> and
+<code>socket.create_connection</code>), so a test that reaches the wire fails immediately:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>NetworkAccessError: A test tried to reach the network (...). Mock the I/O boundary
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>(the download / HTTP seam) instead, or mark the test @pytest.mark.allow_network if
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>it truly must hit the wire.
+</span></code></pre></div>
+<p>If you see this, something in <code>purecalendars</code> started doing I/O — which the package must not do
+(fetching belongs in <code>opendata-calendars</code>). Remove the I/O rather than work around the guard. A test that genuinely must hit the network opts out explicitly:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">allow_network</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_something_that_really_needs_the_wire</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+</span></code></pre></div>
+<p>Why it is a guard and not a guideline: <code>purecalendars</code> is a <code>pure*</code> package — computation only, no
+I/O. The guard turns that rule into a red test the moment network code creeps back in. Note that DNS resolution (<code>socket.getaddrinfo</code>) is deliberately <strong>not</strong> blocked: resolving an
+address neither exfiltrates data nor triggers a ban, and blocking it would break code that
+classifies an address before deciding whether to connect.</p>
+<h3 id="the-warning-policy">The warning policy<a class="headerlink" href="#the-warning-policy" title="Permanent link">&para;</a></h3>
+<p><code>pytest.ini</code> turns <code>ResourceWarning</code>, <code>pytest.PytestUnraisableExceptionWarning</code> and
+missing-docstring-parameter warnings into errors. <code>DeprecationWarning</code>, <code>FutureWarning</code> and
+<code>UserWarning</code> are no longer blanket-ignored: only the narrow, named filters in <code>pytest.ini</code>
+(PIL, matplotlib, beartype, numpy divide-by-zero) are silenced. Fix a new warning at its
+source; add a filter only with a reason.</p>
+<hr />
+<h2 id="linting-and-formatting">Linting and formatting<a class="headerlink" href="#linting-and-formatting" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>lint<span class="w">   </span><span class="c1"># ruff + mypy + codespell + pydocstyle + docstrings + shell/sql/yaml</span>
+</span></code></pre></div>
+<p>Ruff config lives in <code>ruff.toml</code>, the BlueprintX template's (line-length 99, 4-space
+indent, double quotes, NumPy docstrings, preview mode on); read it for the active rule
+families and the deviations. <code>bin/*.py</code> is linted and formatted like
+<code>src/</code> and <code>tests/</code>. Findings whose fix would change a signature or test strictness
+(<code>PLR6301</code>, <code>PLR2004</code>, <code>PT011</code>, ...) are baselined with an inline <code># noqa</code>; remove one
+when you touch that code and can fix it properly. Docstring parameter/return types <strong>must match</strong> the type hints textually
+(<code>int | float</code>, not <code>Union[int, float]</code>) — the <code>check-docstrings</code> gate enforces this.</p>
+<hr />
+<h2 id="template-provenance-and-drift">Template provenance and drift<a class="headerlink" href="#template-provenance-and-drift" title="Permanent link">&para;</a></h2>
+<p><code>purecalendars</code> was scaffolded from the BlueprintX <code>lib-minimal</code> template, and
+<code>.blueprintx-provenance.yaml</code> records which one: the tier, the BlueprintX version and commit
+(<code>blueprintx_commit</code>, the merge base for every comparison), the review-bot roster choice and
+the scaffold date. The stamp pins BlueprintX <code>12e76053</code> (v0.12.2): it was chosen by
+measurement as the commit whose template the vendored files match most (38 of the 47
+comparable files byte for byte), not by date.</p>
+<p>Two tools compare the project with a BlueprintX checkout. Both need one, passed as
+<code>--blueprintx-root</code> or exported as <code>BLUEPRINTX_TEMPLATE_ROOT</code>, and both run as poe tasks from the project
+root:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">BLUEPRINTX_TEMPLATE_ROOT</span><span class="o">=</span>~/github/blueprintx<span class="w">   </span><span class="c1"># or pass --blueprintx-root per call</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>template_drift<span class="w"> </span>--root<span class="w"> </span>.<span class="w">          </span><span class="c1"># report only; always exits 0</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>template_update<span class="w"> </span>--root<span class="w"> </span>.<span class="w">         </span><span class="c1"># dry run: lists what would change</span>
+</span></code></pre></div>
+<p><code>check_template_drift.py</code> classifies template-managed files as <strong>missing</strong> (the template ships
+it, the project lacks it), <strong>template changed since scaffold</strong> (the project left it alone) or
+<strong>both changed</strong> (the project edited it too). <code>template_update.py</code> is a dry run until
+<code>--apply</code>, which switches to <code>chore/template-update-&lt;short-sha&gt;</code>, merges with <code>git merge-file</code>
+and leaves the result uncommitted. Do not run <code>--apply</code> casually: it touches hundreds of files.</p>
+<p>Known limits, recorded rather than fixed:</p>
+<ul>
+<li>It reports only files the template still ships. A file the template dropped (<code>docs/api.md</code>) is not reported as removed here, because the stamped commit
+  predates the <code>--list-copies</code> dry run the removed-file check needs (the run prints
+  <code>SKIPPED removed-file check</code>).</li>
+<li>Rendered files (<code>README.md</code>, <code>pyproject.toml</code>, <code>LICENSE</code>, <code>SECURITY.md</code>) and the <code>bin/ci/</code>
+  copies are outside the comparison.</li>
+<li>The vendored package tree appears under the placeholder <code>src/project/...</code> in the template,
+  not under <code>src/purecalendars/...</code>.</li>
+<li>The stamp keeps only the answers given at scaffold time (tier, roster choice, versions,
+  commits); the other scaffold answers are not recorded.</li>
+</ul>
+<p>A file the repository has since reformatted (<code>ruff format</code>, plus inline <code># noqa</code> baselines)
+differs from the template byte for byte, so it shows up as changed on both sides without a
+real divergence.</p>
+<hr />
+<h2 id="building-and-verifying-the-wheel">Building and verifying the wheel<a class="headerlink" href="#building-and-verifying-the-wheel" title="Permanent link">&para;</a></h2>
+<p><strong>Run this before your final commit / opening a PR.</strong> It builds the wheel, installs it into
+the Poetry environment, and smoke-imports the package — catching packaging mistakes (a missing
+<code>__init__</code>, an unshipped <code>_internal/</code> subpackage, a broken public import) that source-tree
+tests never surface:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>install_dist_locally
+</span></code></pre></div>
+<p>A successful run prints <code>Package import works</code> followed by the version. If it fails, the wheel
+is broken even when <code>unit_tests</code> is green — fix it before pushing.</p>
+<hr />
+<h2 id="opening-a-branch-and-pull-request">Opening a branch and pull request<a class="headerlink" href="#opening-a-branch-and-pull-request" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Branch off the default branch</strong> — <code>main</code> is protected, so never commit to it directly.
+   Use a descriptive <code>feat/…</code>, <code>fix/…</code>, <code>docs/…</code>, <code>chore/…</code> name:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feat/my-change
+</span></code></pre></div>
+</li>
+<li>
+<p><strong>Verify locally</strong> before pushing — the same gates CI runs:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>unit_tests<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>lint<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>bin/poe_exec.sh<span class="w"> </span>install_dist_locally
+</span></code></pre></div>
+</li>
+<li>
+<p><strong>Open the PR.</strong> GitHub pre-fills the
+   <a href="https://github.com/guilhermegor/purecalendars/blob/main/.github/PULL_REQUEST_TEMPLATE.md">pull-request template</a>;
+   fill in every section — <strong>Description</strong> (what / why / how), <strong>Changes Made</strong>
+   (added / updated / fixed), <strong>Testing</strong> (manual + automated evidence), <strong>Documentation</strong>, and
+   <strong>Reviewer Focus</strong>. Link the issue the work addresses.</p>
+</li>
+</ol>
+<h3 id="the-ci-gate-must-be-green-before-review">The CI gate — must be green before review<a class="headerlink" href="#the-ci-gate-must-be-green-before-review" title="Permanent link">&para;</a></h3>
+<p>Every push and pull request triggers the <strong>Run Tests</strong> workflow
+(<code>.github/workflows/tests.yaml</code>). A PR is only considered once <strong>all</strong> of these pass:</p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>What it checks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>codespell</td>
+<td>Spelling across the repo.</td>
+</tr>
+<tr>
+<td>docstring consistency</td>
+<td><code>pydocstyle</code> (D412/D417) + <code>check_docstrings.py</code> — docstring types/raises match the signatures.</td>
+</tr>
+<tr>
+<td>ruff</td>
+<td>Lint + format (<code>ruff check src/ tests/</code>).</td>
+</tr>
+<tr>
+<td>mypy</td>
+<td>Static type check (<code>cd src &amp;&amp; mypy .</code>). <code>ignore_missing_imports = False</code>: use a <code>types-*</code> stub where one exists, else add a <code>[mypy-&lt;pkg&gt;.*]</code> ignore section in <code>mypy.ini</code>.</td>
+</tr>
+<tr>
+<td>shell / sql / yaml lint</td>
+<td>Non-Python lint gates (mirrors the <code>lint</code> task).</td>
+</tr>
+<tr>
+<td>unit + integration tests</td>
+<td>The full pytest suites.</td>
+</tr>
+</tbody>
+</table>
+<p>Because pre-commit mirrors these gates, a commit that passed your local hooks will pass CI.</p>
+<hr />
+<h2 id="publishing-to-pypi-maintainers">Publishing to PyPI (maintainers)<a class="headerlink" href="#publishing-to-pypi-maintainers" title="Permanent link">&para;</a></h2>
+<p>Two GitHub Actions workflows handle releases:</p>
+<ul>
+<li><strong><code>release-test-pypi.yaml</code></strong> — publish to <a href="https://test.pypi.org">Test PyPI</a> first.</li>
+<li><strong><code>release-pypi.yaml</code></strong> — publish to <a href="https://pypi.org">PyPI</a> and cut a GitHub release.</li>
+</ul>
+<p><strong>There is no manual version bump.</strong> The version is the <strong>git tag</strong> — <code>pyproject.toml</code> holds a
+<code>0.0.0</code> placeholder and <a href="https://github.com/mtkennerly/poetry-dynamic-versioning">poetry-dynamic-versioning</a>
+stamps the real version at build time. To release, trigger the workflow from the <strong>Actions</strong> tab
+(<code>workflow_dispatch</code>) with the version (e.g. <code>1.1.0</code>). The pipeline then:</p>
+<ol>
+<li><strong>Runs the full test suite</strong> (<code>tests.yaml</code>, full matrix) as a hard gate — publishing is
+   blocked unless tests pass on exactly this commit.</li>
+<li>Checks the version is greater than what is already published.</li>
+<li>Tags the commit <code>v1.1.0</code>, builds with <code>python -m build</code> (dynamic versioning stamps <code>1.1.0</code>),
+   and uploads via <a href="https://docs.pypi.org/trusted-publishers/">OIDC <strong>trusted publishing</strong></a> — no
+   API token stored.</li>
+<li>Cuts a GitHub release for the tag. (Test PyPI builds the same version via
+   <code>POETRY_DYNAMIC_VERSIONING_BYPASS</code> without creating a tag.)</li>
+</ol>
+<p>Configure once:</p>
+<ul>
+<li>A GitHub <strong>Environment</strong> per index (repository settings): <code>release-pypi</code> for PyPI,
+  <code>release-test-pypi</code> for Test PyPI.</li>
+<li>A <strong>trusted publisher</strong> on each index (PyPI and Test PyPI), matching this repo exactly:
+  owner <code>guilhermegor</code>, repo <code>purecalendars</code>, workflow filename <code>release-pypi.yaml</code> (environment
+  <code>release-pypi</code>) and <code>release-test-pypi.yaml</code> (environment <code>release-test-pypi</code>). On a first-ever release use a
+  <a href="https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/"><strong>pending publisher</strong></a>
+  (register it before the project exists). No <code>PYPI_TOKEN</code> / <code>TEST_PYPI_TOKEN</code> secret is needed.</li>
+</ul>
+<p>Documentation is published separately — every push to <code>main</code> runs
+<code>.github/workflows/docs.yaml</code>, which builds this site and deploys it to GitHub Pages.</p>
+<h2 id="changelog-maintainers">Changelog (maintainers)<a class="headerlink" href="#changelog-maintainers" title="Permanent link">&para;</a></h2>
+<p><code>CHANGELOG.md</code> is generated from the conventional-commit history and the git tags, <strong>never
+committed to <code>main</code> by CI</strong>. The published site's Changelog page is regenerated fresh on every
+docs build (<code>docs.yaml</code> runs <code>cz changelog</code> before <code>mkdocs build</code>), and each release also gets
+GitHub-generated release notes. This keeps branch protection intact and needs <strong>no stored
+secret</strong> (no PAT, no bypass). The only discipline is writing <code>feat:</code> / <code>fix:</code> / etc. commit
+messages; preview the changelog locally any time with <code>bash bin/poe_exec.sh changelog</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
