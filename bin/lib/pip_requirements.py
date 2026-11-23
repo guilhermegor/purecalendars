@@ -200,11 +200,11 @@ def _bound_order(tup_bound: _Bound) -> tuple[tuple[float, ...], int]:
 def _segment_bounds(str_segment: str, str_spec: str) -> list[tuple[str, _Bound]]:
     """Turn one normalised pip segment into ``(side, bound)`` pairs (``==`` yields both)."""
     str_op = next((op for op in ("==", ">=", "<=", ">", "<") if str_segment.startswith(op)), "")
-    if not str_op or "*" in str_segment:
+    str_text = str_segment[len(str_op) :]
+    if not str_op or not re.fullmatch(r"\d+(\.\d+)*", str_text):
         raise ValueError(
             f"Cannot merge '||' union {str_spec!r}: segment {str_segment!r} is not a range"
         )
-    str_text = str_segment[len(str_op) :]
     tup_key = _version_key(str_text)
     list_ops = [">=", "<="] if str_op == "==" else [str_op]
     return [
@@ -228,7 +228,7 @@ def _touches(tup_lower: _Bound, tup_upper: _Bound) -> bool:
 
 def _alternative_interval(str_alt: str, str_spec: str) -> tuple[_Bound, _Bound]:
     """Intersect one alternative's comma segments into a ``(lower, upper)`` interval."""
-    if not str_alt.strip():
+    if not str_alt.replace(",", "").strip():
         raise ValueError(f"Cannot merge '||' union {str_spec!r}: blank alternative")
     tup_lower, tup_upper = _BOUND_ANY_LOWER, _BOUND_ANY_UPPER
     for str_segment in normalize_segments(str_alt):

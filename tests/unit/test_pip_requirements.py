@@ -132,6 +132,7 @@ def test_normalize_version_spec_comma_segments(str_spec: str, str_expected: str)
         ("==0 || >=0,<2", ">=0,<2"),
         ("0.0 || >0", ">=0.0"),
         ("^1.2 | ^2.0", ">=1.2,<3.0.0"),
+        ("^1 || ^3 || ^2", ">=1,<4.0.0"),
     ],
 )
 def test_normalize_version_spec_merges_touching_unions(str_spec: str, str_expected: str) -> None:
@@ -155,9 +156,20 @@ def test_normalize_version_spec_rejects_non_range_union_segment() -> None:
         pipreq.normalize_version_spec("~=1.2 || ^3")
 
 
-@pytest.mark.parametrize("str_spec", ["1.2.* || ^3", "==1.2.* || ^1", "^1 || >=1.2.*"])
-def test_normalize_version_spec_rejects_wildcard_in_union(str_spec: str) -> None:
-    """A ``.*`` wildcard is not an exact bound, so a union containing one is refused."""
+@pytest.mark.parametrize(
+    "str_spec",
+    [
+        "1.2.* || ^3",
+        "==1.2.* || ^1",
+        "^1 || >=1.2.*",
+        ">=1.0.post1,<2 || ^2",
+        "^1.0.0rc1 || ^2",
+        "===1.2 || ^2",
+        ">= 1.2 || ^2",
+    ],
+)
+def test_normalize_version_spec_rejects_non_numeric_bound_in_union(str_spec: str) -> None:
+    """Only dotted-integer bounds are ordered exactly, so any other bound is refused."""
     with pytest.raises(ValueError, match="not a range"):
         pipreq.normalize_version_spec(str_spec)
 
@@ -168,7 +180,7 @@ def test_normalize_version_spec_rejects_empty_union_alternative() -> None:
         pipreq.normalize_version_spec(">=2,<1 || ^1")
 
 
-@pytest.mark.parametrize("str_spec", ["^1.2 ||", "^1.2 || ", "|| ^1.2", "^1.2 | "])
+@pytest.mark.parametrize("str_spec", ["^1.2 ||", "^1.2 || ", "|| ^1.2", "^1.2 | ", "^1 || ,"])
 def test_normalize_version_spec_rejects_blank_union_alternative(str_spec: str) -> None:
     """A blank alternative is refused rather than read as "any version"."""
     with pytest.raises(ValueError, match="blank alternative"):
