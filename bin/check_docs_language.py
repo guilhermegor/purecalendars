@@ -167,11 +167,14 @@ RE_BLOCK_HTML = re.compile(
     rf" {{0,3}}</?(?:{'|'.join(sorted(markdown.util.BLOCK_LEVEL_ELEMENTS))})\b", re.IGNORECASE
 )
 
+RE_HTML_DECLARATION = re.compile(r" {0,3}<(?:\?|!(?:doctype\b|\[))", re.IGNORECASE)
+
 TUPLE_NOT_SETEXT_TEXT = (
     RE_ATX_HEADING,
     RE_CONTAINER_OPENER,
     RE_COMMENT_LINE,
     RE_BLOCK_HTML,
+    RE_HTML_DECLARATION,
     re.compile(r"(?:=+|-{1,2})[ ]*$"),
     re.compile(" {4}"),
 )
@@ -301,13 +304,16 @@ def _is_yaml_mapping(str_yaml: str) -> bool:
         return False
 
 
-def _find_front_matter_close(list_lines: list) -> int:
+def _find_front_matter_close(list_lines: list, *, list_raw: list) -> int:
     """Return the index of the line that closes the page's leading ``---`` front matter.
 
     Parameters
     ----------
     list_lines : list of str
-        The page's lines.
+        The page's lines, tabs expanded, which is how the closer is found.
+    list_raw : list of str
+        The same lines as the page has them. MkDocs parses the YAML from these, so the mapping
+        verdict reads them: a tab that YAML refuses is one the expansion would hide.
 
     Returns
     -------
@@ -331,7 +337,7 @@ def _find_front_matter_close(list_lines: list) -> int:
     if (
         int_close > 0
         and list_lines[int_close].startswith(".")
-        and not _is_yaml_mapping("\n".join(list_lines[1:int_close]))
+        and not _is_yaml_mapping("\n".join(list_raw[1:int_close]))
     ):
         return -1
     return int_close
@@ -413,7 +419,8 @@ def _is_setext_text(str_line: str) -> bool:
 
     Python-Markdown tries its setext processor before every list, quote, thematic-break and
     definition processor, so ``- item`` or ``***`` over ``===`` is a header. What claims the
-    line first is the HTML preprocessor (a block-level tag or a comment), the code block and
+    line first is the HTML preprocessor (a block-level tag, a comment, a processing instruction,
+    a ``DOCTYPE`` or a ``CDATA`` section), the code block and
     hash header processors (any line that starts with ``#``, with no space needed and no cap
     on the count, unlike CommonMark), and admonitions. The ``tables`` processor outranks setext
     too, but it cannot claim a line that is followed by ``===`` or ``---``: those carry no
@@ -437,7 +444,7 @@ def _is_setext_text(str_line: str) -> bool:
     )
 
 
-def _flag_block_splits(list_lines: list, *, list_fenced: list) -> list:
+def _flag_block_splits(list_lines: list, *, list_raw: list, list_fenced: list) -> list:
     """Say, for every line, whether Python-Markdown ends a block there.
 
     A table may start on the line after a flagged one. One forward pass: a setext underline
@@ -448,6 +455,8 @@ def _flag_block_splits(list_lines: list, *, list_fenced: list) -> list:
     ----------
     list_lines : list of str
         The page's lines, tabs already expanded.
+    list_raw : list of str
+        The same lines before tab expansion.
     list_fenced : list of bool
         Per line, whether it is a fence delimiter or sits inside a fence.
 
@@ -458,7 +467,7 @@ def _flag_block_splits(list_lines: list, *, list_fenced: list) -> list:
         runs under a text line that starts the page or follows a flagged line), a front matter
         close or a definition title.
     """
-    int_close = _find_front_matter_close(list_lines)
+    int_close = _find_front_matter_close(list_lines, list_raw=list_raw)
     list_setext = [False] * len(list_lines)
     list_hard = [False] * len(list_lines)
     list_split = [False] * len(list_lines)
@@ -560,6 +569,7 @@ def _mask_lines(str_text: str) -> list:
     list_states = _track_fences(list_expanded)
     list_split = _flag_block_splits(
         list_expanded,
+        list_raw=list_lines,
         list_fenced=[bool_toggle or bool_open for bool_toggle, bool_open in list_states],
     )
     bool_in_table = False

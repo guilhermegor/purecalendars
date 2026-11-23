@@ -25,6 +25,8 @@ and scored as prose (a false failure, never a false pass). Follow-up to #131.
   cannot open a table.
 - A hash header is `^#{1,6}` as Python-Markdown reads it (column 0, no space, no cap), not the
   CommonMark shape; a `...` closer counts as a boundary only when the block is a YAML mapping.
+- The front-matter mapping verdict reads the raw lines (MkDocs parses those; a tab is a YAML error), and
+  a processing instruction, `DOCTYPE` or `CDATA` line is no setext text.
 - Setext underlines are flagged in one forward pass (`_flag_block_splits`): the recursive form raised
   `RecursionError` on about 330 stacked headers, and the walk-back loop took 26 s on 5000 `===`
   lines. An ATX heading, comment, container opener, indented line or short `=`/`-` run is no

@@ -1012,6 +1012,10 @@ def test_mask_lines_long_run_of_underline_lines_is_scanned_once(
         "1. item\nText\n===",
         "    code\n===",
         "<div>\n===",
+        "<?x?>\n===",
+        "  <?x?>\n===",
+        "<!DOCTYPE html>\n===",
+        "<![CDATA[x]]>\n===",
         "  <DETAILS open>\n===",
         "```\ncode\n```\nText\n===",
         "~~~\ncode\n~~~\nText\n===",
@@ -1062,6 +1066,18 @@ def test_main_table_after_dotted_close_of_a_block_that_is_not_a_mapping_is_score
     """MkDocs keeps a ``---`` block that is no YAML mapping, and ``...`` splits no block."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(tmp_path / "docs" / "index.md", str_text=str_front + STR_TABLE_FOREIGN + "\n" + STR_EN)
+    assert _run(tmp_path) == 1
+
+
+def test_main_table_after_dotted_close_of_a_block_with_a_tab_yaml_refuses_is_scored(
+    tmp_path: Path,
+) -> None:
+    """MkDocs parses the raw lines, where a tab is a YAML error, so the block is kept as text."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text="---\ntitle:\n\tsub: x\n...\n" + STR_TABLE_FOREIGN + "\n" + STR_EN,
+    )
     assert _run(tmp_path) == 1
 
 
