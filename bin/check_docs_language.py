@@ -109,7 +109,7 @@ RE_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
 
 RE_FENCE_CLOSE = re.compile(r"^[ \t]*(?:`{3,}|~{3,})[ \t]*$")
 
-RE_ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
+RE_ATX_HEADING = re.compile(r"#{1,6}")
 
 RE_CONTAINER_OPENER = re.compile(r"^ *(?:!!!|\?\?\?\+?|===)[ \t]+\S")
 
@@ -168,7 +168,7 @@ RE_BLOCK_HTML = re.compile(
 )
 
 TUPLE_NOT_SETEXT_TEXT = (
-    re.compile("#"),
+    RE_ATX_HEADING,
     RE_CONTAINER_OPENER,
     RE_COMMENT_LINE,
     RE_BLOCK_HTML,
@@ -276,7 +276,32 @@ def _block_text(list_lines: list, int_start: int, int_stop: int) -> str:
     return "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_start, int_stop))))
 
 
-def _front_matter_close(list_lines: list) -> int:
+@lru_cache(maxsize=32)
+def _is_yaml_mapping(str_yaml: str) -> bool:
+    """Say whether text parses as a YAML mapping, which is what MkDocs strips as front matter.
+
+    A parse failure (a ``YAMLError``, a ``ValueError`` from an impossible date or timezone
+    offset, a ``RecursionError`` from deep nesting) means "not a mapping", as in
+    ``mkdocs.utils.meta.get_data``, which treats every exception that way. Cached, so a page's
+    block is parsed once however many callers ask.
+
+    Parameters
+    ----------
+    str_yaml : str
+        The lines between the opening and closing ``---``.
+
+    Returns
+    -------
+    bool
+        True when the text loads to a ``dict``.
+    """
+    try:
+        return isinstance(yaml.safe_load(str_yaml), dict)
+    except (yaml.YAMLError, ValueError, RecursionError):
+        return False
+
+
+def _find_front_matter_close(list_lines: list) -> int:
     """Return the index of the line that closes the page's leading ``---`` front matter.
 
     Parameters
@@ -288,13 +313,14 @@ def _front_matter_close(list_lines: list) -> int:
     -------
     int
         The index of the first closer (``---`` or ``...``) after at least one line, as
-        ``RE_MULTILINE_BLANK`` reads it, or ``-1`` when the page does not open with ``---`` or
-        the block is never closed. Found once per page, so a line is never tested against it by
-        rescanning the lines above.
+        ``RE_MULTILINE_BLANK`` reads it, or ``-1`` when the page does not open with ``---``,
+        the block is never closed, or a ``...`` closes a block MkDocs will not strip because it
+        is no YAML mapping (a ``---`` closer is a thematic break either way, so it is kept).
+        Found once per page, so a line is never tested against it by rescanning the lines above.
     """
     if not list_lines or not RE_FRONT_MATTER_OPEN.match(list_lines[0]):
         return -1
-    return next(
+    int_close = next(
         (
             int_idx
             for int_idx, str_line in enumerate(islice(list_lines, 2, None), 2)
@@ -302,6 +328,13 @@ def _front_matter_close(list_lines: list) -> int:
         ),
         -1,
     )
+    if (
+        int_close > 0
+        and list_lines[int_close].startswith(".")
+        and not _is_yaml_mapping("\n".join(list_lines[1:int_close]))
+    ):
+        return -1
+    return int_close
 
 
 def _closes_titled_definition(list_lines: list, int_idx: int) -> bool:
@@ -335,7 +368,7 @@ def _is_boundary(list_lines: list, int_idx: int, *, int_front_matter_close: int)
     int_idx : int
         Index of the candidate line.
     int_front_matter_close : int
-        What ``_front_matter_close`` returned for the page.
+        What ``_find_front_matter_close`` returned for the page.
 
     Returns
     -------
@@ -384,9 +417,10 @@ def _is_setext_text(str_line: str) -> bool:
     hash header processors (any line that starts with ``#``, with no space needed and no cap
     on the count, unlike CommonMark), and admonitions. The ``tables`` processor outranks setext
     too, but it cannot claim a line that is followed by ``===`` or ``---``: those carry no
-    column separator, so it is left out. A run of ``=`` or ``-`` is refused as well: which of
-    two stacked underlines pairs with the text depends on where the block starts, so the gate
-    does not count on either.
+    column separator, so it is left out. A run of ``=`` or one or two ``-`` is refused as well:
+    which of two stacked underlines pairs with the text depends on where the block starts, so the
+    gate does not count on either. Three or more ``-`` are a thematic break and stay allowed as
+    text; refusing the short run can only turn a table into a false failure, never a false pass.
 
     Parameters
     ----------
@@ -403,7 +437,7 @@ def _is_setext_text(str_line: str) -> bool:
     )
 
 
-def _split_flags(list_lines: list, *, list_fenced: list) -> list:
+def _flag_block_splits(list_lines: list, *, list_fenced: list) -> list:
     """Say, for every line, whether Python-Markdown ends a block there.
 
     A table may start on the line after a flagged one. One forward pass: a setext underline
@@ -424,7 +458,7 @@ def _split_flags(list_lines: list, *, list_fenced: list) -> list:
         runs under a text line that starts the page or follows a flagged line), a front matter
         close or a definition title.
     """
-    int_close = _front_matter_close(list_lines)
+    int_close = _find_front_matter_close(list_lines)
     list_setext = [False] * len(list_lines)
     list_hard = [False] * len(list_lines)
     list_split = [False] * len(list_lines)
@@ -456,7 +490,7 @@ def _starts_table(list_lines: list, int_idx: int, *, list_split: list) -> bool:
     int_idx : int
         Index of the candidate header line.
     list_split : list of bool
-        What ``_split_flags`` returned for the page.
+        What ``_flag_block_splits`` returned for the page.
 
     Returns
     -------
@@ -477,7 +511,7 @@ def _starts_table(list_lines: list, int_idx: int, *, list_split: list) -> bool:
     return TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, int_end))
 
 
-def _fence_states(list_lines: list) -> list:
+def _track_fences(list_lines: list) -> list:
     """Track the fenced code of a page, line by line, as CommonMark does.
 
     Parameters
@@ -523,8 +557,8 @@ def _mask_lines(str_text: str) -> list:
     bool_after_definition = False
     list_lines = [*str_text.splitlines(), ""]
     list_expanded = [str_line.expandtabs(4) for str_line in list_lines]
-    list_states = _fence_states(list_expanded)
-    list_split = _split_flags(
+    list_states = _track_fences(list_expanded)
+    list_split = _flag_block_splits(
         list_expanded,
         list_fenced=[bool_toggle or bool_open for bool_toggle, bool_open in list_states],
     )
@@ -567,13 +601,8 @@ def _blank_span(re_hit: re.Match) -> str:
     str_span = re_hit.group()
     if "\n" not in str_span:
         return str_span
-    if str_span.startswith("---"):
-        try:
-            bool_mapping = isinstance(yaml.safe_load("\n".join(str_span.split("\n")[1:-1])), dict)
-        except (yaml.YAMLError, ValueError, RecursionError):
-            bool_mapping = False
-        if not bool_mapping:
-            return str_span
+    if str_span.startswith("---") and not _is_yaml_mapping("\n".join(str_span.split("\n")[1:-1])):
+        return str_span
     return re.sub(r"[^\n]", "", str_span)
 
 

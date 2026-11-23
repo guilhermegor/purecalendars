@@ -23,7 +23,9 @@ and scored as prose (a false failure, never a false pass). Follow-up to #131.
   a fence line that was not a real closer. `_mask_lines` treats every fence-looking line (any
   indent) as a fence and masks what sits inside, and a closing line carries no pipe, so it
   cannot open a table.
-- Setext underlines are flagged in one forward pass (`_split_flags`): the recursive form raised
+- A hash header is `^#{1,6}` as Python-Markdown reads it (column 0, no space, no cap), not the
+  CommonMark shape; a `...` closer counts as a boundary only when the block is a YAML mapping.
+- Setext underlines are flagged in one forward pass (`_flag_block_splits`): the recursive form raised
   `RecursionError` on about 330 stacked headers, and the walk-back loop took 26 s on 5000 `===`
   lines. An ATX heading, comment, container opener, indented line or short `=`/`-` run is no
   setext text line, nor is any line starting with `#` (no space needed, any count), a block-level

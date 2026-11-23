@@ -67,8 +67,9 @@ def _run(path_root: Path) -> int:
 
 @pytest.fixture(autouse=True)
 def clear_blanked_lines_cache() -> None:
-    """Empty the gate's per-text cache so no test reads another test's cached page."""
+    """Empty the gate's per-text caches so no test reads another test's cached page."""
     cls_gate._blanked_lines.cache_clear()
+    cls_gate._is_yaml_mapping.cache_clear()
 
 
 @pytest.mark.parametrize(
@@ -1003,6 +1004,8 @@ def test_mask_lines_long_run_of_underline_lines_is_scanned_once(
     [
         "# H\n===",
         "#tag\n===",
+        "  # H\nText\n===",
+        "   # H",
         "#######\n===",
         "- item\nText\n===",
         "> quote\nText\n===",
@@ -1037,6 +1040,29 @@ def test_main_table_after_a_list_quote_or_rule_line_used_as_header_text_is_maske
         str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
     )
     assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_heading", ["#tag", "#######", "# H #", "#"])
+def test_main_table_directly_under_a_hash_header_is_masked(
+    tmp_path: Path, *, str_heading: str
+) -> None:
+    """Python-Markdown's hash header starts at column 0, needs no space and caps nothing."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_heading + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_front", ["---\nsome prose\n...\n", "---\n- a\n- b\n...\n"])
+def test_main_table_after_dotted_close_of_a_block_that_is_not_a_mapping_is_scored(
+    tmp_path: Path, *, str_front: str
+) -> None:
+    """MkDocs keeps a ``---`` block that is no YAML mapping, and ``...`` splits no block."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=str_front + STR_TABLE_FOREIGN + "\n" + STR_EN)
+    assert _run(tmp_path) == 1
 
 
 @pytest.mark.skipif(
