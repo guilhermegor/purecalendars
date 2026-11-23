@@ -287,3 +287,7 @@ jobs:
       - name: Run Layer Import Policy Check
         if: runner.os == 'Linux'
         run: poetry run python bin/check_layer_imports.py
+
+      - name: Run Docs Language Enforcement
+        if: runner.os == 'Linux'
+        run: poetry run python bin/check_docs_language.py
