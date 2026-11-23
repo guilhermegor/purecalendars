@@ -737,3 +737,17 @@ def test_main_run_of_headings_never_hands_the_table_test_more_than_two_rows(
     spy_test = mocker.spy(cls_gate.TABLE_PROCESSOR, "test")
     _run(tmp_path)
     assert max(len(tuple_call.args[1].splitlines()) for tuple_call in spy_test.call_args_list) == 2
+
+
+@pytest.mark.parametrize(
+    "str_text",
+    [
+        "\n| " + STR_FOREIGN_BLOCK.strip() + " |\n",
+        "\nIntro\n| " + STR_FOREIGN_BLOCK.strip() + "\n",
+    ],
+)
+def test_main_pipe_led_line_outside_a_table_is_scored(tmp_path: Path, *, str_text: str) -> None:
+    """A line that merely starts with a pipe is prose when no table opens its block."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN + str_text)
+    assert _run(tmp_path) == 1

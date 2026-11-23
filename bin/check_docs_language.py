@@ -124,8 +124,6 @@ TUPLE_BLANKINGS = (
     re.compile(r"https?://\S+"),
 )
 
-RE_TABLE_ROW = re.compile(r"^[ \t]*\|")
-
 RE_LINK_DEFINITION = re.compile(
     r"""^[ \t]*\[(?!\^)(?:\\.|[^\[\]\\\n])+\]:[ \t]*\S+"""
     r"""(?P<title>[ \t]+(?:"[^"]*"|'[^']*'|\([^)]*\)))?[ \t]*$"""
@@ -277,12 +275,7 @@ def _mask_lines(str_text: str) -> list:
                 bool_in_table or _starts_table(list_lines, int_idx)
             )
         bool_blank = (
-            bool_in_table
-            or bool_toggle
-            or bool(str_open)
-            or bool_definition
-            or bool_title
-            or bool(RE_TABLE_ROW.match(str_line))
+            bool_in_table or bool_toggle or bool(str_open) or bool_definition or bool_title
         )
         list_out.append("" if bool_blank else str_line)
     return list_out
