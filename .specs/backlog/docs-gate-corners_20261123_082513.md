@@ -14,11 +14,15 @@ and scored as prose (a false failure, never a false pass). Follow-up to #131.
 - [x] Front-matter opener with trailing blanks, as MkDocs' `YAML_RE` reads it (item 3)
 - [x] Find the front-matter closer once per page, not once per line (item 4)
 - [x] One autouse `cache_clear` fixture instead of per-test calls (item 5)
-- [x] `RE_FENCE_CLOSE` as a boundary: measured, no change needed (item 6)
+- [x] `RE_FENCE_CLOSE` as a boundary: measured; under superfences a fence closer starts no block, so
+  it is no longer a boundary for tables (item 6)
 
 ## Notes
 
-- Item 6 is declined with a measurement. A fuzz of 60000 fence-heavy pages made 91869
+- Item 6 first read as no change needed; the fifth review showed otherwise. Superfences stashes a
+  fence without padding it, so a table right under a closer renders no table, and the closer is
+  no block start. The first fuzz (60000 pages) only looked at non-closer fence lines and so missed
+  it: it fence-heavy pages made 91869
   `_starts_table` calls, 27852 right after a fence-looking line, and none decided "table" through
   a fence line that was not a real closer. `_mask_lines` treats every fence-looking line (any
   indent) as a fence and masks what sits inside, and a closing line carries no pipe, so it

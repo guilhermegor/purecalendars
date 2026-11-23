@@ -107,9 +107,7 @@ TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessor
 
 RE_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
 
-RE_FENCE_CLOSE = re.compile(r"^[ \t]*(?:`{3,}|~{3,})[ \t]*$")
-
-RE_ATX_HEADING = re.compile(r"#{1,6}")
+RE_HASH_HEADER = re.compile(r"^#{1,6}")
 
 RE_CONTAINER_OPENER = re.compile(r"^ *(?:!!!|\?\?\?\+?|===)[ \t]+\S")
 
@@ -156,26 +154,26 @@ RE_FRONT_MATTER_CLOSE = re.compile(r"^(?:---|\.\.\.)[ \t]*$")
 RE_COMMENT_LINE = re.compile(r"^[ \t]*<!--.*-->[ \t]*$", re.DOTALL)
 
 TUPLE_BLOCK_STARTS = (
-    RE_ATX_HEADING,
+    RE_HASH_HEADER,
     RE_CONTAINER_OPENER,
     RE_THEMATIC_BREAK,
-    RE_FENCE_CLOSE,
     RE_COMMENT_LINE,
 )
 
 RE_BLOCK_HTML = re.compile(
-    rf" {{0,3}}</?(?:{'|'.join(sorted(markdown.util.BLOCK_LEVEL_ELEMENTS))})\b", re.IGNORECASE
+    rf" {{0,3}}</?(?:{'|'.join(sorted(markdown.util.BLOCK_LEVEL_ELEMENTS))})(?=[\s/>]|$)",
+    re.IGNORECASE,
 )
 
 RE_HTML_DECLARATION = re.compile(r" {0,3}<(?:\?|!(?:doctype\b|\[))", re.IGNORECASE)
 
 TUPLE_NOT_SETEXT_TEXT = (
-    RE_ATX_HEADING,
+    RE_HASH_HEADER,
     RE_CONTAINER_OPENER,
     RE_COMMENT_LINE,
     RE_BLOCK_HTML,
     RE_HTML_DECLARATION,
-    re.compile(r"(?:=+|-{1,2})[ ]*$"),
+    RE_SETEXT_UNDERLINE,
     re.compile(" {4}"),
 )
 
@@ -283,9 +281,9 @@ def _block_text(list_lines: list, int_start: int, int_stop: int) -> str:
 def _is_yaml_mapping(str_yaml: str) -> bool:
     """Say whether text parses as a YAML mapping, which is what MkDocs strips as front matter.
 
-    A parse failure (a ``YAMLError``, a ``ValueError`` from an impossible date or timezone
-    offset, a ``RecursionError`` from deep nesting) means "not a mapping", as in
-    ``mkdocs.utils.meta.get_data``, which treats every exception that way. Cached, so a page's
+    Any exception while loading (a ``YAMLError``, a ``ValueError`` from an impossible date or
+    timezone offset, a ``RecursionError`` from deep nesting) means "not a mapping": that is what
+    ``mkdocs.utils.meta.get_data`` does with ``except Exception``. Cached, so a page's
     block is parsed once however many callers ask.
 
     Parameters
@@ -300,7 +298,7 @@ def _is_yaml_mapping(str_yaml: str) -> bool:
     """
     try:
         return isinstance(yaml.safe_load(str_yaml), dict)
-    except (yaml.YAMLError, ValueError, RecursionError):
+    except Exception:  # noqa: BLE001 -- MkDocs' get_data treats every failure as not a mapping
         return False
 
 
@@ -424,10 +422,11 @@ def _is_setext_text(str_line: str) -> bool:
     hash header processors (any line that starts with ``#``, with no space needed and no cap
     on the count, unlike CommonMark), and admonitions. The ``tables`` processor outranks setext
     too, but it cannot claim a line that is followed by ``===`` or ``---``: those carry no
-    column separator, so it is left out. A run of ``=`` or one or two ``-`` is refused as well:
-    which of two stacked underlines pairs with the text depends on where the block starts, so the
-    gate does not count on either. Three or more ``-`` are a thematic break and stay allowed as
-    text; refusing the short run can only turn a table into a false failure, never a false pass.
+    column separator, so it is left out. Any run of ``=`` or ``-`` is refused as well: which of
+    two stacked underlines pairs with the text depends on where the block starts (an indented
+    code block or a list item above can shift it), so the gate does not count on either. That
+    can only turn a table into a false failure, never a false pass; it costs the rare header
+    whose text is itself ``---``.
 
     Parameters
     ----------
@@ -464,8 +463,10 @@ def _flag_block_splits(list_lines: list, *, list_raw: list, list_fenced: list) -
     -------
     list of bool
         True for a blank line, a ``TUPLE_BLOCK_STARTS`` line, a setext underline (``=`` or ``-``
-        runs under a text line that starts the page or follows a flagged line), a front matter
-        close or a definition title.
+        runs under a text line that starts the page or follows a blank line, a block start, the
+        front matter close or another setext header, but not a definition), a front matter close
+        or a definition title. A fence closer is none of these: superfences stashes the fence
+        without padding it, so the line after it shares its block.
     """
     int_close = _find_front_matter_close(list_lines, list_raw=list_raw)
     list_setext = [False] * len(list_lines)
@@ -479,9 +480,7 @@ def _flag_block_splits(list_lines: list, *, list_raw: list, list_fenced: list) -
             and RE_SETEXT_UNDERLINE.match(str_line)
             and _is_setext_text(list_lines[int_idx - 1])
         ):
-            list_setext[int_idx] = int_idx == 1 or (
-                list_hard[int_idx - 2] and not list_fenced[int_idx - 2]
-            )
+            list_setext[int_idx] = int_idx == 1 or list_hard[int_idx - 2]
         list_hard[int_idx] = list_setext[int_idx] or _is_boundary(
             list_lines, int_idx, int_front_matter_close=int_close
         )
@@ -521,7 +520,10 @@ def _starts_table(list_lines: list, int_idx: int, *, list_split: list) -> bool:
 
 
 def _track_fences(list_lines: list) -> list:
-    """Track the fenced code of a page, line by line, as CommonMark does.
+    """Track the fenced code of a page, line by line, at any indent.
+
+    A fence indented 0 to 3 spaces is superfences' code, and one indented 4 or more is an indented
+    code block; either way what it holds renders as code, so masking it hides no prose.
 
     Parameters
     ----------

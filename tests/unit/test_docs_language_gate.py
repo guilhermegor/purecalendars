@@ -66,7 +66,7 @@ def _run(path_root: Path) -> int:
 
 
 @pytest.fixture(autouse=True)
-def clear_blanked_lines_cache() -> None:
+def clear_gate_caches() -> None:
     """Empty the gate's per-text caches so no test reads another test's cached page."""
     cls_gate._blanked_lines.cache_clear()
     cls_gate._is_yaml_mapping.cache_clear()
@@ -869,7 +869,8 @@ def test_main_impossible_date_in_leading_block_does_not_raise(
 @pytest.mark.parametrize(
     "str_before",
     [
-        "```\ncode\n```",
+        "```\ncode\n```\n",
+        "~~~\ncode\n~~~\n",
         "<!-- note -->",
         '[ref]: https://a.b/c\n  "A title"',
     ],
@@ -877,7 +878,7 @@ def test_main_impossible_date_in_leading_block_does_not_raise(
 def test_main_table_after_fence_comment_or_titled_definition_is_masked(
     tmp_path: Path, *, str_before: str
 ) -> None:
-    """Python-Markdown renders a table right after a closing fence, a comment or a title line."""
+    """A table renders after a fence closer and a blank line, a comment or a title line."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(
         tmp_path / "docs" / "index.md",
@@ -1038,6 +1039,32 @@ def test_main_table_after_a_list_quote_or_rule_line_used_as_header_text_is_maske
     tmp_path: Path, *, str_before: str
 ) -> None:
     """A setext header outranks list, quote and rule parsing, so its text may look like one."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_fence", ["```\ncode\n```", "~~~\ncode\n~~~", "```py\ncode\n```"])
+def test_main_table_directly_under_a_fence_closer_is_scored(
+    tmp_path: Path, *, str_fence: str
+) -> None:
+    """Superfences stashes a fence unpadded, so a table right under it stays paragraph text."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_fence + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize("str_before", ["<div-x>\n===", "<p-card>\n===", "<divx>\n==="])
+def test_main_table_after_a_custom_element_used_as_header_text_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A tag that only starts with a block name is no raw block HTML, so it can be header text."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(
         tmp_path / "docs" / "index.md",
