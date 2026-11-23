@@ -701,3 +701,24 @@ def test_main_tables_follow_python_markdown_rules(
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(tmp_path / "docs" / "index.md", str_text=STR_EN + "\n" + str_table)
     assert _run(tmp_path) == int_code
+
+
+def test_main_non_utf8_page_fails_with_a_message(
+    tmp_path: Path, *, capsys: pytest.CaptureFixture
+) -> None:
+    """A page that is not UTF-8 text is reported by name instead of raising."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    (tmp_path / "docs" / "bad.md").write_bytes(b"\xff\xfe not text\n")
+    int_rc = _run(tmp_path)
+    assert (int_rc, "bad.md: cannot be read as UTF-8 text" in capsys.readouterr().out) == (1, True)
+
+
+def test_main_non_utf8_mkdocs_fails_with_a_message(
+    tmp_path: Path, *, capsys: pytest.CaptureFixture
+) -> None:
+    """A ``mkdocs.yml`` that is not UTF-8 text ends in the gate's own message, not a traceback."""
+    (tmp_path / "mkdocs.yml").write_bytes(b"site_name: \xff\xfe\n")
+    _write(tmp_path / "docs" / "index.md", str_text=STR_EN)
+    int_rc = _run(tmp_path)
+    assert (int_rc, "cannot be read as UTF-8 text" in capsys.readouterr().out) == (1, True)

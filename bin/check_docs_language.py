@@ -415,12 +415,17 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
     Returns
     -------
     tuple of (list of str, bool, int)
-        ``path:line`` messages naming the locale the paragraph reads as and an excerpt, whether
+        ``path:line`` messages naming the locale the paragraph reads as and an excerpt (one
+        message for a page that is not UTF-8 text, which is never silently skipped), whether
         the page was skipped as untranslated, then how many paragraphs were scored, a
         paragraph counting only when it holds a word, so punctuation residue is not prose.
     """
     list_out: list = []
-    str_text = path_page.read_text(encoding="utf-8")
+    str_rel = pathlib.Path(os.path.relpath(path_page, path_root)).as_posix()
+    try:
+        str_text = path_page.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as cls_err:
+        return [f"❌ {str_rel}: cannot be read as UTF-8 text: {cls_err}"], False, 0
     if is_untranslated(str_text):
         return list_out, True, 0
     list_paras = prose_paragraphs(str_text)
@@ -430,7 +435,6 @@ def page_problems(path_page: pathlib.Path, *, path_root: pathlib.Path, str_decla
             str_flat = " ".join(str_para.split())
             str_tail = "…" if len(str_flat) > INT_EXCERPT else ""
             str_excerpt = f"{str_flat[:INT_EXCERPT]}{str_tail}"
-            str_rel = pathlib.Path(os.path.relpath(path_page, path_root)).as_posix()
             list_out.append(
                 f"❌ {str_rel}:{int_line}: paragraph reads as "
                 f"{str_read} but theme.language is {str_declared} -- {str_excerpt}"
@@ -461,6 +465,8 @@ def _load_config(path_root: pathlib.Path) -> tuple:
         dict_mkdocs = load_mkdocs(path_mkdocs)
     except yaml.YAMLError as cls_err:
         return {}, f"{path_mkdocs} is not valid YAML: {cls_err}"
+    except (OSError, UnicodeDecodeError) as cls_err:
+        return {}, f"{path_mkdocs} cannot be read as UTF-8 text: {cls_err}"
     if not isinstance(dict_mkdocs, dict):
         return {}, f"{path_mkdocs} must be a YAML mapping"
     path_docs = path_root / str(dict_mkdocs.get("docs_dir") or STR_DEFAULT_DOCS_DIR)
