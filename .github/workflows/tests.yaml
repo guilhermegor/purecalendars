@@ -99,13 +99,14 @@ jobs:
         run: |
           bash bin/check_clean_index.sh
           echo "control" > .clean-index-control
+          bash bin/check_clean_index.sh
           git add .clean-index-control
-          if bash bin/check_clean_index.sh >/dev/null 2>&1; then
-            git reset -q && rm -f .clean-index-control
-            echo "::error::check_clean_index.sh passed with a staged file — the guard is broken." >&2
+          str_out="$(bash bin/check_clean_index.sh 2>&1)" && int_rc=0 || int_rc=$?
+          git reset -q && rm -f .clean-index-control
+          if [ "$int_rc" -eq 0 ] || ! grep -q "index is not empty" <<<"$str_out"; then
+            echo "::error::check_clean_index.sh did not refuse a staged file (exit $int_rc) - the guard is broken."
             exit 1
           fi
-          git reset -q && rm -f .clean-index-control
 
       - name: Run Spell Check (codespell)
         if: runner.os == 'Linux'

@@ -51,6 +51,9 @@ def test_version_parts(str_raw: str, list_expected: list[int]) -> None:
         ("^0.0.3", ">=0.0.3,<0.0.4"),
         ("^1", ">=1,<2.0.0"),
         ("^0.2", ">=0.2,<0.3.0"),
+        ("^0", ">=0,<1.0.0"),
+        ("^0.0", ">=0.0,<0.1.0"),
+        ("^0.0.0", ">=0.0.0,<0.0.1"),
         ("^1.2.0rc1", ">=1.2.0rc1,<2.0.0"),
     ],
 )
@@ -86,7 +89,7 @@ def test_tilde_to_range(str_raw: str, str_expected: str) -> None:
         (">=1", ">=1"),
         ("!=1.5", "!=1.5"),
         ("1.2.3", "==1.2.3"),
-        ("1.2,<2", "1.2,<2"),
+        ("1.2,<2", "==1.2,<2"),
     ],
 )
 def test_normalize_version_spec(str_spec: str, str_expected: str) -> None:
