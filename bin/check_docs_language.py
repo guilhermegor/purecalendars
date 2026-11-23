@@ -46,7 +46,7 @@ checking against.
 """
 
 from functools import lru_cache
-from itertools import takewhile
+from itertools import islice, takewhile
 import os
 import pathlib
 import re
@@ -107,9 +107,7 @@ TABLE_PROCESSOR = markdown.Markdown(extensions=["tables"]).parser.blockprocessor
 
 RE_FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})(.*)$")
 
-RE_FENCE_CLOSE = re.compile(r"^[ \t]*(?:`{3,}|~{3,})[ \t]*$")
-
-RE_ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]|$)")
+RE_HASH_HEADER = re.compile(r"^#{1,6}")
 
 RE_CONTAINER_OPENER = re.compile(r"^ *(?:!!!|\?\?\?\+?|===)[ \t]+\S")
 
@@ -126,7 +124,7 @@ STR_DEFAULT_DOCS_DIR = "docs"
 RE_CODE_SPAN = re.compile(r"(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)")
 
 RE_MULTILINE_BLANK = re.compile(
-    r"\A---\n.*?\n(?:---|\.\.\.)[ \t]*$|<!--.*?-->", re.DOTALL | re.MULTILINE
+    r"\A---[ \t]*\n.*?\n(?:---|\.\.\.)[ \t]*$|<!--.*?-->", re.DOTALL | re.MULTILINE
 )
 
 TUPLE_BLANKINGS = (
@@ -149,17 +147,34 @@ RE_THEMATIC_BREAK = re.compile(
 
 RE_SETEXT_UNDERLINE = re.compile(r"^(?:=+|-+)[ ]*$")
 
+RE_FRONT_MATTER_OPEN = re.compile(r"^---[ \t]*$")
+
 RE_FRONT_MATTER_CLOSE = re.compile(r"^(?:---|\.\.\.)[ \t]*$")
 
 RE_COMMENT_LINE = re.compile(r"^[ \t]*<!--.*-->[ \t]*$", re.DOTALL)
 
 TUPLE_BLOCK_STARTS = (
-    RE_ATX_HEADING,
+    RE_HASH_HEADER,
     RE_CONTAINER_OPENER,
-    RE_LINK_DEFINITION,
     RE_THEMATIC_BREAK,
-    RE_FENCE_CLOSE,
     RE_COMMENT_LINE,
+)
+
+RE_BLOCK_HTML = re.compile(
+    rf" {{0,3}}</?(?:{'|'.join(sorted(markdown.util.BLOCK_LEVEL_ELEMENTS))})(?=[\s/>]|$)",
+    re.IGNORECASE,
+)
+
+RE_HTML_DECLARATION = re.compile(r" {0,3}<(?:\?|!(?:doctype|\[))", re.IGNORECASE)
+
+TUPLE_NOT_SETEXT_TEXT = (
+    RE_HASH_HEADER,
+    RE_CONTAINER_OPENER,
+    RE_COMMENT_LINE,
+    RE_BLOCK_HTML,
+    RE_HTML_DECLARATION,
+    RE_SETEXT_UNDERLINE,
+    re.compile(" {4}"),
 )
 
 RE_DEFINITION_TITLE = re.compile(r"""^[ \t]*(?:"[^"]*"|'[^']*'|\([^)]*\))[ \t]*$""")
@@ -262,27 +277,68 @@ def _block_text(list_lines: list, int_start: int, int_stop: int) -> str:
     return "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_start, int_stop))))
 
 
-def _closes_front_matter(list_lines: list, int_idx: int) -> bool:
-    """Say whether a line closes the page's leading ``---`` front matter (``---`` or ``...``).
+@lru_cache(maxsize=32)
+def _is_yaml_mapping(str_yaml: str) -> bool:
+    """Say whether text parses as a YAML mapping, which is what MkDocs strips as front matter.
+
+    Any exception while loading (a ``YAMLError``, a ``ValueError`` from an impossible date or
+    timezone offset, a ``RecursionError`` from deep nesting) means "not a mapping": that is what
+    ``mkdocs.utils.meta.get_data`` does with ``except Exception``. Cached, so a page's
+    block is parsed once however many callers ask.
 
     Parameters
     ----------
-    list_lines : list of str
-        The page's lines.
-    int_idx : int
-        Index of the candidate closing line.
+    str_yaml : str
+        The lines between the opening and closing ``---``.
 
     Returns
     -------
     bool
-        True when the page opens with ``---`` and this is the first closer after at least one
-        line, as ``RE_MULTILINE_BLANK`` reads it.
+        True when the text loads to a ``dict``.
     """
-    if int_idx <= 1 or list_lines[0] != "---":
+    try:
+        return isinstance(yaml.safe_load(str_yaml), dict)
+    except Exception:  # noqa: BLE001 -- MkDocs' get_data treats every failure as not a mapping
         return False
-    return not any(
-        RE_FRONT_MATTER_CLOSE.match(str_line) for str_line in list_lines[1:int_idx]
-    ) and bool(RE_FRONT_MATTER_CLOSE.match(list_lines[int_idx]))
+
+
+def _find_front_matter_close(list_lines: list, *, list_raw: list) -> int:
+    """Return the index of the line that closes the page's leading ``---`` front matter.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines, tabs expanded, which is how the closer is found.
+    list_raw : list of str
+        The same lines as the page has them. MkDocs parses the YAML from these, so the mapping
+        verdict reads them: a tab that YAML refuses is one the expansion would hide.
+
+    Returns
+    -------
+    int
+        The index of the first closer (``---`` or ``...``) after at least one line, as
+        ``RE_MULTILINE_BLANK`` reads it, or ``-1`` when the page does not open with ``---``,
+        the block is never closed, or a ``...`` closes a block MkDocs will not strip because it
+        is no YAML mapping (a ``---`` closer is a thematic break either way, so it is kept).
+        Found once per page, so a line is never tested against it by rescanning the lines above.
+    """
+    if not list_lines or not RE_FRONT_MATTER_OPEN.match(list_lines[0]):
+        return -1
+    int_close = next(
+        (
+            int_idx
+            for int_idx, str_line in enumerate(islice(list_lines, 2, None), 2)
+            if RE_FRONT_MATTER_CLOSE.match(str_line)
+        ),
+        -1,
+    )
+    if (
+        int_close > 0
+        and list_lines[int_close].startswith(".")
+        and not _is_yaml_mapping("\n".join(list_raw[1:int_close]))
+    ):
+        return -1
+    return int_close
 
 
 def _closes_titled_definition(list_lines: list, int_idx: int) -> bool:
@@ -306,65 +362,142 @@ def _closes_titled_definition(list_lines: list, int_idx: int) -> bool:
     return bool(re_definition) and not re_definition.group("title")
 
 
-def _is_setext_underline(list_lines: list, int_idx: int) -> bool:
-    """Say whether a line is a setext underline: at column 0, under a non-blank text line.
+def _is_boundary(list_lines: list, int_idx: int, *, int_front_matter_close: int) -> bool:
+    """Say whether a line is one Python-Markdown always ends a block at, setext aside.
 
     Parameters
     ----------
     list_lines : list of str
-        The page's lines.
+        The page's lines, tabs already expanded.
     int_idx : int
-        Index of the candidate underline.
+        Index of the candidate line.
+    int_front_matter_close : int
+        What ``_find_front_matter_close`` returned for the page.
 
     Returns
     -------
     bool
-        True for ``=`` or ``-`` runs of any length under text, which a lone one after a blank
-        line is not.
+        True for a blank line, a ``TUPLE_BLOCK_STARTS`` line or the front matter close: a line
+        after which a block provably starts, whatever else the block holds.
     """
-    return (
-        int_idx >= 1
-        and bool(list_lines[int_idx - 1].strip())
-        and (int_idx == 1 or not list_lines[int_idx - 2].strip())
-        and bool(RE_SETEXT_UNDERLINE.match(list_lines[int_idx]))
-    )
-
-
-def _splits_block_at(list_lines: list, int_idx: int) -> bool:
-    """Say whether Python-Markdown ends a block at a line, so a table may start on the next.
-
-    Parameters
-    ----------
-    list_lines : list of str
-        The page's lines.
-    int_idx : int
-        Index of the line before the candidate table header.
-
-    Returns
-    -------
-    bool
-        True for a blank line, a ``TUPLE_BLOCK_STARTS`` line, a setext underline, a front
-        matter close or a definition title.
-    """
-    str_line = list_lines[int_idx].expandtabs(4)
+    str_line = list_lines[int_idx]
     return (
         not str_line.strip()
         or any(re_start.match(str_line) for re_start in TUPLE_BLOCK_STARTS)
-        or _is_setext_underline(list_lines, int_idx)
-        or _closes_front_matter(list_lines, int_idx)
-        or _closes_titled_definition(list_lines, int_idx)
+        or int_idx == int_front_matter_close
     )
 
 
-def _starts_table(list_lines: list, int_idx: int) -> bool:
+def _is_definition(list_lines: list, int_idx: int) -> bool:
+    """Say whether a line is a link definition or the title line of one.
+
+    Python-Markdown splits a block after a definition only when nothing that runs before its
+    reference processor claims the block first, so a table may follow one but a setext header
+    may not be counted on to.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines, tabs already expanded.
+    int_idx : int
+        Index of the candidate line.
+
+    Returns
+    -------
+    bool
+        True for a ``RE_LINK_DEFINITION`` line or a title right under a definition.
+    """
+    return bool(RE_LINK_DEFINITION.match(list_lines[int_idx])) or _closes_titled_definition(
+        list_lines, int_idx
+    )
+
+
+def _is_setext_text(str_line: str) -> bool:
+    """Say whether a line can be the text a setext underline sits under.
+
+    Python-Markdown tries its setext processor before every list, quote, thematic-break and
+    definition processor, so ``- item`` or ``***`` over ``===`` is a header. What claims the
+    line first is the HTML preprocessor (a block-level tag, a comment, a processing instruction,
+    a ``DOCTYPE`` or a ``CDATA`` section), the code block and
+    hash header processors (any line that starts with ``#``, with no space needed and no cap
+    on the count, unlike CommonMark), and admonitions. The ``tables`` processor outranks setext
+    too, but it cannot claim a line that is followed by ``===`` or ``---``: those carry no
+    column separator, so it is left out. Any run of ``=`` or ``-`` is refused as well: which of
+    two stacked underlines pairs with the text depends on where the block starts (an indented
+    code block or a list item above can shift it), so the gate does not count on either. That
+    can only turn a table into a false failure, never a false pass; it costs the rare header
+    whose text is itself ``---``.
+
+    Parameters
+    ----------
+    str_line : str
+        A line, tabs already expanded.
+
+    Returns
+    -------
+    bool
+        True for a non-blank line that none of ``TUPLE_NOT_SETEXT_TEXT`` matches.
+    """
+    return bool(str_line.strip()) and not any(
+        re_claim.match(str_line) for re_claim in TUPLE_NOT_SETEXT_TEXT
+    )
+
+
+def _flag_block_splits(list_lines: list, *, list_raw: list, list_fenced: list) -> list:
+    """Say, for every line, whether Python-Markdown ends a block there.
+
+    A table may start on the line after a flagged one. One forward pass: a setext underline
+    depends only on the two lines above it, so each flag is read from flags already set and a run
+    of stacked headers or ``=`` lines costs linear time.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines, tabs already expanded.
+    list_raw : list of str
+        The same lines before tab expansion.
+    list_fenced : list of bool
+        Per line, whether it is a fence delimiter or sits inside a fence.
+
+    Returns
+    -------
+    list of bool
+        True for a blank line, a ``TUPLE_BLOCK_STARTS`` line, a setext underline (``=`` or ``-``
+        runs under a text line that starts the page or follows a blank line, a block start, the
+        front matter close or another setext header, but not a definition), a front matter close
+        or a definition title. A fence closer is none of these: superfences stashes the fence
+        without padding it, so the line after it shares its block.
+    """
+    int_close = _find_front_matter_close(list_lines, list_raw=list_raw)
+    list_setext = [False] * len(list_lines)
+    list_hard = [False] * len(list_lines)
+    list_split = [False] * len(list_lines)
+    for int_idx, str_line in enumerate(list_lines):
+        if (
+            int_idx
+            and not any(list_fenced[int_idx - 1 : int_idx + 1])
+            and RE_SETEXT_UNDERLINE.match(str_line)
+            and _is_setext_text(list_lines[int_idx - 1])
+        ):
+            list_setext[int_idx] = int_idx == 1 or list_hard[int_idx - 2]
+        list_hard[int_idx] = list_setext[int_idx] or _is_boundary(
+            list_lines, int_idx, int_front_matter_close=int_close
+        )
+        list_split[int_idx] = list_hard[int_idx] or _is_definition(list_lines, int_idx)
+    return list_split
+
+
+def _starts_table(list_lines: list, int_idx: int, *, list_split: list) -> bool:
     """Say whether the block that begins at a line is a table, by Python-Markdown's own test.
 
     Parameters
     ----------
     list_lines : list of str
-        The page's lines.
+        The page's lines, tabs already expanded as Python-Markdown expands them up front.
     int_idx : int
         Index of the candidate header line.
+    list_split : list of bool
+        What ``_flag_block_splits`` returned for the page.
 
     Returns
     -------
@@ -377,7 +510,7 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
         unless the header is a single column, so those two are tested first and the rest of
         the block is read only for a real table start: a run of heading lines stays linear.
     """
-    if int_idx and not _splits_block_at(list_lines, int_idx - 1):
+    if int_idx and not list_split[int_idx - 1]:
         return False
     int_end = len(list_lines)
     if not TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, min(int_idx + 2, int_end))):
@@ -385,8 +518,40 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
     return TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, int_end))
 
 
+def _track_fences(list_lines: list) -> list:
+    """Track the fenced code of a page, line by line, at any indent.
+
+    A fence indented 0 to 3 spaces is superfences' code, and one indented 4 or more is an indented
+    code block; either way what it holds renders as code, so masking it hides no prose.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines, tabs already expanded.
+
+    Returns
+    -------
+    list of tuple
+        ``(bool_toggle, bool_open)`` per line: whether it opens or closes a fence, and whether a
+        fence is still open once it is read.
+    """
+    list_out: list = []
+    str_open = ""
+    for str_line in list_lines:
+        re_marker = RE_FENCE.match(str_line)
+        str_marker, str_info = re_marker.groups() if re_marker else ("", "")
+        bool_toggle = _fence_toggles(str_open, str_marker=str_marker, str_info=str_info)
+        if bool_toggle:
+            str_open = "" if str_open else str_marker
+        list_out.append((bool_toggle, bool(str_open)))
+    return list_out
+
+
 def _mask_lines(str_text: str) -> list:
     """Blank fenced code, table rows and link definitions, keeping line numbers.
+
+    Every decision reads the lines with tabs expanded, as Python-Markdown does before any block
+    processor runs; the lines returned are the source's own.
 
     Parameters
     ----------
@@ -399,28 +564,28 @@ def _mask_lines(str_text: str) -> list:
         One entry per source line, plus a trailing empty line that closes the last paragraph.
     """
     list_out: list = []
-    str_open = ""
     bool_after_definition = False
     list_lines = [*str_text.splitlines(), ""]
+    list_expanded = [str_line.expandtabs(4) for str_line in list_lines]
+    list_states = _track_fences(list_expanded)
+    list_split = _flag_block_splits(
+        list_expanded,
+        list_raw=list_lines,
+        list_fenced=[bool_toggle or bool_open for bool_toggle, bool_open in list_states],
+    )
     bool_in_table = False
-    for int_idx, str_line in enumerate(list_lines):
-        re_marker = RE_FENCE.match(str_line)
-        str_marker, str_info = re_marker.groups() if re_marker else ("", "")
-        bool_toggle = _fence_toggles(str_open, str_marker=str_marker, str_info=str_info)
-        if bool_toggle:
-            str_open = "" if str_open else str_marker
-        re_definition = None if str_open else RE_LINK_DEFINITION.match(str_line)
+    for int_idx, str_line in enumerate(list_expanded):
+        bool_toggle, bool_open = list_states[int_idx]
+        re_definition = None if bool_open else RE_LINK_DEFINITION.match(str_line)
         bool_definition = bool(re_definition)
         bool_title = bool_after_definition and bool(RE_DEFINITION_TITLE.match(str_line))
         bool_after_definition = bool_definition and not re_definition.group("title")
-        if not str_open:
+        if not bool_open:
             bool_in_table = bool(str_line.strip()) and (
-                bool_in_table or _starts_table(list_lines, int_idx)
+                bool_in_table or _starts_table(list_expanded, int_idx, list_split=list_split)
             )
-        bool_blank = (
-            bool_in_table or bool_toggle or bool(str_open) or bool_definition or bool_title
-        )
-        list_out.append("" if bool_blank else str_line)
+        bool_blank = bool_in_table or bool_toggle or bool_open or bool_definition or bool_title
+        list_out.append("" if bool_blank else list_lines[int_idx])
     return list_out
 
 
@@ -447,13 +612,8 @@ def _blank_span(re_hit: re.Match) -> str:
     str_span = re_hit.group()
     if "\n" not in str_span:
         return str_span
-    if str_span.startswith("---"):
-        try:
-            bool_mapping = isinstance(yaml.safe_load("\n".join(str_span.split("\n")[1:-1])), dict)
-        except (yaml.YAMLError, ValueError, RecursionError):
-            bool_mapping = False
-        if not bool_mapping:
-            return str_span
+    if str_span.startswith("---") and not _is_yaml_mapping("\n".join(str_span.split("\n")[1:-1])):
+        return str_span
     return re.sub(r"[^\n]", "", str_span)
 
 

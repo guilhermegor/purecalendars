@@ -65,6 +65,13 @@ def _run(path_root: Path) -> int:
     return cls_gate.main(["--root", str(path_root)])
 
 
+@pytest.fixture(autouse=True)
+def clear_gate_caches() -> None:
+    """Empty the gate's per-text caches so no test reads another test's cached page."""
+    cls_gate._blanked_lines.cache_clear()
+    cls_gate._is_yaml_mapping.cache_clear()
+
+
 @pytest.mark.parametrize(
     ("str_mkdocs", "str_text"),
     [
@@ -862,15 +869,14 @@ def test_main_impossible_date_in_leading_block_does_not_raise(
 @pytest.mark.parametrize(
     "str_before",
     [
-        "```\ncode\n```",
         "<!-- note -->",
         '[ref]: https://a.b/c\n  "A title"',
     ],
 )
-def test_main_table_after_fence_comment_or_titled_definition_is_masked(
+def test_main_table_after_comment_or_titled_definition_is_masked(
     tmp_path: Path, *, str_before: str
 ) -> None:
-    """Python-Markdown renders a table right after a closing fence, a comment or a title line."""
+    """A table renders right after a comment line or a definition's title line."""
     _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
     _write(
         tmp_path / "docs" / "index.md",
@@ -914,6 +920,207 @@ def test_main_table_after_front_matter_closed_by_dots_is_masked(tmp_path: Path) 
     assert _run(tmp_path) == 0
 
 
+@pytest.mark.parametrize(
+    "str_before",
+    [
+        "# H\nText\n===",
+        "***\nText\n===",
+        "Text\n===\nMore\n===",
+    ],
+)
+def test_main_table_after_a_setext_header_under_a_block_start_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A setext header needs no blank line above it when a block start does the splitting."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_main_long_run_of_setext_headers_does_not_raise(tmp_path: Path) -> None:
+    """Each underline leans on the line above it, so a long run must not recurse once per pair."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + "Text\n===\n" * 500 + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_before", ["Text\n===\t", "Text\n-\t", "# H\nText\n===\t"])
+def test_main_table_after_a_setext_underline_with_a_tab_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """Python-Markdown expands tabs before any block processor, so a tab after ``===`` is blank."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_opener", ["--- ", "---\t", "---  \t"])
+def test_main_front_matter_opened_with_trailing_whitespace_is_stripped(
+    tmp_path: Path, *, str_opener: str
+) -> None:
+    """MkDocs' own pattern allows blanks after the opening ``---``, so the block is not prose."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=str_opener + "\ntitle: x\n...\n" + STR_TABLE_FOREIGN + "\n" + STR_EN,
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_mask_lines_unclosed_front_matter_is_scanned_once(mocker: MockerFixture) -> None:
+    """The closer is looked for once per page, not again from every line below the opener."""
+    int_lines = 400
+    cls_spy = mocker.patch.object(
+        cls_gate, "RE_FRONT_MATTER_CLOSE", wraps=cls_gate.RE_FRONT_MATTER_CLOSE
+    )
+    cls_gate._mask_lines("---\n" + "x\n" * int_lines)
+    assert 1 <= cls_spy.match.call_count <= int_lines + 2
+
+
+@pytest.mark.parametrize("str_head", ["===", "-"])
+def test_mask_lines_long_run_of_underline_lines_is_scanned_once(
+    mocker: MockerFixture, *, str_head: str
+) -> None:
+    """Each line is classified once: the walk-back this replaced did it once per line below."""
+    int_lines = 5000
+    str_page = "Text\n" + (str_head + "\n") * int_lines + STR_TABLE_FOREIGN
+    cls_spy = mocker.spy(cls_gate, "_is_boundary")
+    cls_gate._mask_lines(str_page)
+    assert int_lines <= cls_spy.call_count <= len(str_page.splitlines()) + 2
+
+
+@pytest.mark.parametrize(
+    "str_before",
+    [
+        "# H\n===",
+        "#tag\n===",
+        "  # H\nText\n===",
+        "   # H",
+        "#######\n===",
+        "- item\nText\n===",
+        "> quote\nText\n===",
+        "1. item\nText\n===",
+        "    code\n===",
+        "<div>\n===",
+        "<?x?>\n===",
+        "  <?x?>\n===",
+        "<!DOCTYPE html>\n===",
+        "<!DOCTYPEhtml>\n===",
+        "<!doctypex>\n===",
+        "<![CDATA[x]]>\n===",
+        "  <DETAILS open>\n===",
+        "```\ncode\n```\nText\n===",
+        "~~~\ncode\n~~~\nText\n===",
+    ],
+)
+def test_main_table_after_a_line_no_setext_header_forms_under_is_scored(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """Where an earlier processor claims the text line, or a list or quote swallows it: prose."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize("str_before", ["- item\n===", "> quote\n===", "***\n==="])
+def test_main_table_after_a_list_quote_or_rule_line_used_as_header_text_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A setext header outranks list, quote and rule parsing, so its text may look like one."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_fence", ["```\ncode\n```", "~~~\ncode\n~~~"])
+def test_main_table_after_a_fence_and_a_blank_line_is_masked(
+    tmp_path: Path, *, str_fence: str
+) -> None:
+    """A blank line after a fence closer ends the block, so a table under it renders."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_fence + "\n\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_fence", ["```\ncode\n```", "~~~\ncode\n~~~", "```py\ncode\n```"])
+def test_main_table_directly_under_a_fence_closer_is_scored(
+    tmp_path: Path, *, str_fence: str
+) -> None:
+    """Superfences stashes a fence unpadded, so a table right under it stays paragraph text."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_fence + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 1
+
+
+@pytest.mark.parametrize("str_before", ["<div-x>\n===", "<p-card>\n===", "<divx>\n==="])
+def test_main_table_after_a_custom_element_used_as_header_text_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A tag that only starts with a block name is no raw block HTML, so it can be header text."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_heading", ["#tag", "#######", "# H #", "#"])
+def test_main_table_directly_under_a_hash_header_is_masked(
+    tmp_path: Path, *, str_heading: str
+) -> None:
+    """Python-Markdown's hash header starts at column 0, needs no space and caps nothing."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_heading + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_front", ["---\nsome prose\n...\n", "---\n- a\n- b\n...\n"])
+def test_main_table_after_dotted_close_of_a_block_that_is_not_a_mapping_is_scored(
+    tmp_path: Path, *, str_front: str
+) -> None:
+    """MkDocs keeps a ``---`` block that is no YAML mapping, and ``...`` splits no block."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text=str_front + STR_TABLE_FOREIGN + "\n" + STR_EN)
+    assert _run(tmp_path) == 1
+
+
+def test_main_table_after_dotted_close_of_a_block_with_a_tab_yaml_refuses_is_scored(
+    tmp_path: Path,
+) -> None:
+    """MkDocs parses the raw lines, where a tab is a YAML error, so the block is kept as text."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text="---\ntitle:\n\tsub: x\n...\n" + STR_TABLE_FOREIGN + "\n" + STR_EN,
+    )
+    assert _run(tmp_path) == 1
+
+
 @pytest.mark.skipif(
     sys.platform == "win32", reason="creating a symlink needs a privilege Windows may not grant"
 )
@@ -932,7 +1139,6 @@ def test_main_unreadable_page_is_not_reported_as_bad_utf8(
 def test_page_problems_parses_front_matter_once(tmp_path: Path, mocker: MockerFixture) -> None:
     """Front matter is parsed once per page, not once for the marker and once for the prose."""
     path_page = _write(tmp_path / "index.md", str_text="---\ntitle: x\n---\n\n" + STR_EN)
-    cls_gate._blanked_lines.cache_clear()
     cls_spy = mocker.spy(cls_gate.yaml, "safe_load")
     cls_gate.page_problems(path_page, path_root=tmp_path, str_declared="en")
     assert cls_spy.call_count == 1
