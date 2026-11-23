@@ -8,7 +8,7 @@ Close the follow-ups the #115 fallback review raised against `bin/check_docs_lan
 
 ## Work
 
-- [ ] 1. Declare `markdown` as a direct dependency
+- [x] 1. Declare `markdown` as a direct dependency
 - [x] 2. `SET_PT_SHORT_WORDS`: refuted, `bin/lib/description_sources.py` reads it
 - [x] 3. `_starts_table` stays linear on a run of headings
 - [x] 4. A non-UTF-8 page or `mkdocs.yml` fails with the gate's own message
