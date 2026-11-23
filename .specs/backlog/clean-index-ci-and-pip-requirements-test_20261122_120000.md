@@ -11,8 +11,8 @@ and give `bin/lib/pip_requirements.py` a unit test.
 
 - [x] Add a clean-index step to `tests.yaml` on one cell (ubuntu, Python 3.11), with a negative control
 - [x] Update `docs/template-updates.md` and `bin/CLAUDE.md`, which said "pre-push only"
-- [ ] Add `tests/unit/test_pip_requirements.py`, one assert per test
+- [x] Add `tests/unit/test_pip_requirements.py`, one assert per test
 
 ## Completed — kept as a record
 
-Pending.
+Both rulings landed; #68 stays open for the owner to close.
