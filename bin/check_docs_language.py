@@ -126,7 +126,7 @@ STR_DEFAULT_DOCS_DIR = "docs"
 RE_CODE_SPAN = re.compile(r"(?<!`)(`+)(?!`).+?(?<!`)\1(?!`)")
 
 RE_MULTILINE_BLANK = re.compile(
-    r"\A---\n.*?\n(?:---|\.\.\.)[ \t]*$|<!--.*?-->", re.DOTALL | re.MULTILINE
+    r"\A---[ \t]*\n.*?\n(?:---|\.\.\.)[ \t]*$|<!--.*?-->", re.DOTALL | re.MULTILINE
 )
 
 TUPLE_BLANKINGS = (
@@ -148,6 +148,8 @@ RE_THEMATIC_BREAK = re.compile(
 )
 
 RE_SETEXT_UNDERLINE = re.compile(r"^(?:=+|-+)[ ]*$")
+
+RE_FRONT_MATTER_OPEN = re.compile(r"^---[ \t]*$")
 
 RE_FRONT_MATTER_CLOSE = re.compile(r"^(?:---|\.\.\.)[ \t]*$")
 
@@ -262,27 +264,32 @@ def _block_text(list_lines: list, int_start: int, int_stop: int) -> str:
     return "\n".join(takewhile(str.strip, (list_lines[i] for i in range(int_start, int_stop))))
 
 
-def _closes_front_matter(list_lines: list, int_idx: int) -> bool:
-    """Say whether a line closes the page's leading ``---`` front matter (``---`` or ``...``).
+def _front_matter_close(list_lines: list) -> int:
+    """Return the index of the line that closes the page's leading ``---`` front matter.
 
     Parameters
     ----------
     list_lines : list of str
         The page's lines.
-    int_idx : int
-        Index of the candidate closing line.
 
     Returns
     -------
-    bool
-        True when the page opens with ``---`` and this is the first closer after at least one
-        line, as ``RE_MULTILINE_BLANK`` reads it.
+    int
+        The index of the first closer (``---`` or ``...``) after at least one line, as
+        ``RE_MULTILINE_BLANK`` reads it, or ``-1`` when the page does not open with ``---`` or
+        the block is never closed. Found once per page, so a line is never tested against it by
+        rescanning the lines above.
     """
-    if int_idx <= 1 or list_lines[0] != "---":
-        return False
-    return not any(
-        RE_FRONT_MATTER_CLOSE.match(str_line) for str_line in list_lines[1:int_idx]
-    ) and bool(RE_FRONT_MATTER_CLOSE.match(list_lines[int_idx]))
+    if not list_lines or not RE_FRONT_MATTER_OPEN.match(list_lines[0]):
+        return -1
+    return next(
+        (
+            int_idx
+            for int_idx, str_line in enumerate(list_lines[2:], 2)
+            if RE_FRONT_MATTER_CLOSE.match(str_line)
+        ),
+        -1,
+    )
 
 
 def _closes_titled_definition(list_lines: list, int_idx: int) -> bool:
@@ -306,39 +313,76 @@ def _closes_titled_definition(list_lines: list, int_idx: int) -> bool:
     return bool(re_definition) and not re_definition.group("title")
 
 
-def _is_setext_underline(list_lines: list, int_idx: int) -> bool:
-    """Say whether a line is a setext underline: at column 0, under a non-blank text line.
+def _is_boundary(list_lines: list, int_idx: int, *, int_front_matter_close: int) -> bool:
+    """Say whether a line is one Python-Markdown always ends a block at, setext aside.
 
     Parameters
     ----------
     list_lines : list of str
-        The page's lines.
+        The page's lines, tabs already expanded.
     int_idx : int
-        Index of the candidate underline.
+        Index of the candidate line.
+    int_front_matter_close : int
+        What ``_front_matter_close`` returned for the page.
 
     Returns
     -------
     bool
-        True for ``=`` or ``-`` runs of any length under text, which a lone one after a blank
-        line is not.
+        True for a blank line, a ``TUPLE_BLOCK_STARTS`` line, the front matter close or a
+        definition title.
     """
+    str_line = list_lines[int_idx]
     return (
-        int_idx >= 1
-        and bool(list_lines[int_idx - 1].strip())
-        and (int_idx == 1 or not list_lines[int_idx - 2].strip())
-        and bool(RE_SETEXT_UNDERLINE.match(list_lines[int_idx]))
+        not str_line.strip()
+        or any(re_start.match(str_line) for re_start in TUPLE_BLOCK_STARTS)
+        or int_idx == int_front_matter_close
+        or _closes_titled_definition(list_lines, int_idx)
     )
 
 
-def _splits_block_at(list_lines: list, int_idx: int) -> bool:
+def _is_setext_underline(list_lines: list, int_idx: int, *, int_front_matter_close: int) -> bool:
+    """Say whether a line is a setext underline: at column 0, under a text line a block opens.
+
+    Parameters
+    ----------
+    list_lines : list of str
+        The page's lines, tabs already expanded.
+    int_idx : int
+        Index of the candidate underline.
+    int_front_matter_close : int
+        What ``_front_matter_close`` returned for the page.
+
+    Returns
+    -------
+    bool
+        True for ``=`` or ``-`` runs of any length under text, when the text starts at the
+        page's top or right after a line the renderer splits at: a blank line, a block start, or
+        another setext header. Header after header is walked back in a loop, not by recursion.
+    """
+    while (
+        int_idx >= 1
+        and list_lines[int_idx - 1].strip()
+        and RE_SETEXT_UNDERLINE.match(list_lines[int_idx])
+    ):
+        if int_idx == 1 or _is_boundary(
+            list_lines, int_idx - 2, int_front_matter_close=int_front_matter_close
+        ):
+            return True
+        int_idx -= 2
+    return False
+
+
+def _splits_block_at(list_lines: list, int_idx: int, *, int_front_matter_close: int) -> bool:
     """Say whether Python-Markdown ends a block at a line, so a table may start on the next.
 
     Parameters
     ----------
     list_lines : list of str
-        The page's lines.
+        The page's lines, tabs already expanded.
     int_idx : int
         Index of the line before the candidate table header.
+    int_front_matter_close : int
+        What ``_front_matter_close`` returned for the page.
 
     Returns
     -------
@@ -346,25 +390,22 @@ def _splits_block_at(list_lines: list, int_idx: int) -> bool:
         True for a blank line, a ``TUPLE_BLOCK_STARTS`` line, a setext underline, a front
         matter close or a definition title.
     """
-    str_line = list_lines[int_idx].expandtabs(4)
-    return (
-        not str_line.strip()
-        or any(re_start.match(str_line) for re_start in TUPLE_BLOCK_STARTS)
-        or _is_setext_underline(list_lines, int_idx)
-        or _closes_front_matter(list_lines, int_idx)
-        or _closes_titled_definition(list_lines, int_idx)
-    )
+    return _is_boundary(
+        list_lines, int_idx, int_front_matter_close=int_front_matter_close
+    ) or _is_setext_underline(list_lines, int_idx, int_front_matter_close=int_front_matter_close)
 
 
-def _starts_table(list_lines: list, int_idx: int) -> bool:
+def _starts_table(list_lines: list, int_idx: int, *, int_front_matter_close: int) -> bool:
     """Say whether the block that begins at a line is a table, by Python-Markdown's own test.
 
     Parameters
     ----------
     list_lines : list of str
-        The page's lines.
+        The page's lines, tabs already expanded as Python-Markdown expands them up front.
     int_idx : int
         Index of the candidate header line.
+    int_front_matter_close : int
+        What ``_front_matter_close`` returned for the page.
 
     Returns
     -------
@@ -377,7 +418,9 @@ def _starts_table(list_lines: list, int_idx: int) -> bool:
         unless the header is a single column, so those two are tested first and the rest of
         the block is read only for a real table start: a run of heading lines stays linear.
     """
-    if int_idx and not _splits_block_at(list_lines, int_idx - 1):
+    if int_idx and not _splits_block_at(
+        list_lines, int_idx - 1, int_front_matter_close=int_front_matter_close
+    ):
         return False
     int_end = len(list_lines)
     if not TABLE_PROCESSOR.test(None, _block_text(list_lines, int_idx, min(int_idx + 2, int_end))):
@@ -402,6 +445,8 @@ def _mask_lines(str_text: str) -> list:
     str_open = ""
     bool_after_definition = False
     list_lines = [*str_text.splitlines(), ""]
+    list_expanded = [str_line.expandtabs(4) for str_line in list_lines]
+    int_front_matter_close = _front_matter_close(list_expanded)
     bool_in_table = False
     for int_idx, str_line in enumerate(list_lines):
         re_marker = RE_FENCE.match(str_line)
@@ -415,7 +460,10 @@ def _mask_lines(str_text: str) -> list:
         bool_after_definition = bool_definition and not re_definition.group("title")
         if not str_open:
             bool_in_table = bool(str_line.strip()) and (
-                bool_in_table or _starts_table(list_lines, int_idx)
+                bool_in_table
+                or _starts_table(
+                    list_expanded, int_idx, int_front_matter_close=int_front_matter_close
+                )
             )
         bool_blank = (
             bool_in_table or bool_toggle or bool(str_open) or bool_definition or bool_title

@@ -65,6 +65,12 @@ def _run(path_root: Path) -> int:
     return cls_gate.main(["--root", str(path_root)])
 
 
+@pytest.fixture(autouse=True)
+def clear_blanked_lines_cache() -> None:
+    """Empty the gate's per-text cache so no test reads another test's cached page."""
+    cls_gate._blanked_lines.cache_clear()
+
+
 @pytest.mark.parametrize(
     ("str_mkdocs", "str_text"),
     [
@@ -914,6 +920,75 @@ def test_main_table_after_front_matter_closed_by_dots_is_masked(tmp_path: Path) 
     assert _run(tmp_path) == 0
 
 
+@pytest.mark.parametrize(
+    "str_before",
+    [
+        "# H\nText\n===",
+        "***\nText\n===",
+        "[ref]: https://a.b/c\nText\n===",
+        "Text\n===\nMore\n===",
+    ],
+)
+def test_main_table_after_a_setext_header_under_a_block_start_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """A setext header needs no blank line above it when a block start does the splitting."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_main_long_run_of_setext_headers_does_not_raise(tmp_path: Path) -> None:
+    """Each underline leans on the line above it, so a long run must not recurse once per pair."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + "Text\n===\n" * 500 + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_before", ["Text\n===\t", "Text\n-\t", "# H\nText\n===\t"])
+def test_main_table_after_a_setext_underline_with_a_tab_is_masked(
+    tmp_path: Path, *, str_before: str
+) -> None:
+    """Python-Markdown expands tabs before any block processor, so a tab after ``===`` is blank."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=STR_EN + "\n" + str_before + "\n" + STR_TABLE_FOREIGN,
+    )
+    assert _run(tmp_path) == 0
+
+
+@pytest.mark.parametrize("str_opener", ["--- ", "---\t", "---  \t"])
+def test_main_front_matter_opened_with_trailing_whitespace_is_stripped(
+    tmp_path: Path, *, str_opener: str
+) -> None:
+    """MkDocs' own pattern allows blanks after the opening ``---``, so the block is not prose."""
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(
+        tmp_path / "docs" / "index.md",
+        str_text=str_opener + "\ntitle: x\n...\n" + STR_TABLE_FOREIGN + "\n" + STR_EN,
+    )
+    assert _run(tmp_path) == 0
+
+
+def test_main_unclosed_front_matter_is_scanned_once(tmp_path: Path, mocker: MockerFixture) -> None:
+    """The closer is looked for once per page, not again from every line below the opener."""
+    int_lines = 400
+    _write(tmp_path / "mkdocs.yml", str_text=STR_MKDOCS_EN)
+    _write(tmp_path / "docs" / "index.md", str_text="---\n" + "x\n" * int_lines + STR_EN)
+    cls_spy = mocker.patch.object(
+        cls_gate, "RE_FRONT_MATTER_CLOSE", wraps=cls_gate.RE_FRONT_MATTER_CLOSE
+    )
+    _run(tmp_path)
+    assert cls_spy.match.call_count <= 2 * int_lines
+
+
 @pytest.mark.skipif(
     sys.platform == "win32", reason="creating a symlink needs a privilege Windows may not grant"
 )
@@ -932,7 +1007,6 @@ def test_main_unreadable_page_is_not_reported_as_bad_utf8(
 def test_page_problems_parses_front_matter_once(tmp_path: Path, mocker: MockerFixture) -> None:
     """Front matter is parsed once per page, not once for the marker and once for the prose."""
     path_page = _write(tmp_path / "index.md", str_text="---\ntitle: x\n---\n\n" + STR_EN)
-    cls_gate._blanked_lines.cache_clear()
     cls_spy = mocker.spy(cls_gate.yaml, "safe_load")
     cls_gate.page_problems(path_page, path_root=tmp_path, str_declared="en")
     assert cls_spy.call_count == 1
